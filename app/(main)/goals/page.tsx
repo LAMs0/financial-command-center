@@ -20,6 +20,7 @@ export default function GoalsPage() {
     <section className="flex flex-1 flex-col">
       <SectionHeader
         eyebrow="Planning"
+        eyebrowClassName="bg-gradient-to-r from-brand-300 to-warning-400 bg-clip-text text-transparent"
         title="Financial Goals"
         actions={<Badge label={`${completed.length} completed`} tone="positive" size="md" />}
       />

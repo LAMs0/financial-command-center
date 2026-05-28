@@ -127,7 +127,7 @@ export default function TransactionsList({
             <div className="divide-y divide-white/10">
               {filtered.map((transaction) => (
                 <div
-                  className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-5 py-4 transition hover:bg-white/[0.02]"
+                  className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-5 py-4 transition hover:bg-white/[0.04]"
                   key={transaction.id}
                 >
                   <TransactionBadge type={transaction.type} />

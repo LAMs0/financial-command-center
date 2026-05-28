@@ -8,3 +8,4 @@ export { default as ProgressBar } from "./ProgressBar";
 export { default as StatCard } from "./StatCard";
 export { default as SectionHeader } from "./SectionHeader";
 export { default as AnimateIn } from "./AnimateIn";
+export { default as MonthSelector } from "./MonthSelector";

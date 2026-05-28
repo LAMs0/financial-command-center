@@ -38,6 +38,7 @@ export default function CardsPage() {
     <section className="flex flex-1 flex-col">
       <SectionHeader
         eyebrow="Finances"
+        eyebrowClassName="bg-gradient-to-r from-info-400 to-brand-300 bg-clip-text text-transparent"
         title="Credit Cards"
         actions={<Badge label={`${formatPercent(aggregateUtilization)} utilization`} tone={aggregateUtilization > 0.3 ? "warning" : "positive"} size="md" />}
       />

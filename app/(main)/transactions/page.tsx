@@ -52,6 +52,7 @@ export default function TransactionsPage() {
     <section className="flex flex-1 flex-col">
       <SectionHeader
         eyebrow="Activity"
+        eyebrowClassName="bg-gradient-to-r from-info-400 to-warning-400 bg-clip-text text-transparent"
         title="Transactions"
         actions={
           <Badge

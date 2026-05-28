@@ -4,6 +4,7 @@ import {
   mockGoals,
   mockInvestments,
   mockTransactions,
+  mockMonthlyHistory,
 } from "@/lib/mock-data";
 import {
   calculateCardUtilization,
@@ -22,43 +23,28 @@ import {
   CardHeader,
   ProgressBar,
   SectionHeader,
-  StatCard,
   TransactionBadge,
 } from "@/components/ui";
+import DashboardStats from "@/components/dashboard/DashboardStats";
+import NetWorthChart from "@/components/charts/NetWorthChart";
 import type { Account } from "@/types/finance";
 
 export const metadata = { title: "Dashboard" };
 
+// Estos valores son estáticos (no cambian por mes en Phase 2)
 const totalCreditBalance = mockCards.reduce((sum, card) => sum + card.balance, 0);
 const totalCreditLimit = mockCards.reduce((sum, card) => sum + card.limit, 0);
 const creditUtilization = totalCreditLimit === 0 ? 0 : totalCreditBalance / totalCreditLimit;
 const netWorth = calculateNetWorth(mockAccounts, mockCards, mockInvestments);
-
-const cashFlow = mockTransactions.reduce(
-  (summary, transaction) => {
-    if (transaction.type === "income") summary.income += transaction.amount;
-    if (transaction.type === "expense") summary.expenses += transaction.amount;
-    return summary;
-  },
-  { income: 0, expenses: 0 }
-);
-const netCashFlow = cashFlow.income - cashFlow.expenses;
 
 const topAccounts = [...mockAccounts].sort((a, b) => b.balance - a.balance);
 const recentTransactions = [...mockTransactions]
   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   .slice(0, 6);
 
-const accountNameById = new Map(
+const accountNameById: Record<string, string> = Object.fromEntries(
   mockAccounts.map((account) => [account.id, account.name])
 );
-
-const sparklineSeries = {
-  netWorth: [172000, 176500, 181200, 179900, 188400, 193100, netWorth.netWorth],
-  cashFlow: [13200, 15800, 12100, 18400, 20900, 19700, netCashFlow],
-  debt: [18600, 17200, 16500, 15100, 14600, 13800, totalCreditBalance],
-  utilization: [0.29, 0.27, 0.26, 0.24, 0.23, 0.22, creditUtilization],
-};
 
 function accountTypeLabel(type: Account["type"]) {
   const labels: Record<Account["type"], string> = {
@@ -67,7 +53,6 @@ function accountTypeLabel(type: Account["type"]) {
     cash: "Cash",
     investment: "Investment",
   };
-
   return labels[type];
 }
 
@@ -89,47 +74,45 @@ export default function DashboardPage() {
         eyebrowClassName="bg-gradient-to-r from-brand-300 to-info-400 bg-clip-text text-transparent"
         title="Financial Overview"
         actions={
-          <>
-            <div className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-text-secondary">
-              May 2025 mock data
-            </div>
-            <button className="rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25">
-              Review portfolio
-            </button>
-          </>
+          <button className="rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25">
+            Review portfolio
+          </button>
         }
       />
 
       <div className="space-y-6 px-4 py-6 md:px-8">
-        <AnimateIn className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard
-            label="Net worth"
-            value={formatCurrency(netWorth.netWorth)}
-            detail={`${formatPercent(netWorth.trendPercentage)} vs last month`}
-            tone="positive"
-            sparkline={sparklineSeries.netWorth}
+        {/*
+          DashboardStats es un Client Component que lee MonthContext.
+          Le pasamos todos los datos históricos como props para que el servidor
+          no tenga que volver a calcularlos cuando el usuario cambia de mes.
+        */}
+        <AnimateIn>
+          <DashboardStats
+            history={mockMonthlyHistory}
+            staticData={{
+              totalCreditBalance,
+              creditUtilization,
+              totalCreditLimit,
+              numCards: mockCards.length,
+            }}
           />
-          <StatCard
-            label="Cash flow"
-            value={formatCurrency(netCashFlow)}
-            detail={`${formatCompact(cashFlow.income)} in / ${formatCompact(cashFlow.expenses)} out`}
-            tone={netCashFlow >= 0 ? "positive" : "negative"}
-            sparkline={sparklineSeries.cashFlow}
-          />
-          <StatCard
-            label="Debt"
-            value={formatCurrency(totalCreditBalance)}
-            detail={`${mockCards.length} active credit lines`}
-            tone="warning"
-            sparkline={sparklineSeries.debt}
-          />
-          <StatCard
-            label="Credit utilization"
-            value={formatPercent(creditUtilization)}
-            detail={`${formatCompact(totalCreditLimit)} total limit`}
-            tone={creditUtilization > 0.3 ? "warning" : "positive"}
-            sparkline={sparklineSeries.utilization}
-          />
+        </AnimateIn>
+
+        <AnimateIn delay={0.04}>
+          <Card padded={false}>
+            <CardHeader
+              title="Net Worth"
+              subtitle="Patrimonio neto — selecciona un mes para resaltar"
+              action={
+                <p className="text-sm font-medium text-positive-400">
+                  {formatCurrency(netWorth.netWorth)}
+                </p>
+              }
+            />
+            <div className="px-2 pb-5">
+              <NetWorthChart data={mockMonthlyHistory} />
+            </div>
+          </Card>
         </AnimateIn>
 
         <AnimateIn className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]" delay={0.06}>
@@ -142,7 +125,7 @@ export default function DashboardPage() {
             <div className="divide-y divide-white/10">
               {topAccounts.map((account) => (
                 <div
-                  className="grid gap-4 px-5 py-4 transition hover:bg-white/[0.02] md:grid-cols-[1fr_auto]"
+                  className="grid gap-4 px-5 py-4 transition hover:bg-white/[0.04] md:grid-cols-[1fr_auto]"
                   key={account.id}
                 >
                   <div className="flex min-w-0 items-center gap-4">
@@ -209,14 +192,14 @@ export default function DashboardPage() {
             <div className="divide-y divide-white/10">
               {recentTransactions.map((transaction) => (
                 <div
-                  className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-5 py-4 transition hover:bg-white/[0.02]"
+                  className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-5 py-4 transition hover:bg-white/[0.04]"
                   key={transaction.id}
                 >
                   <TransactionBadge type={transaction.type} />
                   <div className="min-w-0">
                     <p className="truncate font-medium text-white">{transaction.description}</p>
                     <p className="truncate text-sm text-text-secondary">
-                      {accountNameById.get(transaction.accountId)} / {formatDate(transaction.date)}
+                      {accountNameById[transaction.accountId]} / {formatDate(transaction.date)}
                     </p>
                   </div>
                   <p className={`text-right text-sm font-semibold ${transactionTone(transaction.type)}`}>

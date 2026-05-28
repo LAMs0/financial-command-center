@@ -16,6 +16,7 @@ import {
   Landmark,
   LayoutDashboard,
   LineChart,
+  PiggyBank,
   ReceiptText,
   type LucideIcon,
 } from "lucide-react";
@@ -41,6 +42,7 @@ const navItems: { label: string; href: string; icon: LucideIcon }[] = [
   { label: "Investments",  href: "/investments",   icon: LineChart },
   { label: "Transactions", href: "/transactions",  icon: ReceiptText },
   { label: "Goals",        href: "/goals",         icon: Flag },
+  { label: "Budget",       href: "/budget",        icon: PiggyBank },
   { label: "Analytics",    href: "/analytics",     icon: BarChart3 },
 ];
 
@@ -75,22 +77,26 @@ export default function Sidebar() {
             <Link
               key={item.label}
               href={item.href}
-              className={`flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition ${
+              className={`group relative flex items-center justify-between overflow-hidden rounded-lg px-3 py-2.5 text-sm transition duration-200 before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-full before:bg-brand-400 before:transition-opacity ${
                 isActive
-                  ? "bg-white/10 text-white shadow-[inset_3px_0_0_#10b981]"
-                  : "text-text-secondary hover:bg-white/5 hover:text-white"
+                  ? "bg-white/10 text-white before:opacity-100"
+                  : "text-text-secondary before:opacity-0 hover:bg-white/[0.08] hover:text-white hover:before:opacity-70"
                 }`}
             >
-              <span className="flex items-center gap-3">
+              <span className="relative flex items-center gap-3">
                 <Icon
                   aria-hidden="true"
-                  className={`h-4 w-4 ${isActive ? "text-brand-300" : "text-text-muted"}`}
+                  className={`h-4 w-4 transition ${
+                    isActive
+                      ? "text-brand-300"
+                      : "text-text-muted group-hover:text-brand-300"
+                  }`}
                   strokeWidth={1.8}
                 />
                 <span>{item.label}</span>
               </span>
               {isActive && (
-                <span className="h-1.5 w-1.5 rounded-full bg-brand-400" />
+                <span className="relative h-1.5 w-1.5 rounded-full bg-brand-400" />
               )}
             </Link>
           );

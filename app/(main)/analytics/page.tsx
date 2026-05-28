@@ -1,7 +1,8 @@
-import { mockTransactions } from "@/lib/mock-data";
+import { mockTransactions, mockMonthlyHistory } from "@/lib/mock-data";
 import { formatCurrency } from "@/lib/formatters";
 import { Badge, Card, CardHeader, ProgressBar, SectionHeader, StatCard } from "@/components/ui";
 import SpendingDonutChart from "@/components/dashboard/SpendingDonutChart";
+import CashFlowChart from "@/components/charts/CashFlowChart";
 
 export const metadata = { title: "Analytics" };
 
@@ -30,6 +31,7 @@ export default function AnalyticsPage() {
     <section className="flex flex-1 flex-col">
       <SectionHeader
         eyebrow="Insights"
+        eyebrowClassName="bg-gradient-to-r from-info-400 to-brand-300 bg-clip-text text-transparent"
         title="Analytics"
         actions={<Badge label="Mock analysis" tone="neutral" size="md" />}
       />
@@ -45,6 +47,17 @@ export default function AnalyticsPage() {
             tone="info"
           />
         </section>
+
+        <Card padded={false}>
+          <CardHeader
+            title="Cash Flow — 6 Months"
+            subtitle="Monthly income vs expenses trend"
+            action={<Badge label="Last 6 months" tone="neutral" />}
+          />
+          <div className="px-2 pb-5">
+            <CashFlowChart data={mockMonthlyHistory} />
+          </div>
+        </Card>
 
         <Card padded={false}>
           <CardHeader

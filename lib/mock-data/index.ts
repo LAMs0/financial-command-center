@@ -15,3 +15,7 @@ export { mockCards } from "./cards";
 export { mockTransactions } from "./transactions";
 export { mockInvestments } from "./investments";
 export { mockGoals } from "./goals";
+export { mockMonthlyHistory } from "./history";
+export type { MonthlySnapshot } from "./history";
+export { mockBudgets } from "./budgets";
+export type { Budget } from "./budgets";

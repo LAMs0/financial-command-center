@@ -27,6 +27,7 @@ export default function AccountsPage() {
     <section className="flex flex-1 flex-col">
       <SectionHeader
         eyebrow="Finances"
+        eyebrowClassName="bg-gradient-to-r from-info-400 to-brand-300 bg-clip-text text-transparent"
         title="Accounts"
         actions={<Badge label={`${mockAccounts.length} connected`} tone="info" size="md" />}
       />
@@ -51,7 +52,7 @@ export default function AccountsPage() {
           <div className="divide-y divide-white/10">
             {mockAccounts.map((account) => (
               <div
-                className="grid gap-4 px-5 py-4 transition hover:bg-white/[0.02] md:grid-cols-[1fr_auto]"
+                className="grid gap-4 px-5 py-4 transition hover:bg-white/[0.04] md:grid-cols-[1fr_auto]"
                 key={account.id}
               >
                 <div className="flex min-w-0 items-center gap-4">

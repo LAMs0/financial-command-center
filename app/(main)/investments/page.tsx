@@ -1,7 +1,8 @@
 import { mockInvestments } from "@/lib/mock-data";
-import { calculateInvestmentGain } from "@/lib/calculations";
+import { calculateInvestmentGain, buildAllocationData } from "@/lib/calculations";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 import { Badge, Card, CardHeader, SectionHeader, StatCard } from "@/components/ui";
+import PortfolioAllocationChart from "@/components/charts/PortfolioAllocationChart";
 
 export const metadata = { title: "Investments" };
 
@@ -17,10 +18,13 @@ export default function InvestmentsPage() {
   const costBasis = totalValue - totalGain;
   const totalGainPercent = costBasis === 0 ? 0 : totalGain / costBasis;
 
+  const allocationData = buildAllocationData(mockInvestments);
+
   return (
     <section className="flex flex-1 flex-col">
       <SectionHeader
         eyebrow="Portfolio"
+        eyebrowClassName="bg-gradient-to-r from-info-400 to-positive-400 bg-clip-text text-transparent"
         title="Investments"
         actions={<Badge label={`${mockInvestments.length} positions`} tone="info" size="md" />}
       />
@@ -38,6 +42,15 @@ export default function InvestmentsPage() {
         </section>
 
         <Card padded={false}>
+          <CardHeader
+            title="Portfolio Allocation"
+            subtitle="Composición del portafolio por tipo de activo"
+            action={<Badge label={`${allocationData.length} asset types`} tone="info" />}
+          />
+          <PortfolioAllocationChart data={allocationData} total={totalValue} />
+        </Card>
+
+        <Card padded={false}>
           <CardHeader title="Positions" subtitle="Holdings, institutions and unrealized return" />
           <div className="divide-y divide-white/10">
             {mockInvestments.map((investment) => {
@@ -47,7 +60,7 @@ export default function InvestmentsPage() {
 
               return (
                 <div
-                  className="grid gap-4 px-5 py-4 transition hover:bg-white/[0.02] md:grid-cols-[1fr_auto]"
+                  className="grid gap-4 px-5 py-4 transition hover:bg-white/[0.04] md:grid-cols-[1fr_auto]"
                   key={investment.id}
                 >
                   <div className="min-w-0">

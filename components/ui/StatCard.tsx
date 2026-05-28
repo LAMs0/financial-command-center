@@ -92,7 +92,7 @@ export default function StatCard({
           <path
             d={`M ${sparklinePoints.map(([x, y]) => `${x.toFixed(2)} ${y.toFixed(2)}`).join(" L ")} L 100 32 L 0 32 Z`}
             fill={toneStroke[tone]}
-            opacity="0.08"
+            opacity="0.14"
           />
         </svg>
       )}

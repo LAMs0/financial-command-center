@@ -31,11 +31,30 @@ export default function DashboardLoading() {
       </div>
 
       <div className="space-y-6 px-4 py-6 md:px-8">
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <SkeletonCard key={index} />
-          ))}
-        </section>
+        {/* Skeleton del MonthSelector + StatCards */}
+        <div className="space-y-4">
+          <div className="flex gap-1.5">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-8 w-12 rounded-lg bg-white/10" />
+            ))}
+          </div>
+          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <SkeletonCard key={index} />
+            ))}
+          </section>
+        </div>
+
+        {/* Skeleton del NetWorthChart */}
+        <div className="rounded-xl border border-white/10 bg-surface-card">
+          <div className="border-b border-white/10 px-5 py-4">
+            <div className="h-4 w-24 rounded-full bg-white/10" />
+            <div className="mt-2 h-3 w-52 rounded-full bg-white/[0.07]" />
+          </div>
+          <div className="px-2 pb-5 pt-4">
+            <div className="h-64 rounded-lg bg-white/[0.03]" />
+          </div>
+        </div>
 
         <section className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
           <div className="rounded-xl border border-white/10 bg-surface-card">

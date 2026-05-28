@@ -124,3 +124,44 @@ export function calculateGoalProgress(
   if (targetAmount === 0) return 0;
   return Math.min(currentAmount / targetAmount, 1); // Máximo 1 (100%)
 }
+
+/*
+  Metadatos de tipos de activo para el PortfolioAllocationChart.
+  Vivir aquí (server-safe) en lugar del componente client permite
+  que los Server Components puedan calcular los datos antes de pasarlos.
+*/
+const ASSET_TYPE_META: Record<string, { label: string; color: string }> = {
+  etf:    { label: "ETFs",    color: "#10b981" },
+  stock:  { label: "Stocks",  color: "#3b82f6" },
+  crypto: { label: "Crypto",  color: "#f59e0b" },
+  bond:   { label: "Bonds",   color: "#8b5cf6" },
+  fund:   { label: "Funds",   color: "#14b8a6" },
+};
+
+export interface AllocationDatum {
+  type: string;
+  label: string;
+  value: number;
+  color: string;
+}
+
+/**
+ * Agrupa las inversiones por tipo y devuelve datos listos para un donut chart.
+ * Función pura — segura en Server Components.
+ */
+export function buildAllocationData(
+  investments: { type: string; quantity: number; currentPrice: number }[]
+): AllocationDatum[] {
+  const byType: Record<string, number> = {};
+
+  for (const inv of investments) {
+    byType[inv.type] = (byType[inv.type] ?? 0) + inv.quantity * inv.currentPrice;
+  }
+
+  return Object.entries(byType).map(([type, value]) => ({
+    type,
+    label: ASSET_TYPE_META[type]?.label ?? type,
+    value,
+    color: ASSET_TYPE_META[type]?.color ?? "#94a3b8",
+  }));
+}
