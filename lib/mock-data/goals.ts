@@ -1,0 +1,48 @@
+import type { Goal } from "@/types/finance";
+
+export const mockGoals: Goal[] = [
+  {
+    id: "goal-001",
+    name: "Fondo de emergencia",
+    category: "emergency_fund",
+    targetAmount: 100000,
+    currentAmount: 52300,
+    currency: "MXN",
+    targetDate: "2025-12-31",
+    color: "#10b981",
+    icon: "🛡️",
+  },
+  {
+    id: "goal-002",
+    name: "Viaje a Japón",
+    category: "vacation",
+    targetAmount: 60000,
+    currentAmount: 18500,
+    currency: "MXN",
+    targetDate: "2026-03-01",
+    color: "#f59e0b",
+    icon: "✈️",
+  },
+  {
+    id: "goal-003",
+    name: "MacBook Pro",
+    category: "custom",
+    targetAmount: 45000,
+    currentAmount: 45000,
+    currency: "MXN",
+    targetDate: "2025-05-01",
+    color: "#6366f1",
+    icon: "💻",
+  },
+  {
+    id: "goal-004",
+    name: "Enganche depa",
+    category: "home",
+    targetAmount: 300000,
+    currentAmount: 28450,
+    currency: "MXN",
+    targetDate: "2027-06-01",
+    color: "#3b82f6",
+    icon: "🏠",
+  },
+];

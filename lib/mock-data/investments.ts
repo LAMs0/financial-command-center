@@ -1,0 +1,47 @@
+import type { Investment } from "@/types/finance";
+
+export const mockInvestments: Investment[] = [
+  {
+    id: "inv-001",
+    name: "S&P 500 ETF",
+    ticker: "VOO",
+    type: "etf",
+    quantity: 5,
+    purchasePrice: 3800,
+    currentPrice: 4250,
+    currency: "MXN",
+    institution: "GBM",
+  },
+  {
+    id: "inv-002",
+    name: "Apple Inc.",
+    ticker: "AAPL",
+    type: "stock",
+    quantity: 10,
+    purchasePrice: 2900,
+    currentPrice: 3120,
+    currency: "MXN",
+    institution: "GBM",
+  },
+  {
+    id: "inv-003",
+    name: "Bitcoin",
+    ticker: "BTC",
+    type: "crypto",
+    quantity: 0.05,
+    purchasePrice: 900000,
+    currentPrice: 1050000,
+    currency: "MXN",
+    institution: "Bitso",
+  },
+  {
+    id: "inv-004",
+    name: "CETES 28 días",
+    type: "bond",
+    quantity: 1,
+    purchasePrice: 10000,
+    currentPrice: 10112,
+    currency: "MXN",
+    institution: "cetesdirecto",
+  },
+];

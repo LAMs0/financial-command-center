@@ -1,0 +1,43 @@
+import type { CreditCard } from "@/types/finance";
+
+export const mockCards: CreditCard[] = [
+  {
+    id: "card-001",
+    name: "Amex Gold",
+    institution: "American Express",
+    lastFourDigits: "4821",
+    balance: 8650.0,
+    limit: 40000,
+    currency: "MXN",
+    cutoffDay: 14,
+    paymentDueDay: 9,
+    minimumPayment: 519.0,
+    color: "#B8860B",
+  },
+  {
+    id: "card-002",
+    name: "BBVA Azul",
+    institution: "BBVA",
+    lastFourDigits: "3390",
+    balance: 3200.5,
+    limit: 15000,
+    currency: "MXN",
+    cutoffDay: 20,
+    paymentDueDay: 15,
+    minimumPayment: 192.0,
+    color: "#004481",
+  },
+  {
+    id: "card-003",
+    name: "Nu Card",
+    institution: "Nu",
+    lastFourDigits: "7714",
+    balance: 1450.0,
+    limit: 10000,
+    currency: "MXN",
+    cutoffDay: 5,
+    paymentDueDay: 28,
+    minimumPayment: 87.0,
+    color: "#820AD1",
+  },
+];

@@ -1,0 +1,100 @@
+/*
+  Transactions page — Server Component.
+
+  Responsabilidades de este archivo (servidor):
+  1. Calcular los totales para los StatCards
+  2. Ordenar las transacciones por fecha
+  3. Construir el mapa de cuentas (id → nombre)
+  4. Pasar los datos al Client Component (TransactionsList)
+
+  ¿Por qué no hacer todo aquí?
+  Los filtros interactivos necesitan useState — solo funciona en el
+  cliente. Delegamos la interactividad a TransactionsList y mantenemos
+  este archivo como Server Component para que los cálculos ocurran
+  en el servidor (sin costo de JS para el usuario).
+*/
+
+import { mockAccounts, mockTransactions } from "@/lib/mock-data";
+import { formatCurrency } from "@/lib/formatters";
+import { Badge, SectionHeader, StatCard } from "@/components/ui";
+import TransactionsList from "@/components/dashboard/TransactionsList";
+
+export const metadata = { title: "Transactions" };
+
+// ── Cálculos en el servidor ──────────────────────────────────────────
+
+const sortedTransactions = [...mockTransactions].sort(
+  (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+);
+
+const income = mockTransactions
+  .filter((t) => t.type === "income")
+  .reduce((sum, t) => sum + t.amount, 0);
+
+const expenses = mockTransactions
+  .filter((t) => t.type === "expense")
+  .reduce((sum, t) => sum + t.amount, 0);
+
+const transferCount = mockTransactions.filter((t) => t.type === "transfer").length;
+
+/*
+  Convertimos Map → Record<string, string> porque los props que se
+  pasan a Client Components deben ser serializables (JSON-safe).
+  Map no es serializable — un objeto plano sí.
+*/
+const accountNameById = Object.fromEntries(
+  mockAccounts.map((a) => [a.id, a.name])
+);
+
+// ── Página ───────────────────────────────────────────────────────────
+export default function TransactionsPage() {
+  return (
+    <section className="flex flex-1 flex-col">
+      <SectionHeader
+        eyebrow="Activity"
+        title="Transactions"
+        actions={
+          <Badge
+            label={`${mockTransactions.length} records`}
+            tone="info"
+            size="md"
+          />
+        }
+      />
+
+      <div className="space-y-6 px-4 py-6 md:px-8">
+        {/* Resumen calculado en servidor */}
+        <section className="grid gap-4 md:grid-cols-3">
+          <StatCard
+            label="Income"
+            value={formatCurrency(income)}
+            detail="This mock period"
+            tone="positive"
+          />
+          <StatCard
+            label="Expenses"
+            value={formatCurrency(expenses)}
+            detail="Excluding transfers"
+            tone="negative"
+          />
+          <StatCard
+            label="Transfers"
+            value={String(transferCount)}
+            detail="Internal account movement"
+            tone="info"
+          />
+        </section>
+
+        {/*
+          TransactionsList es Client Component — recibe los datos
+          ya ordenados y el mapa de cuentas como props serializables.
+          Gestiona el estado de filtros internamente.
+        */}
+        <TransactionsList
+          transactions={sortedTransactions}
+          accountNameById={accountNameById}
+        />
+      </div>
+    </section>
+  );
+}
