@@ -59,6 +59,7 @@ export default function StatCard({
   sparkline,
 }: StatCardProps) {
   const sparklinePoints = buildSparklinePoints(sparkline);
+  const sparklineGradientId = `sparkline-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 
   return (
     <article className="rounded-xl border border-white/10 bg-surface-card p-5 shadow-2xl shadow-black/20">
@@ -68,7 +69,7 @@ export default function StatCard({
         />
       )}
       <p className="text-sm text-text-secondary">{label}</p>
-      <p className="mt-3 text-2xl font-semibold tracking-normal text-white">
+      <p className="mt-3 text-2xl font-semibold tracking-normal text-white tabular-nums">
         {value}
       </p>
       {detail && (
@@ -81,6 +82,12 @@ export default function StatCard({
           preserveAspectRatio="none"
           viewBox="0 0 100 32"
         >
+          <defs>
+            <linearGradient id={sparklineGradientId} x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor={toneStroke[tone]} stopOpacity="0.18" />
+              <stop offset="100%" stopColor={toneStroke[tone]} stopOpacity="0" />
+            </linearGradient>
+          </defs>
           <path
             d={`M ${sparklinePoints.map(([x, y]) => `${x.toFixed(2)} ${y.toFixed(2)}`).join(" L ")}`}
             fill="none"
@@ -91,8 +98,7 @@ export default function StatCard({
           />
           <path
             d={`M ${sparklinePoints.map(([x, y]) => `${x.toFixed(2)} ${y.toFixed(2)}`).join(" L ")} L 100 32 L 0 32 Z`}
-            fill={toneStroke[tone]}
-            opacity="0.14"
+            fill={`url(#${sparklineGradientId})`}
           />
         </svg>
       )}

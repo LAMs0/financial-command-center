@@ -1,4 +1,14 @@
 import { mockBudgets } from "@/lib/mock-data";
+import {
+  Car,
+  Dumbbell,
+  Home,
+  ShoppingBag,
+  Tv2,
+  Utensils,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 import {
   Badge,
@@ -36,21 +46,40 @@ const toneBadge: Record<ReturnType<typeof budgetTone>, "positive" | "warning" | 
   negative: "negative",
 };
 
+const budgetIcons: Record<string, LucideIcon> = {
+  Car,
+  Dumbbell,
+  Home,
+  ShoppingBag,
+  Tv2,
+  Utensils,
+  Zap,
+};
+
 function BudgetCard({ budget }: { budget: Budget }) {
   const ratio = budget.allocated === 0 ? 0 : budget.spent / budget.allocated;
   const remaining = budget.allocated - budget.spent;
   const tone = budgetTone(ratio);
   const isOver = ratio >= 1;
+  const Icon = budgetIcons[budget.icon] ?? Zap;
 
   return (
     <Card>
       {/* Header de la card */}
       <div className="mb-4 flex items-start gap-4">
-        <span
-          aria-hidden="true"
-          className="mt-0.5 h-10 w-2 shrink-0 rounded-full"
-          style={{ backgroundColor: budget.color }}
-        />
+        <div className="flex items-center gap-3">
+          <span
+            aria-hidden="true"
+            className="h-10 w-2 shrink-0 rounded-full"
+            style={{ backgroundColor: budget.color }}
+          />
+          <span
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[0.03]"
+            style={{ color: budget.color }}
+          >
+            <Icon aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
+          </span>
+        </div>
         <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="font-semibold text-white">{budget.label}</p>

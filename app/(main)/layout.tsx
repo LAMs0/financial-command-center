@@ -34,7 +34,7 @@ export default function MainLayout({
   return (
     <MonthProvider history={mockMonthlyHistory} defaultMonth={defaultMonth}>
       <div className="flex min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),transparent_34%),linear-gradient(135deg,#090b11_0%,#0c111b_48%,#111018_100%)] text-text-primary">
-        <Sidebar />
+        <Sidebar history={mockMonthlyHistory} />
         {/* flex-1 hace que el contenido ocupe todo el ancho restante */}
         <div className="flex min-w-0 flex-1 flex-col">
           <MobileNav />
