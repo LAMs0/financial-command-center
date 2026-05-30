@@ -1,0 +1,229 @@
+// Prisma Schema — Financial Command Center
+//
+// ¿Qué es Prisma?
+// ORM (Object-Relational Mapper) que convierte tu schema en:
+//   1. Tablas reales en PostgreSQL (via migraciones)
+//   2. Tipos TypeScript generados automáticamente
+//   3. Un cliente con autocompletado para hacer queries
+//
+// Flujo de trabajo:
+//   Editas este archivo → npx prisma migrate dev → tabla creada + tipos actualizados
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Enums ────────────────────────────────────────────────────────────────────
+
+enum AccountType {
+  checking
+  savings
+  cash
+  investment
+}
+
+enum TransactionType {
+  income
+  expense
+  transfer
+}
+
+enum InvestmentType {
+  etf
+  stock
+  crypto
+  bond
+  fund
+}
+
+enum Currency {
+  MXN
+  USD
+  EUR
+}
+
+// ── Modelos ──────────────────────────────────────────────────────────────────
+
+// User — creado automáticamente por NextAuth cuando el usuario hace login
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  image         String?
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relaciones — todos los datos financieros pertenecen a un User
+  financialAccounts FinancialAccount[]
+  cards             CreditCard[]
+  transactions      Transaction[]
+  investments       Investment[]
+  goals             Goal[]
+  budgets           Budget[]
+
+  // NextAuth — tokens de OAuth y sesiones
+  // OJO: el adapter estándar de Auth.js espera un modelo llamado `Account`.
+  // Por eso este es `Account` (OAuth), y las cuentas bancarias son `FinancialAccount`.
+  accounts Account[]
+  sessions Session[]
+}
+
+// Account — tokens de OAuth por provider (Google, GitHub, etc.)
+// Nombre obligatorio para el adapter de NextAuth/Auth.js.
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+// Session — sesiones activas gestionadas por NextAuth
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// VerificationToken — para email verification (NextAuth)
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ── Datos financieros ────────────────────────────────────────────────────────
+
+// FinancialAccount — cuenta bancaria/efectivo/inversión del usuario.
+// (Renombrada desde `Account` para no chocar con el modelo OAuth de NextAuth.)
+model FinancialAccount {
+  id          String      @id @default(cuid())
+  name        String
+  institution String
+  type        AccountType
+  balance     Decimal     @db.Decimal(14, 2)
+  currency    Currency    @default(MXN)
+  color       String      @default("#10b981")
+  lastUpdated DateTime    @default(now())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+}
+
+model CreditCard {
+  id             String   @id @default(cuid())
+  name           String
+  institution    String
+  balance        Decimal  @db.Decimal(14, 2)
+  limit          Decimal  @db.Decimal(14, 2)
+  currency       Currency @default(MXN)
+  cutoffDay      Int
+  paymentDueDay  Int
+  lastFourDigits String
+  minimumPayment Decimal  @default(0) @db.Decimal(14, 2)
+  color          String   @default("#10b981")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  description String
+  amount      Decimal         @db.Decimal(14, 2)
+  type        TransactionType
+  category    String
+  date        DateTime
+  currency    Currency        @default(MXN)
+  notes       String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId String
+  account   FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+}
+
+model Investment {
+  id            String         @id @default(cuid())
+  name          String
+  ticker        String?
+  type          InvestmentType
+  quantity      Decimal        @db.Decimal(18, 8)
+  purchasePrice Decimal        @db.Decimal(18, 4)
+  currentPrice  Decimal        @db.Decimal(18, 4)
+  currency      Currency       @default(MXN)
+  institution   String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Goal {
+  id            String   @id @default(cuid())
+  name          String
+  category      String
+  targetAmount  Decimal  @db.Decimal(14, 2)
+  currentAmount Decimal  @default(0) @db.Decimal(14, 2)
+  targetDate    DateTime
+  currency      Currency @default(MXN)
+  color         String   @default("#10b981")
+  icon          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Budget — presupuesto mensual por categoría
+// El campo `month` es formato "YYYY-MM" (ej: "2025-05")
+model Budget {
+  id        String   @id @default(cuid())
+  category  String
+  label     String
+  allocated Decimal  @db.Decimal(14, 2)
+  spent     Decimal  @default(0) @db.Decimal(14, 2)
+  currency  Currency @default(MXN)
+  color     String   @default("#10b981")
+  icon      String   @default("Zap")
+  month     String   // "YYYY-MM"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Un usuario no puede tener dos budgets del mismo mes+categoría
+  @@unique([userId, month, category])
+}
