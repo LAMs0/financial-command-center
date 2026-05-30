@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useReducedMotion } from "framer-motion";
 import {
   Cell,
@@ -37,20 +37,28 @@ export default function SpendingDonutChart({
 }: SpendingDonutChartProps) {
   const [mounted, setMounted] = useState(false);
   const shouldReduceMotion = useReducedMotion();
-  const chartData = data.map((item) => ({
-    ...item,
-    label: item.category.charAt(0).toUpperCase() + item.category.slice(1),
-  }));
+  const isReady = mounted || shouldReduceMotion;
+  const chartData = useMemo(
+    () => data.map((item) => ({
+      ...item,
+      label: item.category.charAt(0).toUpperCase() + item.category.slice(1),
+    })),
+    [data]
+  );
 
   useEffect(() => {
-    const frame = window.requestAnimationFrame(() => setMounted(true));
-    return () => window.cancelAnimationFrame(frame);
-  }, []);
+    if (shouldReduceMotion) {
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(frame);
+  }, [shouldReduceMotion]);
 
   return (
     <div className="grid gap-6 p-5 lg:grid-cols-[minmax(260px,0.9fr)_1fr] lg:items-center">
       <div className="relative h-72 min-h-72">
-        {mounted ? (
+        {isReady ? (
           <div aria-label="Expense mix donut chart by category" className="h-full" role="img">
           <ResponsiveContainer height="100%" width="100%">
             <PieChart>
@@ -61,7 +69,7 @@ export default function SpendingDonutChart({
                 isAnimationActive={!shouldReduceMotion}
                 outerRadius="88%"
                 paddingAngle={3}
-                stroke="rgba(255,255,255,0.08)"
+                stroke="color-mix(in oklab, var(--color-text-primary) 10%, transparent)"
                 strokeWidth={2}
               >
                 {chartData.map((entry, index) => (
@@ -74,7 +82,7 @@ export default function SpendingDonutChart({
               <Tooltip
                 contentStyle={{
                   background: "var(--color-surface-raised)",
-                  border: "1px solid rgba(255,255,255,0.12)",
+                  border: "1px solid color-mix(in oklab, var(--color-text-primary) 16%, transparent)",
                   borderRadius: 10,
                   color: "var(--color-text-primary)",
                 }}
@@ -94,7 +102,7 @@ export default function SpendingDonutChart({
             <p className="text-xs uppercase tracking-[0.2em] text-text-muted">
               Total spend
             </p>
-            <p className="mt-2 text-2xl font-semibold text-white tabular-nums">
+            <p className="mt-2 text-2xl font-semibold text-text-primary tabular-nums">
               {formatCurrency(total)}
             </p>
           </div>
@@ -115,10 +123,10 @@ export default function SpendingDonutChart({
                   className="h-2.5 w-2.5 shrink-0 rounded-full"
                   style={{ backgroundColor: chartColors[index % chartColors.length] }}
                 />
-                <p className="truncate font-medium text-white">{item.label}</p>
+                <p className="truncate font-medium text-text-primary">{item.label}</p>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-semibold text-white">
+              <div className="text-right tabular-nums">
+                <p className="text-sm font-semibold text-text-primary">
                   {formatCurrency(item.amount)}
                 </p>
                 <p className="text-xs text-text-secondary">

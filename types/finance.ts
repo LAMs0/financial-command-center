@@ -173,3 +173,12 @@ export interface Budget {
   color: string;
   icon: string;
 }
+
+// ─── Datos calculados para gráficas ───────────────────────────────────────────
+
+export interface AllocationDatum {
+  type: string;
+  label: string;
+  value: number;
+  color: string;
+}

@@ -41,12 +41,6 @@ function budgetStatusLabel(ratio: number): string {
   return "On track";
 }
 
-const toneBadge: Record<ReturnType<typeof budgetTone>, "positive" | "warning" | "negative"> = {
-  positive: "positive",
-  warning: "warning",
-  negative: "negative",
-};
-
 const budgetIcons: Record<string, LucideIcon> = {
   Car,
   Dumbbell,
@@ -83,15 +77,15 @@ function BudgetCard({ budget }: { budget: Budget }) {
         </div>
         <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="font-semibold text-white">{budget.label}</p>
-            <p className="mt-0.5 text-sm text-text-secondary">
+            <p className="font-semibold text-text-primary">{budget.label}</p>
+            <p className="mt-0.5 text-sm tabular-nums text-text-secondary">
               {formatCurrency(budget.spent, budget.currency)} of{" "}
               {formatCurrency(budget.allocated, budget.currency)}
             </p>
           </div>
           <Badge
             label={budgetStatusLabel(ratio)}
-            tone={toneBadge[tone]}
+            tone={tone}
             size="sm"
           />
         </div>
@@ -101,8 +95,8 @@ function BudgetCard({ budget }: { budget: Budget }) {
       <ProgressBar value={Math.min(ratio, 1)} autoColor size="md" />
 
       {/* Footer: porcentaje y restante/exceso */}
-      <div className="mt-3 flex items-center justify-between text-sm">
-        <span className="font-medium text-white">{formatPercent(ratio, 1)}</span>
+      <div className="mt-3 flex items-center justify-between text-sm tabular-nums">
+        <span className="font-medium text-text-primary">{formatPercent(ratio, 1)}</span>
         {isOver ? (
           <span className="text-negative-400">
             +{formatCurrency(Math.abs(remaining), budget.currency)} over
@@ -124,14 +118,13 @@ export default async function BudgetPage() {
   const totalRemaining = totalAllocated - totalSpent;
   const overallRatio = totalAllocated === 0 ? 0 : totalSpent / totalAllocated;
 
-  const onTrack = budgets.filter(
-    (b) => b.spent / b.allocated < 0.7
-  );
-  const atRisk = budgets.filter((b) => {
-    const r = b.spent / b.allocated;
-    return r >= 0.7 && r < 1;
-  });
-  const overBudget = budgets.filter((b) => b.spent >= b.allocated);
+  const budgetsWithRatio = budgets.map((b) => ({
+    ...b,
+    ratio: b.allocated === 0 ? 0 : b.spent / b.allocated,
+  }));
+  const onTrack = budgetsWithRatio.filter((b) => b.ratio < 0.7);
+  const atRisk = budgetsWithRatio.filter((b) => b.ratio >= 0.7 && b.ratio < 1);
+  const overBudget = budgetsWithRatio.filter((b) => b.ratio >= 1);
 
   return (
     <section className="flex flex-1 flex-col">
@@ -184,11 +177,11 @@ export default async function BudgetPage() {
         {/* ── Progress global ── */}
         <Card>
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm font-medium text-white">Overall spending</p>
-            <p className="text-sm text-text-secondary">{formatPercent(overallRatio, 1)}</p>
+            <p className="text-sm font-medium text-text-primary">Overall spending</p>
+            <p className="text-sm tabular-nums text-text-secondary">{formatPercent(overallRatio, 1)}</p>
           </div>
           <ProgressBar value={Math.min(overallRatio, 1)} autoColor size="md" />
-          <div className="mt-3 flex justify-between text-xs text-text-muted">
+          <div className="mt-3 flex justify-between text-xs tabular-nums text-text-muted">
             <span>{formatCurrency(totalSpent)} spent</span>
             <span>{formatCurrency(totalAllocated)} budget</span>
           </div>

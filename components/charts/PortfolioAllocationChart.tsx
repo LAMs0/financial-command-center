@@ -40,9 +40,9 @@ function CustomTooltip({ active, payload }: PortfolioTooltipProps) {
           className="h-2.5 w-2.5 rounded-full"
           style={{ backgroundColor: item.payload.color }}
         />
-        <p className="text-sm font-medium text-white">{item.payload.label}</p>
+        <p className="text-sm font-medium text-text-primary">{item.payload.label}</p>
       </div>
-      <p className="mt-1 text-lg font-semibold text-white">
+      <p className="mt-1 text-lg font-semibold tabular-nums text-text-primary">
         {formatCurrency(Number(item.value))}
       </p>
     </div>
@@ -55,17 +55,22 @@ export default function PortfolioAllocationChart({
 }: PortfolioAllocationChartProps) {
   const [mounted, setMounted] = useState(false);
   const shouldReduceMotion = useReducedMotion();
+  const isReady = mounted || shouldReduceMotion;
 
   useEffect(() => {
+    if (shouldReduceMotion) {
+      return;
+    }
+
     const frame = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(frame);
-  }, []);
+  }, [shouldReduceMotion]);
 
   return (
     <div className="grid gap-6 p-5 lg:grid-cols-[minmax(240px,0.85fr)_1fr] lg:items-center">
       {/* Donut */}
       <div className="relative h-64 min-h-64">
-        {mounted ? (
+        {isReady ? (
           <div aria-label="Portfolio allocation donut chart" className="h-full" role="img">
           <ResponsiveContainer height="100%" width="100%">
             <PieChart>
@@ -76,7 +81,7 @@ export default function PortfolioAllocationChart({
                 isAnimationActive={!shouldReduceMotion}
                 outerRadius="86%"
                 paddingAngle={3}
-                stroke="rgba(255,255,255,0.06)"
+                stroke="color-mix(in oklab, var(--color-text-primary) 8%, transparent)"
                 strokeWidth={2}
               >
                 {data.map((entry) => (
@@ -95,7 +100,7 @@ export default function PortfolioAllocationChart({
         <div className="pointer-events-none absolute inset-0 grid place-items-center">
           <div className="text-center">
             <p className="text-xs uppercase tracking-[0.2em] text-text-secondary">Total</p>
-            <p className="mt-1.5 text-xl font-semibold text-white">
+            <p className="mt-1.5 text-xl font-semibold tabular-nums text-text-primary">
               {formatCurrency(total)}
             </p>
           </div>
@@ -117,10 +122,10 @@ export default function PortfolioAllocationChart({
                   className="h-2.5 w-2.5 shrink-0 rounded-full"
                   style={{ backgroundColor: item.color }}
                 />
-                <p className="truncate font-medium text-white">{item.label}</p>
+                <p className="truncate font-medium text-text-primary">{item.label}</p>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-semibold text-white">
+              <div className="text-right tabular-nums">
+                <p className="text-sm font-semibold text-text-primary">
                   {formatCurrency(item.value)}
                 </p>
                 <p className="text-xs text-text-secondary">

@@ -49,8 +49,8 @@ export default function DashboardStats({ history, staticData }: DashboardStatsPr
 
   const sparklineNetWorth = history.map((h) => h.netWorth);
   const sparklineCashFlow = history.map((h) => h.income - h.expenses);
-  const sparklineDebt = history.map(() => staticData.totalCreditBalance);
-  const sparklineUtil = history.map(() => staticData.creditUtilization);
+  const sparklineDebt = Array<number>(history.length).fill(staticData.totalCreditBalance);
+  const sparklineUtil = Array<number>(history.length).fill(staticData.creditUtilization);
 
   return (
     <div className="space-y-4">

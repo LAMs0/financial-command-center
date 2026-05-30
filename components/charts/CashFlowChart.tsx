@@ -26,20 +26,10 @@ import {
 import { formatCompact, formatCurrency } from "@/lib/formatters";
 import { useMonth } from "@/contexts/MonthContext";
 import type { MonthlySnapshot } from "@/types/finance";
+import { ActiveMonthTick, type ChartTooltipProps } from "./_chartUtils";
 
 interface CashFlowChartProps {
   data: MonthlySnapshot[];
-}
-
-interface ChartTooltipPayload {
-  dataKey?: string | number;
-  value?: number | string;
-}
-
-interface ChartTooltipProps {
-  active?: boolean;
-  payload?: ChartTooltipPayload[];
-  label?: string | number;
 }
 
 function CustomTooltip({ active, payload, label }: ChartTooltipProps) {
@@ -52,7 +42,7 @@ function CustomTooltip({ active, payload, label }: ChartTooltipProps) {
   return (
     <div className="min-w-[160px] rounded-xl border border-white/12 bg-surface-raised px-4 py-3 shadow-2xl shadow-black/40">
       <p className="mb-2 text-xs uppercase tracking-[0.18em] text-text-secondary">{label}</p>
-      <div className="space-y-1.5 text-sm">
+      <div className="space-y-1.5 text-sm tabular-nums">
         <div className="flex justify-between gap-6">
           <span className="text-text-secondary">Income</span>
           <span className="font-medium text-positive-400">{formatCurrency(Number(income))}</span>
@@ -89,13 +79,18 @@ export default function CashFlowChart({ data }: CashFlowChartProps) {
   const [mounted, setMounted] = useState(false);
   const shouldReduceMotion = useReducedMotion();
   const { selectedMonth } = useMonth();
+  const isReady = mounted || shouldReduceMotion;
 
   useEffect(() => {
+    if (shouldReduceMotion) {
+      return;
+    }
+
     const frame = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(frame);
-  }, []);
+  }, [shouldReduceMotion]);
 
-  if (!mounted) {
+  if (!isReady) {
     return <div className="h-64 animate-pulse rounded-lg bg-white/[0.03]" />;
   }
 
@@ -109,7 +104,7 @@ export default function CashFlowChart({ data }: CashFlowChartProps) {
         margin={{ top: 8, right: 4, bottom: 0, left: 0 }}
       >
         <CartesianGrid
-          stroke="rgba(255,255,255,0.05)"
+          stroke="color-mix(in oklab, var(--color-text-primary) 8%, transparent)"
           strokeDasharray="3 3"
           vertical={false}
         />
@@ -117,21 +112,7 @@ export default function CashFlowChart({ data }: CashFlowChartProps) {
         <XAxis
           axisLine={false}
           dataKey="label"
-          tick={({ x, y, payload }) => {
-            const isActive = data.find((d) => d.label === payload.value)?.month === selectedMonth;
-            return (
-              <text
-                fill={isActive ? "var(--color-text-primary)" : "var(--color-text-secondary)"}
-                fontSize={isActive ? 13 : 12}
-                fontWeight={isActive ? 600 : 400}
-                textAnchor="middle"
-                x={Number(x)}
-                y={Number(y) + 12}
-              >
-                {payload.value}
-              </text>
-            );
-          }}
+          tick={ActiveMonthTick(data, selectedMonth)}
           tickLine={false}
         />
 
@@ -145,7 +126,7 @@ export default function CashFlowChart({ data }: CashFlowChartProps) {
 
         <Tooltip
           content={<CustomTooltip />}
-          cursor={{ fill: "rgba(255,255,255,0.03)" }}
+          cursor={{ fill: "color-mix(in oklab, var(--color-text-primary) 5%, transparent)" }}
         />
 
         <Legend content={<CustomLegend />} verticalAlign="top" />

@@ -12,10 +12,13 @@ import {
   calculateNetWorth,
 } from "@/lib/calculations";
 import {
+  formatAccountType,
   formatCompact,
   formatCurrency,
   formatDate,
   formatPercent,
+  transactionPrefix,
+  transactionTone,
 } from "@/lib/formatters";
 import {
   AnimateIn,
@@ -30,29 +33,8 @@ import Link from "next/link";
 import { CreditCard, Flag, Landmark, ReceiptText } from "lucide-react";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import NetWorthChart from "@/components/charts/NetWorthChart";
-import type { Account } from "@/types/finance";
 
 export const metadata = { title: "Dashboard" };
-
-function accountTypeLabel(type: Account["type"]) {
-  const labels: Record<Account["type"], string> = {
-    checking: "Checking",
-    savings: "Savings",
-    cash: "Cash",
-    investment: "Investment",
-  };
-  return labels[type];
-}
-
-function transactionAmountPrefix(type: string) {
-  return type === "expense" ? "-" : "+";
-}
-
-function transactionTone(type: string) {
-  if (type === "income") return "text-positive-400";
-  if (type === "transfer") return "text-info-400";
-  return "text-negative-400";
-}
 
 export default async function DashboardPage() {
   /*
@@ -71,8 +53,13 @@ export default async function DashboardPage() {
     ]);
 
   // Valores derivados (antes vivían a nivel de módulo con los mocks)
-  const totalCreditBalance = cards.reduce((sum, card) => sum + card.balance, 0);
-  const totalCreditLimit = cards.reduce((sum, card) => sum + card.limit, 0);
+  const { totalCreditBalance, totalCreditLimit } = cards.reduce(
+    (acc, card) => ({
+      totalCreditBalance: acc.totalCreditBalance + card.balance,
+      totalCreditLimit: acc.totalCreditLimit + card.limit,
+    }),
+    { totalCreditBalance: 0, totalCreditLimit: 0 }
+  );
   const creditUtilization =
     totalCreditLimit === 0 ? 0 : totalCreditBalance / totalCreditLimit;
   const netWorth = calculateNetWorth(accounts, cards, investments);
@@ -126,7 +113,7 @@ export default async function DashboardPage() {
               title="Net Worth"
               subtitle="Patrimonio neto — selecciona un mes para resaltar"
               action={
-                <p className="text-sm font-medium text-positive-400">
+                <p className="text-sm font-medium tabular-nums text-positive-400">
                   {formatCurrency(netWorth.netWorth)}
                 </p>
               }
@@ -162,13 +149,13 @@ export default async function DashboardPage() {
                       style={{ backgroundColor: account.color }}
                     />
                     <div className="min-w-0">
-                      <p className="truncate font-medium text-white">{account.name}</p>
+                      <p className="truncate font-medium text-text-primary">{account.name}</p>
                       <p className="text-sm text-text-secondary">
-                        {account.institution} / {accountTypeLabel(account.type)} / Updated {formatDate(account.lastUpdated)}
+                        {account.institution} / {formatAccountType(account.type)} / Updated {formatDate(account.lastUpdated)}
                       </p>
                     </div>
                   </div>
-                  <p className="text-left text-lg font-semibold text-white md:text-right">
+                  <p className="text-left text-lg font-semibold tabular-nums text-text-primary md:text-right">
                     {formatCurrency(account.balance, account.currency)}
                   </p>
                 </div>
@@ -177,13 +164,11 @@ export default async function DashboardPage() {
           </Card>
 
           <Card>
-            <div className="mb-5 flex items-center justify-between">
-              <div>
-                <h2 className="text-base font-semibold text-white">Credit Lines</h2>
-                <p className="text-sm text-text-secondary">Utilization and due dates</p>
-              </div>
-              <p className="text-sm font-medium text-warning-400">{formatPercent(creditUtilization)}</p>
-            </div>
+            <CardHeader
+              title="Credit Lines"
+              subtitle="Utilization and due dates"
+              action={<p className="text-sm font-medium tabular-nums text-warning-400">{formatPercent(creditUtilization)}</p>}
+            />
             <div className="space-y-4">
               {cards.length === 0 ? (
                 <EmptyState
@@ -198,15 +183,15 @@ export default async function DashboardPage() {
                   <Card variant="raised" className="shadow-none" key={card.id}>
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <p className="font-medium text-white">{card.name}</p>
+                        <p className="font-medium text-text-primary">{card.name}</p>
                         <p className="text-sm text-text-secondary">
                           Ends {card.lastFourDigits} / Due day {card.paymentDueDay}
                         </p>
                       </div>
-                      <p className="text-sm text-text-secondary">{formatPercent(utilization)}</p>
+                      <p className="text-sm tabular-nums text-text-secondary">{formatPercent(utilization)}</p>
                     </div>
                     <ProgressBar value={utilization} autoColor size="md" className="mt-4" />
-                    <div className="mt-3 flex justify-between text-sm text-text-secondary">
+                    <div className="mt-3 flex justify-between text-sm tabular-nums text-text-secondary">
                       <span>{formatCompact(card.balance, card.currency)} used</span>
                       <span>{formatCompact(card.limit, card.currency)} limit</span>
                     </div>
@@ -237,13 +222,13 @@ export default async function DashboardPage() {
                 >
                   <TransactionBadge type={transaction.type} />
                   <div className="min-w-0">
-                    <p className="truncate font-medium text-white">{transaction.description}</p>
+                    <p className="truncate font-medium text-text-primary">{transaction.description}</p>
                     <p className="truncate text-sm text-text-secondary">
                       {accountNameById[transaction.accountId]} / {formatDate(transaction.date)}
                     </p>
                   </div>
-                  <p className={`text-right text-sm font-semibold ${transactionTone(transaction.type)}`}>
-                    {transactionAmountPrefix(transaction.type)}
+                  <p className={`text-right text-sm font-semibold tabular-nums ${transactionTone(transaction.type)}`}>
+                    {transactionPrefix(transaction.type)}
                     {formatCurrency(transaction.amount, transaction.currency)}
                   </p>
                 </div>
@@ -252,13 +237,11 @@ export default async function DashboardPage() {
           </Card>
 
           <Card>
-            <div className="mb-5 flex items-center justify-between">
-              <div>
-                <h2 className="text-base font-semibold text-white">Financial Goals</h2>
-                <p className="text-sm text-text-secondary">Progress toward priority targets</p>
-              </div>
-              <p className="text-sm text-text-secondary">{goals.length} goals</p>
-            </div>
+            <CardHeader
+              title="Financial Goals"
+              subtitle="Progress toward priority targets"
+              action={<p className="text-sm text-text-secondary">{goals.length} goals</p>}
+            />
 
             <div className="grid gap-4 md:grid-cols-2">
               {goals.length === 0 ? (
@@ -274,17 +257,17 @@ export default async function DashboardPage() {
                   <Card variant="raised" className="shadow-none" key={goal.id}>
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-medium text-white">{goal.name}</p>
+                        <p className="font-medium text-text-primary">{goal.name}</p>
                         <p className="mt-1 text-sm text-text-secondary">
                           Target {formatDate(goal.targetDate)}
                         </p>
                       </div>
-                      <p className="text-sm font-semibold text-white">
+                      <p className="text-sm font-semibold tabular-nums text-text-primary">
                         {formatPercent(progress, 0)}
                       </p>
                     </div>
                     <ProgressBar value={progress} color={goal.color} size="md" className="mt-5" />
-                    <div className="mt-3 flex justify-between text-sm text-text-secondary">
+                    <div className="mt-3 flex justify-between text-sm tabular-nums text-text-secondary">
                       <span>{formatCompact(goal.currentAmount, goal.currency)}</span>
                       <span>{formatCompact(goal.targetAmount, goal.currency)}</span>
                     </div>

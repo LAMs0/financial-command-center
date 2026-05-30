@@ -1,11 +1,13 @@
 import type {
   Account,
+  AllocationDatum,
+  Budget,
   CreditCard,
   Investment,
-  Transaction,
   NetWorthSummary,
-  CashFlowSummary,
 } from "@/types/finance";
+
+export type { AllocationDatum };
 
 /*
   calculations.ts — Lógica de negocio financiera
@@ -49,53 +51,54 @@ export function calculateNetWorth(
 }
 
 /**
- * Calcula el Cash Flow del mes actual.
- * Filtra las transacciones del mes en curso y suma ingresos vs gastos.
- */
-export function calculateCashFlow(
-  transactions: Transaction[]
-): CashFlowSummary {
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
-  // Filtrar solo transacciones del mes actual
-  const thisMonthTxns = transactions.filter((txn) => {
-    const date = new Date(txn.date);
-    return (
-      date.getMonth() === currentMonth && date.getFullYear() === currentYear
-    );
-  });
-
-  const totalIncome = thisMonthTxns
-    .filter((txn) => txn.type === "income")
-    .reduce((sum, txn) => sum + txn.amount, 0);
-
-  const totalExpenses = thisMonthTxns
-    .filter((txn) => txn.type === "expense")
-    .reduce((sum, txn) => sum + txn.amount, 0);
-
-  const monthName = now.toLocaleDateString("es-MX", {
-    month: "long",
-    year: "numeric",
-  });
-
-  return {
-    totalIncome,
-    totalExpenses,
-    netFlow: totalIncome - totalExpenses,
-    currency: "MXN",
-    period: monthName.charAt(0).toUpperCase() + monthName.slice(1),
-  };
-}
-
-/**
  * Calcula el porcentaje de utilización de una tarjeta de crédito.
  * Sobre 30% = warning. Sobre 70% = danger.
  */
 export function calculateCardUtilization(card: CreditCard): number {
   if (card.limit === 0) return 0;
   return card.balance / card.limit;
+}
+
+/**
+ * Calcula la utilización agregada de todas las tarjetas de crédito.
+ */
+export function calculateAggregateCardUtilization(cards: CreditCard[]): number {
+  const totalBalance = cards.reduce((sum, c) => sum + c.balance, 0);
+  const totalLimit = cards.reduce((sum, c) => sum + c.limit, 0);
+  return totalLimit === 0 ? 0 : totalBalance / totalLimit;
+}
+
+/**
+ * Calcula el resumen del portafolio de inversiones.
+ */
+export function calculatePortfolioSummary(investments: Investment[]): {
+  totalValue: number;
+  totalGain: number;
+  costBasis: number;
+  totalGainPercent: number;
+} {
+  let totalValue = 0;
+  let totalGain = 0;
+  for (const inv of investments) {
+    const currentValue = inv.quantity * inv.currentPrice;
+    const purchaseValue = inv.quantity * inv.purchasePrice;
+    totalValue += currentValue;
+    totalGain += currentValue - purchaseValue;
+  }
+  const costBasis = totalValue - totalGain;
+  return {
+    totalValue,
+    totalGain,
+    costBasis,
+    totalGainPercent: costBasis === 0 ? 0 : totalGain / costBasis,
+  };
+}
+
+/**
+ * Calcula el ratio de gasto de un presupuesto (spent / allocated).
+ */
+export function calculateBudgetRatio(budget: Budget): number {
+  return budget.allocated === 0 ? 0 : budget.spent / budget.allocated;
 }
 
 /**
@@ -137,13 +140,6 @@ const ASSET_TYPE_META: Record<string, { label: string; color: string }> = {
   bond:   { label: "Bonds",   color: "#8b5cf6" },
   fund:   { label: "Funds",   color: "#14b8a6" },
 };
-
-export interface AllocationDatum {
-  type: string;
-  label: string;
-  value: number;
-  color: string;
-}
 
 /**
  * Agrupa las inversiones por tipo y devuelve datos listos para un donut chart.

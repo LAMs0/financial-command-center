@@ -28,20 +28,10 @@ import {
 import { formatCurrency, formatCompact } from "@/lib/formatters";
 import { useMonth } from "@/contexts/MonthContext";
 import type { MonthlySnapshot } from "@/types/finance";
+import { ActiveMonthTick, type ChartTooltipProps } from "./_chartUtils";
 
 interface NetWorthChartProps {
   data: MonthlySnapshot[];
-}
-
-interface ChartTooltipPayload {
-  dataKey?: string | number;
-  value?: number | string;
-}
-
-interface ChartTooltipProps {
-  active?: boolean;
-  payload?: ChartTooltipPayload[];
-  label?: string | number;
 }
 
 function CustomTooltip({ active, payload, label }: ChartTooltipProps) {
@@ -54,8 +44,8 @@ function CustomTooltip({ active, payload, label }: ChartTooltipProps) {
   return (
     <div className="rounded-xl border border-white/12 bg-surface-raised px-4 py-3 shadow-2xl shadow-black/40">
       <p className="mb-2 text-xs uppercase tracking-[0.18em] text-text-secondary">{label}</p>
-      <p className="text-lg font-semibold text-white">{formatCurrency(Number(netWorth))}</p>
-      <div className="mt-2 space-y-1 text-xs text-text-secondary">
+      <p className="text-lg font-semibold tabular-nums text-text-primary">{formatCurrency(Number(netWorth))}</p>
+      <div className="mt-2 space-y-1 text-xs tabular-nums text-text-secondary">
         <p>Assets: <span className="text-positive-400">{formatCurrency(Number(assets))}</span></p>
         <p>Liabilities: <span className="text-negative-400">{formatCurrency(Number(liabilities))}</span></p>
       </div>
@@ -67,18 +57,23 @@ export default function NetWorthChart({ data }: NetWorthChartProps) {
   const [mounted, setMounted] = useState(false);
   const shouldReduceMotion = useReducedMotion();
   const { selectedMonth } = useMonth();
+  const isReady = mounted || shouldReduceMotion;
 
   useEffect(() => {
+    if (shouldReduceMotion) {
+      return;
+    }
+
     const frame = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(frame);
-  }, []);
+  }, [shouldReduceMotion]);
 
   const minValue = Math.min(...data.map((d) => d.netWorth));
   const maxValue = Math.max(...data.map((d) => d.netWorth));
   const yMin = Math.floor((minValue * 0.97) / 10_000) * 10_000;
   const yMax = Math.ceil((maxValue * 1.02) / 10_000) * 10_000;
 
-  if (!mounted) {
+  if (!isReady) {
     return <div className="h-64 animate-pulse rounded-lg bg-white/[0.03]" />;
   }
 
@@ -94,7 +89,7 @@ export default function NetWorthChart({ data }: NetWorthChartProps) {
         </defs>
 
         <CartesianGrid
-          stroke="rgba(255,255,255,0.05)"
+          stroke="color-mix(in oklab, var(--color-text-primary) 8%, transparent)"
           strokeDasharray="3 3"
           vertical={false}
         />
@@ -102,22 +97,7 @@ export default function NetWorthChart({ data }: NetWorthChartProps) {
         <XAxis
           axisLine={false}
           dataKey="label"
-          tick={({ x, y, payload }) => {
-            // Mes activo en blanco brillante, el resto en gris
-            const isActive = data.find((d) => d.label === payload.value)?.month === selectedMonth;
-            return (
-              <text
-                fill={isActive ? "var(--color-text-primary)" : "var(--color-text-secondary)"}
-                fontSize={isActive ? 13 : 12}
-                fontWeight={isActive ? 600 : 400}
-                textAnchor="middle"
-                x={Number(x)}
-                y={Number(y) + 12}
-              >
-                {payload.value}
-              </text>
-            );
-          }}
+          tick={ActiveMonthTick(data, selectedMonth)}
           tickLine={false}
         />
 
@@ -132,7 +112,7 @@ export default function NetWorthChart({ data }: NetWorthChartProps) {
 
         <Tooltip
           content={<CustomTooltip />}
-          cursor={{ stroke: "rgba(255,255,255,0.12)", strokeWidth: 1 }}
+          cursor={{ stroke: "color-mix(in oklab, var(--color-text-primary) 16%, transparent)", strokeWidth: 1 }}
         />
 
         <Area

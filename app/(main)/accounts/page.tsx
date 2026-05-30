@@ -1,21 +1,9 @@
 import { getAccounts } from "@/lib/data";
-import { formatCurrency, formatDate } from "@/lib/formatters";
+import { formatAccountType, formatCurrency, formatDate } from "@/lib/formatters";
 import { Badge, Card, CardHeader, EmptyState, SectionHeader, StatCard } from "@/components/ui";
-import type { Account } from "@/types/finance";
 import { Landmark } from "lucide-react";
 
 export const metadata = { title: "Accounts" };
-
-function accountTypeLabel(type: Account["type"]) {
-  const labels: Record<Account["type"], string> = {
-    checking: "Checking",
-    savings: "Savings",
-    cash: "Cash",
-    investment: "Investment",
-  };
-
-  return labels[type];
-}
 
 export default async function AccountsPage() {
   const accounts = await getAccounts();
@@ -69,13 +57,13 @@ export default async function AccountsPage() {
                     style={{ backgroundColor: account.color }}
                   />
                   <div className="min-w-0">
-                    <p className="truncate font-medium text-white">{account.name}</p>
+                    <p className="truncate font-medium text-text-primary">{account.name}</p>
                     <p className="text-sm text-text-secondary">
-                      {account.institution} / {accountTypeLabel(account.type)} / Updated {formatDate(account.lastUpdated)}
+                      {account.institution} / {formatAccountType(account.type)} / Updated {formatDate(account.lastUpdated)}
                     </p>
                   </div>
                 </div>
-                <p className="text-left text-lg font-semibold text-white md:text-right">
+                <p className="text-left text-lg font-semibold tabular-nums text-text-primary md:text-right">
                   {formatCurrency(account.balance, account.currency)}
                 </p>
               </div>

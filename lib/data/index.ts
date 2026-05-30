@@ -22,7 +22,9 @@
   Los Server Components simplemente hacen `await getAccounts()`.
 */
 
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/auth";
 import { toISODate, toNumber } from "./serialize";
 import {
   mockAccounts,
@@ -54,20 +56,15 @@ function useDatabase(): boolean {
   return process.env.DATA_SOURCE === "database";
 }
 
-const DEMO_USER_EMAIL = "demo@financialcc.app";
-
 /*
-  Mientras no haya autenticación, todos los datos pertenecen al usuario demo.
-  Cuando integremos NextAuth (Fase 4), este helper se reemplaza por el id de
-  la sesión activa — y nada más en la app tendrá que cambiar.
+  Lee el id del usuario de la sesión activa (Auth.js v5).
+  cache() deduplica la llamada dentro de un mismo render pass — si 6 funciones
+  lo llaman en paralelo, auth() solo se ejecuta una vez por request.
 */
-async function getCurrentUserId(): Promise<string | null> {
-  const user = await prisma.user.findUnique({
-    where: { email: DEMO_USER_EMAIL },
-    select: { id: true },
-  });
-  return user?.id ?? null;
-}
+const getCurrentUserId = cache(async (): Promise<string | null> => {
+  const session = await auth();
+  return session?.user?.id ?? null;
+});
 
 /*
   Wrapper que centraliza el patrón "intenta DB, si no usa mock".
@@ -219,7 +216,9 @@ export async function getGoals(): Promise<Goal[]> {
 }
 
 // ── Presupuestos ─────────────────────────────────────────────────────────────
-export async function getBudgets(month = "2025-05"): Promise<Budget[]> {
+export async function getBudgets(
+  month = new Date().toISOString().slice(0, 7)
+): Promise<Budget[]> {
   return withFallback(
     "getBudgets",
     async () => {

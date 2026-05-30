@@ -8,12 +8,15 @@ export const metadata = { title: "Goals" };
 
 export default async function GoalsPage() {
   const goals = await getGoals();
-  const active = goals.filter(
-    (goal) => calculateGoalProgress(goal.currentAmount, goal.targetAmount) < 1
-  );
-  const completed = goals.filter(
-    (goal) => calculateGoalProgress(goal.currentAmount, goal.targetAmount) >= 1
-  );
+
+  // Pre-compute progress once — reused in filters and render loop
+  const goalsWithProgress = goals.map((goal) => ({
+    ...goal,
+    progress: calculateGoalProgress(goal.currentAmount, goal.targetAmount),
+  }));
+  const active = goalsWithProgress.filter((g) => g.progress < 1);
+  const completed = goalsWithProgress.filter((g) => g.progress >= 1);
+
   const totalTarget = goals.reduce((sum, goal) => sum + goal.targetAmount, 0);
   const totalSaved = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
   const aggregateProgress = totalTarget === 0 ? 0 : totalSaved / totalTarget;
@@ -46,31 +49,27 @@ export default async function GoalsPage() {
           <section>
             <div className="mb-4 flex items-center justify-between">
               <p className="text-xs uppercase tracking-[0.22em] text-text-muted">In progress</p>
-              <Badge label={`${active.length} active`} tone="neutral" />
+              <Badge ariaLabel={`${active.length} active goals`} label={`${active.length} active`} tone="neutral" />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              {active.map((goal) => {
-                const progress = calculateGoalProgress(goal.currentAmount, goal.targetAmount);
-
-                return (
-                  <Card key={goal.id}>
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="font-semibold text-white">{goal.name}</p>
-                        <p className="mt-1 text-sm text-text-secondary">
-                          Target {formatDate(goal.targetDate)}
-                        </p>
-                      </div>
-                      <Badge label={formatPercent(progress, 0)} tone="info" />
+              {active.map((goal) => (
+                <Card key={goal.id}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-semibold text-text-primary">{goal.name}</p>
+                      <p className="mt-1 text-sm text-text-secondary">
+                        Target {formatDate(goal.targetDate)}
+                      </p>
                     </div>
-                    <ProgressBar value={progress} color={goal.color} size="md" className="mt-5" />
-                    <div className="mt-3 flex justify-between text-sm text-text-secondary">
-                      <span>{formatCurrency(goal.currentAmount, goal.currency)}</span>
-                      <span>{formatCurrency(goal.targetAmount, goal.currency)}</span>
-                    </div>
-                  </Card>
-                );
-              })}
+                    <Badge label={formatPercent(goal.progress, 0)} tone="info" />
+                  </div>
+                  <ProgressBar value={goal.progress} color={goal.color} size="md" className="mt-5" />
+                  <div className="mt-3 flex justify-between text-sm tabular-nums text-text-secondary">
+                    <span>{formatCurrency(goal.currentAmount, goal.currency)}</span>
+                    <span>{formatCurrency(goal.targetAmount, goal.currency)}</span>
+                  </div>
+                </Card>
+              ))}
             </div>
           </section>
         )}
@@ -86,8 +85,8 @@ export default async function GoalsPage() {
                 <Card key={goal.id} className="border-positive-400/20">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="font-semibold text-white">{goal.name}</p>
-                      <p className="mt-1 text-sm text-text-secondary">
+                      <p className="font-semibold text-text-primary">{goal.name}</p>
+                      <p className="mt-1 text-sm tabular-nums text-text-secondary">
                         {formatCurrency(goal.targetAmount, goal.currency)} reached
                       </p>
                     </div>

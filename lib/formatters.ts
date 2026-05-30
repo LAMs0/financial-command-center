@@ -1,4 +1,4 @@
-import type { Currency } from "@/types/finance";
+import type { AccountType, Currency, TransactionType } from "@/types/finance";
 
 /*
   formatters.ts — Funciones de presentación de datos
@@ -83,4 +83,28 @@ export function formatCompact(
   }
   // Para montos pequeños usa el formato completo — no necesita compresión
   return formatCurrency(amount, currency);
+}
+
+const ACCOUNT_TYPE_LABELS: Record<AccountType, string> = {
+  checking: "Checking",
+  savings: "Savings",
+  cash: "Cash",
+  investment: "Investment",
+};
+
+/** Convierte el tipo de cuenta a una etiqueta legible. */
+export function formatAccountType(type: AccountType): string {
+  return ACCOUNT_TYPE_LABELS[type];
+}
+
+/** Clase CSS de color según el tipo de transacción. */
+export function transactionTone(type: TransactionType): string {
+  if (type === "income") return "text-positive-400";
+  if (type === "transfer") return "text-info-400";
+  return "text-negative-400";
+}
+
+/** Prefijo de signo según el tipo de transacción. */
+export function transactionPrefix(type: TransactionType): string {
+  return type === "expense" ? "-" : "+";
 }
