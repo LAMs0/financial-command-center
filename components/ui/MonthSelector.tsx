@@ -11,7 +11,8 @@
 */
 
 import { useMonth } from "@/contexts/MonthContext";
-import type { MonthlySnapshot } from "@/lib/mock-data";
+import type { MonthlySnapshot } from "@/types/finance";
+import type { KeyboardEvent } from "react";
 
 interface MonthSelectorProps {
   months: MonthlySnapshot[];
@@ -20,13 +21,34 @@ interface MonthSelectorProps {
 export default function MonthSelector({ months }: MonthSelectorProps) {
   const { selectedMonth, setSelectedMonth } = useMonth();
 
+  function handleKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+
+    event.preventDefault();
+    const nextIndex =
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? months.length - 1
+          : event.key === "ArrowLeft"
+            ? Math.max(index - 1, 0)
+            : Math.min(index + 1, months.length - 1);
+    const nextMonth = months[nextIndex]?.month;
+    if (!nextMonth) return;
+
+    setSelectedMonth(nextMonth);
+    event.currentTarget.parentElement
+      ?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+      [nextIndex]?.focus();
+  }
+
   return (
     <div
       aria-label="Select month"
       className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5"
       role="tablist"
     >
-      {months.map((snapshot) => {
+      {months.map((snapshot, index) => {
         const isActive = snapshot.month === selectedMonth;
 
         return (
@@ -38,8 +60,10 @@ export default function MonthSelector({ months }: MonthSelectorProps) {
                 : "border-white/10 bg-white/[0.03] text-text-secondary hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
             }`}
             key={snapshot.month}
+            onKeyDown={(event) => handleKeyDown(event, index)}
             onClick={() => setSelectedMonth(snapshot.month)}
             role="tab"
+            tabIndex={isActive ? 0 : -1}
             type="button"
           >
             {snapshot.label}

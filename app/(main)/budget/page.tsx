@@ -1,4 +1,4 @@
-import { mockBudgets } from "@/lib/mock-data";
+import { getBudgets } from "@/lib/data";
 import {
   Car,
   Dumbbell,
@@ -13,11 +13,12 @@ import { formatCurrency, formatPercent } from "@/lib/formatters";
 import {
   Badge,
   Card,
+  EmptyState,
   ProgressBar,
   SectionHeader,
   StatCard,
 } from "@/components/ui";
-import type { Budget } from "@/lib/mock-data";
+import type { Budget } from "@/types/finance";
 
 export const metadata = { title: "Budget" };
 
@@ -116,20 +117,21 @@ function BudgetCard({ budget }: { budget: Budget }) {
   );
 }
 
-export default function BudgetPage() {
-  const totalAllocated = mockBudgets.reduce((s, b) => s + b.allocated, 0);
-  const totalSpent = mockBudgets.reduce((s, b) => s + b.spent, 0);
+export default async function BudgetPage() {
+  const budgets = await getBudgets();
+  const totalAllocated = budgets.reduce((s, b) => s + b.allocated, 0);
+  const totalSpent = budgets.reduce((s, b) => s + b.spent, 0);
   const totalRemaining = totalAllocated - totalSpent;
   const overallRatio = totalAllocated === 0 ? 0 : totalSpent / totalAllocated;
 
-  const onTrack = mockBudgets.filter(
+  const onTrack = budgets.filter(
     (b) => b.spent / b.allocated < 0.7
   );
-  const atRisk = mockBudgets.filter((b) => {
+  const atRisk = budgets.filter((b) => {
     const r = b.spent / b.allocated;
     return r >= 0.7 && r < 1;
   });
-  const overBudget = mockBudgets.filter((b) => b.spent >= b.allocated);
+  const overBudget = budgets.filter((b) => b.spent >= b.allocated);
 
   return (
     <section className="flex flex-1 flex-col">
@@ -156,7 +158,7 @@ export default function BudgetPage() {
           <StatCard
             label="Total budget"
             value={formatCurrency(totalAllocated)}
-            detail={`${mockBudgets.length} categories`}
+            detail={`${budgets.length} categories`}
             tone="brand"
           />
           <StatCard
@@ -243,6 +245,18 @@ export default function BudgetPage() {
           </section>
         )}
       </div>
+
+      {budgets.length === 0 && (
+        <div className="px-4 pb-8 md:px-8">
+          <Card padded={false}>
+            <EmptyState
+              icon={<Zap aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
+              title="No budget categories"
+              description="Monthly category budgets will appear here once a planning period has been configured."
+            />
+          </Card>
+        </div>
+      )}
     </section>
   );
 }

@@ -11,6 +11,7 @@
 */
 
 import { useEffect, useState } from "react";
+import { useReducedMotion } from "framer-motion";
 import {
   Bar,
   BarChart,
@@ -24,7 +25,7 @@ import {
 } from "recharts";
 import { formatCompact, formatCurrency } from "@/lib/formatters";
 import { useMonth } from "@/contexts/MonthContext";
-import type { MonthlySnapshot } from "@/lib/mock-data";
+import type { MonthlySnapshot } from "@/types/finance";
 
 interface CashFlowChartProps {
   data: MonthlySnapshot[];
@@ -86,6 +87,7 @@ function CustomLegend() {
 
 export default function CashFlowChart({ data }: CashFlowChartProps) {
   const [mounted, setMounted] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
   const { selectedMonth } = useMonth();
 
   useEffect(() => {
@@ -98,6 +100,7 @@ export default function CashFlowChart({ data }: CashFlowChartProps) {
   }
 
   return (
+    <div aria-label="Cash flow chart showing income and expenses by month" role="img">
     <ResponsiveContainer height={256} width="100%">
       <BarChart
         barCategoryGap="28%"
@@ -148,7 +151,7 @@ export default function CashFlowChart({ data }: CashFlowChartProps) {
         <Legend content={<CustomLegend />} verticalAlign="top" />
 
         {/* Income bars — plena opacidad en el mes activo, atenuadas en los demás */}
-        <Bar dataKey="income" radius={[4, 4, 0, 0]}>
+        <Bar dataKey="income" isAnimationActive={!shouldReduceMotion} radius={[4, 4, 0, 0]}>
           {data.map((entry) => (
             <Cell
               fill="var(--color-positive-500)"
@@ -159,7 +162,7 @@ export default function CashFlowChart({ data }: CashFlowChartProps) {
         </Bar>
 
         {/* Expense bars — misma lógica */}
-        <Bar dataKey="expenses" radius={[4, 4, 0, 0]}>
+        <Bar dataKey="expenses" isAnimationActive={!shouldReduceMotion} radius={[4, 4, 0, 0]}>
           {data.map((entry) => (
             <Cell
               fill="var(--color-negative-500)"
@@ -170,5 +173,6 @@ export default function CashFlowChart({ data }: CashFlowChartProps) {
         </Bar>
       </BarChart>
     </ResponsiveContainer>
+    </div>
   );
 }

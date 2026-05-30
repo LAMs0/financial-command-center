@@ -151,3 +151,25 @@ export interface CashFlowSummary {
   currency: Currency;
   period: string;          // "Mayo 2025"
 }
+
+export interface MonthlySnapshot {
+  month: string;
+  label: string;
+  income: number;
+  expenses: number;
+  assets: number;
+  liabilities: number;
+  netWorth: number;
+  currency?: Currency;
+}
+
+export interface Budget {
+  id: string;
+  category: string;
+  label: string;
+  allocated: number;
+  spent: number;
+  currency: Currency;
+  color: string;
+  icon: string;
+}

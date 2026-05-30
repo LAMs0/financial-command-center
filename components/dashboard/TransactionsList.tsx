@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { RotateCcw, Search, SearchX } from "lucide-react";
-import { Card, TransactionBadge } from "@/components/ui";
+import { Button, EmptyState, TransactionBadge } from "@/components/ui";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { Transaction, TransactionType } from "@/types/finance";
 
@@ -63,6 +63,7 @@ export default function TransactionsList({
         <div className="flex flex-wrap gap-2">
           {filterOptions.map((option) => (
             <button
+              aria-pressed={activeFilter === option.value}
               className={`rounded-lg border px-3 py-1.5 text-sm transition ${
                 activeFilter === option.value
                   ? "border-brand-400/40 bg-brand-500/15 text-brand-300"
@@ -70,6 +71,7 @@ export default function TransactionsList({
               }`}
               key={option.value}
               onClick={() => setActiveFilter(option.value)}
+              type="button"
             >
               {option.label}
             </button>
@@ -84,6 +86,7 @@ export default function TransactionsList({
           />
           <input
             className="w-full rounded-lg border border-white/10 bg-white/[0.03] py-1.5 pl-9 pr-3 text-sm text-white placeholder:text-text-muted transition focus:border-brand-400/40 focus:bg-brand-500/[0.05] focus:outline-none"
+            aria-label="Search transactions"
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Search transactions..."
             type="text"
@@ -93,29 +96,26 @@ export default function TransactionsList({
       </div>
 
       <div className="rounded-xl border border-white/10 bg-surface-card">
-        {filtered.length === 0 ? (
-          <div className="grid place-items-center px-5 py-14 text-center">
-            <Card className="max-w-md shadow-none" variant="raised">
-              <div className="mx-auto grid h-12 w-12 place-items-center rounded-lg border border-warning-400/20 bg-warning-900/50 text-warning-400">
-                <SearchX aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />
-              </div>
-              <h2 className="mt-4 text-base font-semibold text-white">
-                No matching transactions
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-text-secondary">
-                Try a broader search term or switch back to all activity to restore the full ledger.
-              </p>
-              <div className="mt-5 flex justify-center">
-                <button
-                  className="inline-flex items-center gap-2 rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25"
-                  onClick={resetFilters}
-                >
-                  <RotateCcw aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
-                  Reset filters
-                </button>
-              </div>
-            </Card>
-          </div>
+        {transactions.length === 0 ? (
+          <EmptyState
+            icon={<SearchX aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
+            title="No transactions yet"
+            description="Once activity is connected, incoming, outgoing and transfer records will appear here."
+          />
+        ) : filtered.length === 0 ? (
+          <EmptyState
+            icon={<SearchX aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
+            title="No matching transactions"
+            description="Try a broader search term or switch back to all activity to restore the full ledger."
+            action={
+              <Button
+                icon={<RotateCcw aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />}
+                onClick={resetFilters}
+              >
+                Reset filters
+              </Button>
+            }
+          />
         ) : (
           <>
             <div className="border-b border-white/10 px-5 py-3">

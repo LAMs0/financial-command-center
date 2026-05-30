@@ -11,12 +11,13 @@ import {
   LineChart,
   PiggyBank,
   ReceiptText,
+  Palette,
   type LucideIcon,
 } from "lucide-react";
-import { Card } from "@/components/ui";
+import { Card, ThemeToggle } from "@/components/ui";
 import { useMonth } from "@/contexts/MonthContext";
 import { formatCompact } from "@/lib/formatters";
-import type { MonthlySnapshot } from "@/lib/mock-data";
+import type { MonthlySnapshot } from "@/types/finance";
 
 const navItems: { label: string; href: string; icon: LucideIcon }[] = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -27,6 +28,7 @@ const navItems: { label: string; href: string; icon: LucideIcon }[] = [
   { label: "Goals", href: "/goals", icon: Flag },
   { label: "Budget", href: "/budget", icon: PiggyBank },
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
+  { label: "Styleguide", href: "/styleguide", icon: Palette },
 ];
 
 interface SidebarProps {
@@ -41,17 +43,20 @@ export default function Sidebar({ history }: SidebarProps) {
 
   return (
     <aside className="hidden w-72 shrink-0 border-r border-white/10 bg-surface-base/80 px-5 py-6 backdrop-blur xl:block">
-      <div className="mb-9 flex items-center gap-3">
+      <div className="mb-9 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
         <div className="grid h-11 w-11 place-items-center rounded-lg border border-brand-400/30 bg-brand-500/15 text-sm font-bold text-brand-300">
           FC
         </div>
-        <div>
+        <div className="min-w-0">
           <p className="text-sm font-semibold tracking-wide">Financial Command</p>
           <p className="text-xs text-text-secondary">Personal CFO workspace</p>
         </div>
+        </div>
+        <ThemeToggle />
       </div>
 
-      <nav className="space-y-1">
+      <nav aria-label="Primary navigation" className="space-y-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -65,6 +70,7 @@ export default function Sidebar({ history }: SidebarProps) {
               }`}
               href={item.href}
               key={item.label}
+              aria-current={isActive ? "page" : undefined}
             >
               <span className="flex items-center gap-3">
                 <Icon
@@ -106,24 +112,27 @@ export function MobileNav() {
 
   return (
     <div className="border-b border-white/10 bg-surface-base/90 px-4 py-3 backdrop-blur xl:hidden">
-      <div className="mb-3 flex items-center gap-3">
-        <div className="grid h-9 w-9 place-items-center rounded-lg border border-brand-400/30 bg-brand-500/15 text-xs font-bold text-brand-300">
-          FC
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="grid h-9 w-9 place-items-center rounded-lg border border-brand-400/30 bg-brand-500/15 text-xs font-bold text-brand-300">
+            FC
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-white">Financial Command</p>
+            <p className="truncate text-xs text-text-secondary">Personal CFO workspace</p>
+          </div>
         </div>
-        <div>
-          <p className="text-sm font-semibold text-white">Financial Command</p>
-          <p className="text-xs text-text-secondary">Personal CFO workspace</p>
-        </div>
+        <ThemeToggle />
       </div>
 
-      <nav className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+      <nav aria-label="Mobile primary navigation" className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 sm:gap-2">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
 
           return (
             <Link
-              className={`flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${
+              className={`flex shrink-0 items-center gap-2 rounded-lg border px-2.5 py-2 text-sm transition sm:px-3 ${
                 isActive
                   ? "border-brand-400/30 bg-brand-500/15 text-brand-300"
                   : "border-white/10 bg-white/[0.03] text-text-secondary"
@@ -131,6 +140,8 @@ export function MobileNav() {
               href={item.href}
               key={item.label}
               title={item.label}
+              aria-current={isActive ? "page" : undefined}
+              aria-label={item.label}
             >
               <Icon aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
               <span className="hidden sm:inline">{item.label}</span>

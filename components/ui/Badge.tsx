@@ -26,15 +26,18 @@ interface BadgeProps {
   label: string;
   tone?: BadgeTone;
   size?: BadgeSize;
+  ariaLabel?: string;
 }
 
 export default function Badge({
   label,
+  ariaLabel,
   tone = "neutral",
   size = "sm",
 }: BadgeProps) {
   return (
     <span
+      aria-label={ariaLabel}
       className={[
         "inline-flex items-center rounded-md font-medium",
         toneClasses[tone],

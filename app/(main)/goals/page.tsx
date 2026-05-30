@@ -1,19 +1,21 @@
-import { mockGoals } from "@/lib/mock-data";
+import { getGoals } from "@/lib/data";
 import { calculateGoalProgress } from "@/lib/calculations";
 import { formatCurrency, formatDate, formatPercent } from "@/lib/formatters";
-import { Badge, Card, ProgressBar, SectionHeader, StatCard } from "@/components/ui";
+import { Badge, Card, EmptyState, ProgressBar, SectionHeader, StatCard } from "@/components/ui";
+import { Flag } from "lucide-react";
 
 export const metadata = { title: "Goals" };
 
-export default function GoalsPage() {
-  const active = mockGoals.filter(
+export default async function GoalsPage() {
+  const goals = await getGoals();
+  const active = goals.filter(
     (goal) => calculateGoalProgress(goal.currentAmount, goal.targetAmount) < 1
   );
-  const completed = mockGoals.filter(
+  const completed = goals.filter(
     (goal) => calculateGoalProgress(goal.currentAmount, goal.targetAmount) >= 1
   );
-  const totalTarget = mockGoals.reduce((sum, goal) => sum + goal.targetAmount, 0);
-  const totalSaved = mockGoals.reduce((sum, goal) => sum + goal.currentAmount, 0);
+  const totalTarget = goals.reduce((sum, goal) => sum + goal.targetAmount, 0);
+  const totalSaved = goals.reduce((sum, goal) => sum + goal.currentAmount, 0);
   const aggregateProgress = totalTarget === 0 ? 0 : totalSaved / totalTarget;
 
   return (
@@ -32,7 +34,15 @@ export default function GoalsPage() {
           <StatCard label="Progress" value={formatPercent(aggregateProgress, 0)} detail={`${active.length} active goals`} tone="info" />
         </section>
 
-        {active.length > 0 && (
+        {goals.length === 0 ? (
+          <Card padded={false}>
+            <EmptyState
+              icon={<Flag aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
+              title="No goals yet"
+              description="Savings targets, debt payoff plans and milestone goals will be organized here."
+            />
+          </Card>
+        ) : active.length > 0 && (
           <section>
             <div className="mb-4 flex items-center justify-between">
               <p className="text-xs uppercase tracking-[0.22em] text-text-muted">In progress</p>

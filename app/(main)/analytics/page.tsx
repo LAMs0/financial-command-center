@@ -1,30 +1,35 @@
-import { mockTransactions, mockMonthlyHistory } from "@/lib/mock-data";
-import { formatCurrency } from "@/lib/formatters";
+import { getTransactions, getMonthlyHistory } from "@/lib/data";
+import { formatCurrency, formatPercent } from "@/lib/formatters";
 import { Badge, Card, CardHeader, ProgressBar, SectionHeader, StatCard } from "@/components/ui";
 import SpendingDonutChart from "@/components/dashboard/SpendingDonutChart";
 import CashFlowChart from "@/components/charts/CashFlowChart";
 
 export const metadata = { title: "Analytics" };
 
-const expensesByCategory = mockTransactions
-  .filter((transaction) => transaction.type === "expense")
-  .reduce<Record<string, number>>((acc, transaction) => {
-    acc[transaction.category] = (acc[transaction.category] ?? 0) + transaction.amount;
-    return acc;
-  }, {});
+export default async function AnalyticsPage() {
+  const [transactions, monthlyHistory] = await Promise.all([
+    getTransactions(),
+    getMonthlyHistory(),
+  ]);
 
-const categoryRows = Object.entries(expensesByCategory).sort(([, a], [, b]) => b - a);
-const categoryChartData = categoryRows.map(([category, amount]) => ({
-  category,
-  amount,
-}));
-const totalExpenses = categoryRows.reduce((sum, [, value]) => sum + value, 0);
-const totalIncome = mockTransactions
-  .filter((transaction) => transaction.type === "income")
-  .reduce((sum, transaction) => sum + transaction.amount, 0);
-const savingsRate = totalIncome === 0 ? 0 : (totalIncome - totalExpenses) / totalIncome;
+  const expensesByCategory = transactions
+    .filter((transaction) => transaction.type === "expense")
+    .reduce<Record<string, number>>((acc, transaction) => {
+      acc[transaction.category] = (acc[transaction.category] ?? 0) + transaction.amount;
+      return acc;
+    }, {});
 
-export default function AnalyticsPage() {
+  const categoryRows = Object.entries(expensesByCategory).sort(([, a], [, b]) => b - a);
+  const categoryChartData = categoryRows.map(([category, amount]) => ({
+    category,
+    amount,
+  }));
+  const totalExpenses = categoryRows.reduce((sum, [, value]) => sum + value, 0);
+  const totalIncome = transactions
+    .filter((transaction) => transaction.type === "income")
+    .reduce((sum, transaction) => sum + transaction.amount, 0);
+  const savingsRate = totalIncome === 0 ? 0 : (totalIncome - totalExpenses) / totalIncome;
+
   const largestCategory = categoryRows[0];
 
   return (
@@ -42,7 +47,7 @@ export default function AnalyticsPage() {
           <StatCard label="Expenses" value={formatCurrency(totalExpenses)} detail="Categorized outflow" tone="negative" />
           <StatCard
             label="Savings rate"
-            value={`${(savingsRate * 100).toFixed(1)}%`}
+            value={formatPercent(savingsRate, 1)}
             detail={largestCategory ? `Top spend: ${largestCategory[0]}` : "No expenses"}
             tone="info"
           />
@@ -55,7 +60,7 @@ export default function AnalyticsPage() {
             action={<Badge label="Last 6 months" tone="neutral" />}
           />
           <div className="px-2 pb-5">
-            <CashFlowChart data={mockMonthlyHistory} />
+            <CashFlowChart data={monthlyHistory} />
           </div>
         </Card>
 
@@ -82,7 +87,7 @@ export default function AnalyticsPage() {
                   <div className="mb-2 flex items-center justify-between gap-4">
                     <p className="font-medium capitalize text-white">{category}</p>
                     <p className="text-sm text-text-secondary">
-                      {formatCurrency(amount)} / {(pct * 100).toFixed(1)}%
+                      {formatCurrency(amount)} / {formatPercent(pct, 1)}
                     </p>
                   </div>
                   <ProgressBar value={pct} color="var(--color-brand-500)" />

@@ -38,7 +38,7 @@
   /* ── Texto ──────────────────────────────────────────────── */
   --color-text-primary:   #f1f5f9;
   --color-text-secondary: #94a3b8;
-  --color-text-muted:     #475569;
+  --color-text-muted:     #8491a6;
 
   /* ── Semántica financiera ───────────────────────────────── */
   /* Verde: ingresos, ganancias, positivo */
@@ -62,6 +62,29 @@
   --color-info-900: #1e3a5f;
 }
 
+:root {
+  --app-shell-bg: radial-gradient(circle at top left, rgba(16, 185, 129, 0.14), transparent 34%),
+    linear-gradient(135deg, #090b11 0%, #0c111b 48%, #111018 100%);
+}
+
+html:not(.dark) {
+  color-scheme: light;
+  --app-shell-bg: radial-gradient(circle at top left, rgba(16, 185, 129, 0.12), transparent 34%),
+    linear-gradient(135deg, #f6f8fb 0%, #eef4f8 48%, #f8fafc 100%);
+  --color-white: #0f172a;
+  --color-surface-base: #f6f8fb;
+  --color-surface-card: #ffffff;
+  --color-surface-raised: #eef3f8;
+  --color-surface-border: #d8e0ea;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748b;
+  --color-positive-900: #dcfce7;
+  --color-negative-900: #fee2e2;
+  --color-warning-900: #fef3c7;
+  --color-info-900: #dbeafe;
+}
+
 /* ── Estilos base globales ──────────────────────────────────── */
 html {
   color-scheme: dark;
@@ -75,6 +98,27 @@ body {
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+:where(a, button, input, select, textarea, [role="button"], [role="tab"]):focus-visible {
+  outline: 2px solid var(--color-brand-400);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-brand-500) 35%, transparent);
+  color: var(--color-text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Scrollbar premium — delgada y acorde al tema oscuro */

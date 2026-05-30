@@ -1,7 +1,8 @@
-import { mockCards } from "@/lib/mock-data";
+import { getCards } from "@/lib/data";
 import { calculateCardUtilization } from "@/lib/calculations";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
-import { Badge, Card, ProgressBar, SectionHeader, StatCard } from "@/components/ui";
+import { Badge, Card, EmptyState, ProgressBar, SectionHeader, StatCard } from "@/components/ui";
+import { CreditCard } from "lucide-react";
 
 export const metadata = { title: "Cards" };
 export const dynamic = "force-dynamic";
@@ -28,11 +29,12 @@ function paymentTone(days: number) {
   return "info";
 }
 
-export default function CardsPage() {
-  const totalDebt = mockCards.reduce((sum, card) => sum + card.balance, 0);
-  const totalLimit = mockCards.reduce((sum, card) => sum + card.limit, 0);
+export default async function CardsPage() {
+  const cards = await getCards();
+  const totalDebt = cards.reduce((sum, card) => sum + card.balance, 0);
+  const totalLimit = cards.reduce((sum, card) => sum + card.limit, 0);
   const aggregateUtilization = totalLimit === 0 ? 0 : totalDebt / totalLimit;
-  const totalMinimumPayment = mockCards.reduce((sum, card) => sum + card.minimumPayment, 0);
+  const totalMinimumPayment = cards.reduce((sum, card) => sum + card.minimumPayment, 0);
 
   return (
     <section className="flex flex-1 flex-col">
@@ -45,13 +47,22 @@ export default function CardsPage() {
 
       <div className="space-y-6 px-4 py-6 md:px-8">
         <section className="grid gap-4 md:grid-cols-3">
-          <StatCard label="Total debt" value={formatCurrency(totalDebt)} detail={`${mockCards.length} active credit lines`} tone="warning" />
+          <StatCard label="Total debt" value={formatCurrency(totalDebt)} detail={`${cards.length} active credit lines`} tone="warning" />
           <StatCard label="Total limit" value={formatCurrency(totalLimit)} detail="Available credit ceiling" tone="info" />
           <StatCard label="Minimum due" value={formatCurrency(totalMinimumPayment)} detail="Next payment cycle" tone="brand" />
         </section>
 
+        {cards.length === 0 ? (
+          <Card padded={false}>
+            <EmptyState
+              icon={<CreditCard aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
+              title="No credit cards connected"
+              description="Credit lines, payment dates and utilization alerts will appear here once cards are connected."
+            />
+          </Card>
+        ) : (
         <section className="grid gap-4 xl:grid-cols-3">
-          {mockCards.map((card) => {
+          {cards.map((card) => {
             const utilization = calculateCardUtilization(card);
             const daysRemaining = daysUntilPayment(card.paymentDueDay);
 
@@ -97,6 +108,7 @@ export default function CardsPage() {
             );
           })}
         </section>
+        )}
       </div>
     </section>
   );

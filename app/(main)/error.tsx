@@ -16,6 +16,7 @@
 */
 
 import Link from "next/link";
+import { AlertTriangle } from "lucide-react";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -26,7 +27,7 @@ export default function Error({ error, reset }: ErrorProps) {
   return (
     <section className="flex flex-1 flex-col items-center justify-center px-4 text-center">
       <div className="mb-6 grid h-12 w-12 place-items-center rounded-xl border border-negative-400/30 bg-negative-900 text-negative-400 text-lg">
-        !
+        <AlertTriangle aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />
       </div>
 
       <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
@@ -41,8 +42,9 @@ export default function Error({ error, reset }: ErrorProps) {
 
       <div className="mt-8 flex gap-3">
         <button
-          onClick={reset}
           className="rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25"
+          onClick={reset}
+          type="button"
         >
           Try again
         </button>

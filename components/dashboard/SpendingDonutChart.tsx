@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useReducedMotion } from "framer-motion";
 import {
   Cell,
   Pie,
@@ -8,7 +9,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
-import { formatCurrency } from "@/lib/formatters";
+import { formatCurrency, formatPercent } from "@/lib/formatters";
 
 interface SpendingDonutDatum {
   category: string;
@@ -21,13 +22,13 @@ interface SpendingDonutChartProps {
 }
 
 const chartColors = [
-  "#10b981",
-  "#3b82f6",
-  "#f59e0b",
-  "#ef4444",
+  "var(--color-positive-500)",
+  "var(--color-info-500)",
+  "var(--color-warning-500)",
+  "var(--color-negative-500)",
+  "var(--color-brand-400)",
+  "var(--color-brand-500)",
   "#8b5cf6",
-  "#14b8a6",
-  "#f97316",
 ];
 
 export default function SpendingDonutChart({
@@ -35,6 +36,7 @@ export default function SpendingDonutChart({
   total,
 }: SpendingDonutChartProps) {
   const [mounted, setMounted] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
   const chartData = data.map((item) => ({
     ...item,
     label: item.category.charAt(0).toUpperCase() + item.category.slice(1),
@@ -49,12 +51,14 @@ export default function SpendingDonutChart({
     <div className="grid gap-6 p-5 lg:grid-cols-[minmax(260px,0.9fr)_1fr] lg:items-center">
       <div className="relative h-72 min-h-72">
         {mounted ? (
+          <div aria-label="Expense mix donut chart by category" className="h-full" role="img">
           <ResponsiveContainer height="100%" width="100%">
             <PieChart>
               <Pie
                 data={chartData}
                 dataKey="amount"
                 innerRadius="68%"
+                isAnimationActive={!shouldReduceMotion}
                 outerRadius="88%"
                 paddingAngle={3}
                 stroke="rgba(255,255,255,0.08)"
@@ -80,6 +84,7 @@ export default function SpendingDonutChart({
               />
             </PieChart>
           </ResponsiveContainer>
+          </div>
         ) : (
           <div className="h-full rounded-full border-[28px] border-white/10" />
         )}
@@ -89,7 +94,7 @@ export default function SpendingDonutChart({
             <p className="text-xs uppercase tracking-[0.2em] text-text-muted">
               Total spend
             </p>
-            <p className="mt-2 text-2xl font-semibold text-white">
+            <p className="mt-2 text-2xl font-semibold text-white tabular-nums">
               {formatCurrency(total)}
             </p>
           </div>
@@ -117,7 +122,7 @@ export default function SpendingDonutChart({
                   {formatCurrency(item.amount)}
                 </p>
                 <p className="text-xs text-text-secondary">
-                  {(pct * 100).toFixed(1)}%
+                  {formatPercent(pct, 1)}
                 </p>
               </div>
             </div>

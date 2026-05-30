@@ -48,6 +48,7 @@ interface StatCardProps {
   accentBar?: boolean;
   /** Valores compactos para dibujar un sparkline en la card */
   sparkline?: number[];
+  className?: string;
 }
 
 export default function StatCard({
@@ -57,12 +58,15 @@ export default function StatCard({
   tone = "brand",
   accentBar = true,
   sparkline,
+  className = "",
 }: StatCardProps) {
   const sparklinePoints = buildSparklinePoints(sparkline);
   const sparklineGradientId = `sparkline-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 
   return (
-    <article className="rounded-xl border border-white/10 bg-surface-card p-5 shadow-2xl shadow-black/20">
+    <article
+      className={`rounded-xl border border-white/10 bg-surface-card p-5 shadow-2xl shadow-black/20 ${className}`}
+    >
       {accentBar && (
         <div
           className={`mb-5 h-1 rounded-full bg-gradient-to-r ${toneBarClass[tone]}`}

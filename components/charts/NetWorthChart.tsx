@@ -14,6 +14,7 @@
 */
 
 import { useEffect, useState } from "react";
+import { useReducedMotion } from "framer-motion";
 import {
   Area,
   AreaChart,
@@ -26,7 +27,7 @@ import {
 } from "recharts";
 import { formatCurrency, formatCompact } from "@/lib/formatters";
 import { useMonth } from "@/contexts/MonthContext";
-import type { MonthlySnapshot } from "@/lib/mock-data";
+import type { MonthlySnapshot } from "@/types/finance";
 
 interface NetWorthChartProps {
   data: MonthlySnapshot[];
@@ -64,6 +65,7 @@ function CustomTooltip({ active, payload, label }: ChartTooltipProps) {
 
 export default function NetWorthChart({ data }: NetWorthChartProps) {
   const [mounted, setMounted] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
   const { selectedMonth } = useMonth();
 
   useEffect(() => {
@@ -81,6 +83,7 @@ export default function NetWorthChart({ data }: NetWorthChartProps) {
   }
 
   return (
+    <div aria-label="Net worth chart showing monthly net worth trend" role="img">
     <ResponsiveContainer height={256} width="100%">
       <AreaChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: 0 }}>
         <defs>
@@ -134,6 +137,7 @@ export default function NetWorthChart({ data }: NetWorthChartProps) {
 
         <Area
           dataKey="netWorth"
+          isAnimationActive={!shouldReduceMotion}
           dot={(props) => {
             // Solo dibuja un dot visible para el mes seleccionado
             const isSelected = props.payload?.month === selectedMonth;
@@ -158,5 +162,6 @@ export default function NetWorthChart({ data }: NetWorthChartProps) {
         />
       </AreaChart>
     </ResponsiveContainer>
+    </div>
   );
 }

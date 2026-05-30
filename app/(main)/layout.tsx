@@ -1,7 +1,7 @@
 import Sidebar, { MobileNav } from "@/components/layout/Sidebar";
 import RouteTransition from "@/components/layout/RouteTransition";
 import { MonthProvider } from "@/contexts/MonthContext";
-import { mockMonthlyHistory } from "@/lib/mock-data";
+import { getMonthlyHistory } from "@/lib/data";
 
 /*
   Este layout envuelve TODAS las páginas del grupo (main):
@@ -24,17 +24,18 @@ import { mockMonthlyHistory } from "@/lib/mock-data";
   el estado del mes seleccionado.
 */
 
-const defaultMonth = mockMonthlyHistory[mockMonthlyHistory.length - 1].month;
-
-export default function MainLayout({
+export default async function MainLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const monthlyHistory = await getMonthlyHistory();
+  const defaultMonth = monthlyHistory[monthlyHistory.length - 1].month;
+
   return (
-    <MonthProvider history={mockMonthlyHistory} defaultMonth={defaultMonth}>
-      <div className="flex min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),transparent_34%),linear-gradient(135deg,#090b11_0%,#0c111b_48%,#111018_100%)] text-text-primary">
-        <Sidebar history={mockMonthlyHistory} />
+    <MonthProvider history={monthlyHistory} defaultMonth={defaultMonth}>
+      <div className="flex min-h-screen bg-[image:var(--app-shell-bg)] text-text-primary">
+        <Sidebar history={monthlyHistory} />
         {/* flex-1 hace que el contenido ocupe todo el ancho restante */}
         <div className="flex min-w-0 flex-1 flex-col">
           <MobileNav />

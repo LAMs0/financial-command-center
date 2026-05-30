@@ -11,13 +11,14 @@
 */
 
 import Link from "next/link";
+import { Compass } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[linear-gradient(135deg,#090b11_0%,#0c111b_48%,#111018_100%)] px-4 text-center">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-[image:var(--app-shell-bg)] px-4 text-center text-text-primary">
       {/* Logo */}
       <div className="mb-8 grid h-14 w-14 place-items-center rounded-xl border border-brand-400/30 bg-brand-500/15 text-base font-bold text-brand-300">
-        FC
+        <Compass aria-hidden="true" className="h-6 w-6" strokeWidth={1.8} />
       </div>
 
       {/* Código de error */}

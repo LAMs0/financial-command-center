@@ -1,7 +1,8 @@
-import { mockAccounts } from "@/lib/mock-data";
+import { getAccounts } from "@/lib/data";
 import { formatCurrency, formatDate } from "@/lib/formatters";
-import { Badge, Card, CardHeader, SectionHeader, StatCard } from "@/components/ui";
+import { Badge, Card, CardHeader, EmptyState, SectionHeader, StatCard } from "@/components/ui";
 import type { Account } from "@/types/finance";
+import { Landmark } from "lucide-react";
 
 export const metadata = { title: "Accounts" };
 
@@ -16,12 +17,13 @@ function accountTypeLabel(type: Account["type"]) {
   return labels[type];
 }
 
-export default function AccountsPage() {
-  const total = mockAccounts.reduce((sum, account) => sum + account.balance, 0);
-  const liquid = mockAccounts
+export default async function AccountsPage() {
+  const accounts = await getAccounts();
+  const total = accounts.reduce((sum, account) => sum + account.balance, 0);
+  const liquid = accounts
     .filter((account) => account.type !== "investment")
     .reduce((sum, account) => sum + account.balance, 0);
-  const largestAccount = [...mockAccounts].sort((a, b) => b.balance - a.balance)[0];
+  const largestAccount = [...accounts].sort((a, b) => b.balance - a.balance)[0];
 
   return (
     <section className="flex flex-1 flex-col">
@@ -29,7 +31,7 @@ export default function AccountsPage() {
         eyebrow="Finances"
         eyebrowClassName="bg-gradient-to-r from-info-400 to-brand-300 bg-clip-text text-transparent"
         title="Accounts"
-        actions={<Badge label={`${mockAccounts.length} connected`} tone="info" size="md" />}
+        actions={<Badge label={`${accounts.length} connected`} tone="info" size="md" />}
       />
 
       <div className="space-y-6 px-4 py-6 md:px-8">
@@ -50,7 +52,13 @@ export default function AccountsPage() {
             subtitle="Balances, institution metadata and last refresh"
           />
           <div className="divide-y divide-white/10">
-            {mockAccounts.map((account) => (
+            {accounts.length === 0 ? (
+              <EmptyState
+                icon={<Landmark aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
+                title="No accounts connected"
+                description="Bank, cash and investment accounts will appear here once a data source is connected."
+              />
+            ) : accounts.map((account) => (
               <div
                 className="grid gap-4 px-5 py-4 transition hover:bg-white/[0.04] md:grid-cols-[1fr_auto]"
                 key={account.id}

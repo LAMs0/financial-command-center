@@ -1,11 +1,11 @@
 import {
-  mockAccounts,
-  mockCards,
-  mockGoals,
-  mockInvestments,
-  mockTransactions,
-  mockMonthlyHistory,
-} from "@/lib/mock-data";
+  getAccounts,
+  getCards,
+  getGoals,
+  getInvestments,
+  getTransactions,
+  getMonthlyHistory,
+} from "@/lib/data";
 import {
   calculateCardUtilization,
   calculateGoalProgress,
@@ -21,30 +21,18 @@ import {
   AnimateIn,
   Card,
   CardHeader,
+  EmptyState,
   ProgressBar,
   SectionHeader,
   TransactionBadge,
 } from "@/components/ui";
+import Link from "next/link";
+import { CreditCard, Flag, Landmark, ReceiptText } from "lucide-react";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import NetWorthChart from "@/components/charts/NetWorthChart";
 import type { Account } from "@/types/finance";
 
 export const metadata = { title: "Dashboard" };
-
-// Estos valores son estáticos (no cambian por mes en Phase 2)
-const totalCreditBalance = mockCards.reduce((sum, card) => sum + card.balance, 0);
-const totalCreditLimit = mockCards.reduce((sum, card) => sum + card.limit, 0);
-const creditUtilization = totalCreditLimit === 0 ? 0 : totalCreditBalance / totalCreditLimit;
-const netWorth = calculateNetWorth(mockAccounts, mockCards, mockInvestments);
-
-const topAccounts = [...mockAccounts].sort((a, b) => b.balance - a.balance);
-const recentTransactions = [...mockTransactions]
-  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-  .slice(0, 6);
-
-const accountNameById: Record<string, string> = Object.fromEntries(
-  mockAccounts.map((account) => [account.id, account.name])
-);
 
 function accountTypeLabel(type: Account["type"]) {
   const labels: Record<Account["type"], string> = {
@@ -66,7 +54,38 @@ function transactionTone(type: string) {
   return "text-negative-400";
 }
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  /*
+    Server Component async: pedimos los datos a la capa de datos (lib/data).
+    Promise.all corre todas las queries en paralelo en vez de en serie —
+    más rápido que await uno por uno.
+  */
+  const [accounts, cards, goals, investments, transactions, monthlyHistory] =
+    await Promise.all([
+      getAccounts(),
+      getCards(),
+      getGoals(),
+      getInvestments(),
+      getTransactions(),
+      getMonthlyHistory(),
+    ]);
+
+  // Valores derivados (antes vivían a nivel de módulo con los mocks)
+  const totalCreditBalance = cards.reduce((sum, card) => sum + card.balance, 0);
+  const totalCreditLimit = cards.reduce((sum, card) => sum + card.limit, 0);
+  const creditUtilization =
+    totalCreditLimit === 0 ? 0 : totalCreditBalance / totalCreditLimit;
+  const netWorth = calculateNetWorth(accounts, cards, investments);
+
+  const topAccounts = [...accounts].sort((a, b) => b.balance - a.balance);
+  const recentTransactions = [...transactions]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 6);
+
+  const accountNameById: Record<string, string> = Object.fromEntries(
+    accounts.map((account) => [account.id, account.name])
+  );
+
   return (
     <section className="flex min-w-0 flex-1 flex-col">
       <SectionHeader
@@ -74,9 +93,12 @@ export default function DashboardPage() {
         eyebrowClassName="bg-gradient-to-r from-brand-300 to-info-400 bg-clip-text text-transparent"
         title="Financial Overview"
         actions={
-          <button className="rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25">
+          <Link
+            className="rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25"
+            href="/investments"
+          >
             Review portfolio
-          </button>
+          </Link>
         }
       />
 
@@ -88,12 +110,12 @@ export default function DashboardPage() {
         */}
         <AnimateIn>
           <DashboardStats
-            history={mockMonthlyHistory}
+            history={monthlyHistory}
             staticData={{
               totalCreditBalance,
               creditUtilization,
               totalCreditLimit,
-              numCards: mockCards.length,
+              numCards: cards.length,
             }}
           />
         </AnimateIn>
@@ -110,7 +132,7 @@ export default function DashboardPage() {
               }
             />
             <div className="px-2 pb-5">
-              <NetWorthChart data={mockMonthlyHistory} />
+              <NetWorthChart data={monthlyHistory} />
             </div>
           </Card>
         </AnimateIn>
@@ -120,10 +142,16 @@ export default function DashboardPage() {
             <CardHeader
               title="Accounts"
               subtitle="Liquid balances across institutions"
-              action={<p className="text-sm text-text-secondary">{mockAccounts.length} connected</p>}
+              action={<p className="text-sm text-text-secondary">{accounts.length} connected</p>}
             />
             <div className="divide-y divide-white/10">
-              {topAccounts.map((account) => (
+              {topAccounts.length === 0 ? (
+                <EmptyState
+                  icon={<Landmark aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
+                  title="No accounts connected"
+                  description="Connected accounts will populate this balance register."
+                />
+              ) : topAccounts.map((account) => (
                 <div
                   className="grid gap-4 px-5 py-4 transition hover:bg-white/[0.04] md:grid-cols-[1fr_auto]"
                   key={account.id}
@@ -157,7 +185,13 @@ export default function DashboardPage() {
               <p className="text-sm font-medium text-warning-400">{formatPercent(creditUtilization)}</p>
             </div>
             <div className="space-y-4">
-              {mockCards.map((card) => {
+              {cards.length === 0 ? (
+                <EmptyState
+                  icon={<CreditCard aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
+                  title="No credit lines"
+                  description="Credit utilization and due date cards will appear here."
+                />
+              ) : cards.map((card) => {
                 const utilization = calculateCardUtilization(card);
 
                 return (
@@ -187,10 +221,16 @@ export default function DashboardPage() {
           <Card padded={false}>
             <CardHeader
               title="Recent Transactions"
-              subtitle="Latest activity from mock accounts"
+              subtitle="Latest activity across accounts"
             />
             <div className="divide-y divide-white/10">
-              {recentTransactions.map((transaction) => (
+              {recentTransactions.length === 0 ? (
+                <EmptyState
+                  icon={<ReceiptText aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
+                  title="No recent activity"
+                  description="Incoming, outgoing and transfer records will appear in this feed."
+                />
+              ) : recentTransactions.map((transaction) => (
                 <div
                   className="grid grid-cols-[auto_1fr_auto] items-center gap-3 px-5 py-4 transition hover:bg-white/[0.04]"
                   key={transaction.id}
@@ -217,11 +257,17 @@ export default function DashboardPage() {
                 <h2 className="text-base font-semibold text-white">Financial Goals</h2>
                 <p className="text-sm text-text-secondary">Progress toward priority targets</p>
               </div>
-              <p className="text-sm text-text-secondary">{mockGoals.length} goals</p>
+              <p className="text-sm text-text-secondary">{goals.length} goals</p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              {mockGoals.map((goal) => {
+              {goals.length === 0 ? (
+                <EmptyState
+                  icon={<Flag aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
+                  title="No goals yet"
+                  description="Priority savings goals will appear here once planning starts."
+                />
+              ) : goals.map((goal) => {
                 const progress = calculateGoalProgress(goal.currentAmount, goal.targetAmount);
 
                 return (

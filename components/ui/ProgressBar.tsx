@@ -51,11 +51,16 @@ export default function ProgressBar({
 
   return (
     <div
+      aria-label={`${Math.round(pct * 100)} percent`}
       className={[
         "w-full rounded-full bg-white/10",
         sizeClasses[size],
         className,
       ].join(" ")}
+      role="progressbar"
+      aria-valuemax={100}
+      aria-valuemin={0}
+      aria-valuenow={Math.round(pct * 100)}
     >
       <div
         className={["rounded-full transition-all duration-500", sizeClasses[size]].join(" ")}

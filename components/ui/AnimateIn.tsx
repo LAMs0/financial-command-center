@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, type HTMLMotionProps } from "framer-motion";
+import { motion, useReducedMotion, type HTMLMotionProps } from "framer-motion";
 import type { ReactNode } from "react";
 
 interface AnimateInProps extends Omit<HTMLMotionProps<"div">, "children"> {
@@ -14,12 +14,18 @@ export default function AnimateIn({
   delay = 0,
   ...props
 }: AnimateInProps) {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <motion.div
       animate={{ opacity: 1, y: 0 }}
       className={className}
-      initial={{ opacity: 0, y: 10 }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1], delay }}
+      initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
+      transition={
+        shouldReduceMotion
+          ? { duration: 0 }
+          : { duration: 0.35, ease: [0.22, 1, 0.36, 1], delay }
+      }
       {...props}
     >
       {children}

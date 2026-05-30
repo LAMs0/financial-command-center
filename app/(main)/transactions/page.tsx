@@ -14,40 +14,43 @@
   en el servidor (sin costo de JS para el usuario).
 */
 
-import { mockAccounts, mockTransactions } from "@/lib/mock-data";
+import { getAccounts, getTransactions } from "@/lib/data";
 import { formatCurrency } from "@/lib/formatters";
 import { Badge, SectionHeader, StatCard } from "@/components/ui";
 import TransactionsList from "@/components/dashboard/TransactionsList";
 
 export const metadata = { title: "Transactions" };
 
-// ── Cálculos en el servidor ──────────────────────────────────────────
+// ── Página (Server Component async) ──────────────────────────────────
+export default async function TransactionsPage() {
+  const [transactions, accounts] = await Promise.all([
+    getTransactions(),
+    getAccounts(),
+  ]);
 
-const sortedTransactions = [...mockTransactions].sort(
-  (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-);
+  // ── Cálculos en el servidor ──────────────────────────────────────
+  const sortedTransactions = [...transactions].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
 
-const income = mockTransactions
-  .filter((t) => t.type === "income")
-  .reduce((sum, t) => sum + t.amount, 0);
+  const income = transactions
+    .filter((t) => t.type === "income")
+    .reduce((sum, t) => sum + t.amount, 0);
 
-const expenses = mockTransactions
-  .filter((t) => t.type === "expense")
-  .reduce((sum, t) => sum + t.amount, 0);
+  const expenses = transactions
+    .filter((t) => t.type === "expense")
+    .reduce((sum, t) => sum + t.amount, 0);
 
-const transferCount = mockTransactions.filter((t) => t.type === "transfer").length;
+  const transferCount = transactions.filter((t) => t.type === "transfer").length;
 
-/*
-  Convertimos Map → Record<string, string> porque los props que se
-  pasan a Client Components deben ser serializables (JSON-safe).
-  Map no es serializable — un objeto plano sí.
-*/
-const accountNameById = Object.fromEntries(
-  mockAccounts.map((a) => [a.id, a.name])
-);
+  /*
+    Convertimos a Record<string, string> porque los props que se
+    pasan a Client Components deben ser serializables (JSON-safe).
+  */
+  const accountNameById = Object.fromEntries(
+    accounts.map((a) => [a.id, a.name])
+  );
 
-// ── Página ───────────────────────────────────────────────────────────
-export default function TransactionsPage() {
   return (
     <section className="flex flex-1 flex-col">
       <SectionHeader
@@ -56,7 +59,7 @@ export default function TransactionsPage() {
         title="Transactions"
         actions={
           <Badge
-            label={`${mockTransactions.length} records`}
+            label={`${transactions.length} records`}
             tone="info"
             size="md"
           />

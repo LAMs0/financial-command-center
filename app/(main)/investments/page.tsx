@@ -1,24 +1,26 @@
-import { mockInvestments } from "@/lib/mock-data";
+import { getInvestments } from "@/lib/data";
 import { calculateInvestmentGain, buildAllocationData } from "@/lib/calculations";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
-import { Badge, Card, CardHeader, SectionHeader, StatCard } from "@/components/ui";
+import { Badge, Card, CardHeader, EmptyState, SectionHeader, StatCard } from "@/components/ui";
 import PortfolioAllocationChart from "@/components/charts/PortfolioAllocationChart";
+import { LineChart } from "lucide-react";
 
 export const metadata = { title: "Investments" };
 
-export default function InvestmentsPage() {
-  const totalValue = mockInvestments.reduce(
+export default async function InvestmentsPage() {
+  const investments = await getInvestments();
+  const totalValue = investments.reduce(
     (sum, investment) => sum + investment.quantity * investment.currentPrice,
     0
   );
-  const totalGain = mockInvestments.reduce(
+  const totalGain = investments.reduce(
     (sum, investment) => sum + calculateInvestmentGain(investment).absoluteGain,
     0
   );
   const costBasis = totalValue - totalGain;
   const totalGainPercent = costBasis === 0 ? 0 : totalGain / costBasis;
 
-  const allocationData = buildAllocationData(mockInvestments);
+  const allocationData = buildAllocationData(investments);
 
   return (
     <section className="flex flex-1 flex-col">
@@ -26,7 +28,7 @@ export default function InvestmentsPage() {
         eyebrow="Portfolio"
         eyebrowClassName="bg-gradient-to-r from-info-400 to-positive-400 bg-clip-text text-transparent"
         title="Investments"
-        actions={<Badge label={`${mockInvestments.length} positions`} tone="info" size="md" />}
+        actions={<Badge label={`${investments.length} positions`} tone="info" size="md" />}
       />
 
       <div className="space-y-6 px-4 py-6 md:px-8">
@@ -41,6 +43,15 @@ export default function InvestmentsPage() {
           <StatCard label="Cost basis" value={formatCurrency(costBasis)} detail="Original capital deployed" tone="brand" />
         </section>
 
+        {investments.length === 0 ? (
+          <Card padded={false}>
+            <EmptyState
+              icon={<LineChart aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
+              title="No investments tracked"
+              description="Positions, cost basis and allocation charts will appear here when investments are added."
+            />
+          </Card>
+        ) : (
         <Card padded={false}>
           <CardHeader
             title="Portfolio Allocation"
@@ -49,11 +60,18 @@ export default function InvestmentsPage() {
           />
           <PortfolioAllocationChart data={allocationData} total={totalValue} />
         </Card>
+        )}
 
         <Card padded={false}>
           <CardHeader title="Positions" subtitle="Holdings, institutions and unrealized return" />
           <div className="divide-y divide-white/10">
-            {mockInvestments.map((investment) => {
+            {investments.length === 0 ? (
+              <EmptyState
+                icon={<LineChart aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
+                title="No positions"
+                description="Holdings will be listed here with institution metadata and unrealized return."
+              />
+            ) : investments.map((investment) => {
               const { absoluteGain, percentageGain } = calculateInvestmentGain(investment);
               const isPositive = absoluteGain >= 0;
               const currentValue = investment.quantity * investment.currentPrice;

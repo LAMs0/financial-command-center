@@ -9,6 +9,7 @@
 */
 
 import { useEffect, useState } from "react";
+import { useReducedMotion } from "framer-motion";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 import type { AllocationDatum } from "@/lib/calculations";
@@ -53,6 +54,7 @@ export default function PortfolioAllocationChart({
   total,
 }: PortfolioAllocationChartProps) {
   const [mounted, setMounted] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => setMounted(true));
@@ -64,12 +66,14 @@ export default function PortfolioAllocationChart({
       {/* Donut */}
       <div className="relative h-64 min-h-64">
         {mounted ? (
+          <div aria-label="Portfolio allocation donut chart" className="h-full" role="img">
           <ResponsiveContainer height="100%" width="100%">
             <PieChart>
               <Pie
                 data={data}
                 dataKey="value"
                 innerRadius="66%"
+                isAnimationActive={!shouldReduceMotion}
                 outerRadius="86%"
                 paddingAngle={3}
                 stroke="rgba(255,255,255,0.06)"
@@ -82,6 +86,7 @@ export default function PortfolioAllocationChart({
               <Tooltip content={<CustomTooltip />} />
             </PieChart>
           </ResponsiveContainer>
+          </div>
         ) : (
           <div className="h-full rounded-full border-[28px] border-white/10 animate-pulse" />
         )}

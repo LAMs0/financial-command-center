@@ -17,7 +17,7 @@
 import { useMonth } from "@/contexts/MonthContext";
 import { StatCard, MonthSelector } from "@/components/ui";
 import { formatCurrency, formatPercent, formatCompact } from "@/lib/formatters";
-import type { MonthlySnapshot } from "@/lib/mock-data";
+import type { MonthlySnapshot } from "@/types/finance";
 
 interface DashboardStatsProps {
   history: MonthlySnapshot[];
@@ -58,8 +58,9 @@ export default function DashboardStats({ history, staticData }: DashboardStatsPr
       <MonthSelector months={history} />
 
       {/* StatCards */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard
+          className="xl:col-span-2"
           label="Net worth"
           value={formatCurrency(current.netWorth)}
           detail={`${netWorthTrend >= 0 ? "+" : ""}${formatPercent(netWorthTrend)} vs prev month`}
