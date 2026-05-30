@@ -73,7 +73,7 @@ export default function StatCard({
         />
       )}
       <p className="text-sm text-text-secondary">{label}</p>
-      <p className="mt-3 text-2xl font-semibold tracking-normal text-white tabular-nums">
+      <p className="mt-3 text-2xl font-semibold tracking-normal text-text-primary tabular-nums">
         {value}
       </p>
       {detail && (

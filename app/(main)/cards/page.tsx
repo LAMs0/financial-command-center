@@ -68,9 +68,9 @@ export default async function CardsPage() {
 
             return (
               <Card key={card.id}>
-                <div className="mb-5 flex items-start justify-between gap-4">
+                <div className="mb-4 flex items-start justify-between gap-4">
                   <div>
-                    <p className="font-semibold text-white">{card.name}</p>
+                    <p className="font-semibold text-text-primary">{card.name}</p>
                     <p className="mt-1 text-sm text-text-secondary">
                       {card.institution} / Ends {card.lastFourDigits}
                     </p>
@@ -92,15 +92,15 @@ export default async function CardsPage() {
                 <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                   <div className="rounded-lg bg-white/[0.03] p-3">
                     <p className="text-text-secondary">Used</p>
-                    <p className="mt-1 font-semibold text-white">{formatCurrency(card.balance, card.currency)}</p>
+                    <p className="mt-1 font-semibold tabular-nums text-text-primary">{formatCurrency(card.balance, card.currency)}</p>
                   </div>
                   <div className="rounded-lg bg-white/[0.03] p-3">
                     <p className="text-text-secondary">Limit</p>
-                    <p className="mt-1 font-semibold text-white">{formatCurrency(card.limit, card.currency)}</p>
+                    <p className="mt-1 font-semibold tabular-nums text-text-primary">{formatCurrency(card.limit, card.currency)}</p>
                   </div>
                 </div>
 
-                <div className="mt-4 flex justify-between text-sm text-text-secondary">
+                <div className="mt-4 flex justify-between text-sm tabular-nums text-text-secondary">
                   <span>Cutoff day {card.cutoffDay}</span>
                   <span>Due day {card.paymentDueDay}</span>
                 </div>

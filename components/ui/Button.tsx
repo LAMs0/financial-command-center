@@ -7,7 +7,7 @@ const toneClasses: Record<ButtonTone, string> = {
   brand:
     "border-brand-400/40 bg-brand-500/15 text-brand-300 hover:bg-brand-500/25 active:bg-brand-500/30 disabled:border-white/10 disabled:bg-white/[0.03] disabled:text-text-muted",
   neutral:
-    "border-white/10 bg-white/[0.04] text-text-secondary hover:bg-white/[0.08] hover:text-white active:bg-white/[0.1] disabled:text-text-muted",
+    "border-white/10 bg-white/[0.04] text-text-secondary hover:bg-white/[0.08] hover:text-text-primary active:bg-white/[0.1] disabled:text-text-muted",
   danger:
     "border-negative-400/30 bg-negative-900 text-negative-400 hover:bg-negative-900/80 active:bg-negative-900 disabled:text-text-muted",
 };
@@ -39,7 +39,7 @@ export default function Button({
   return (
     <button
       className={[
-        "inline-flex items-center justify-center gap-2 rounded-lg border font-medium transition disabled:cursor-not-allowed disabled:opacity-70",
+        "inline-flex items-center justify-center gap-2 rounded-lg border font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 disabled:cursor-not-allowed disabled:opacity-70",
         toneClasses[tone],
         sizeClasses[size],
         className,

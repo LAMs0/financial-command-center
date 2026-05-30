@@ -20,7 +20,7 @@ export default function SectionHeader({
           <p className={`text-xs uppercase tracking-[0.24em] ${eyebrowClassName}`}>
             {eyebrow}
           </p>
-          <h1 className="mt-2 text-2xl font-semibold tracking-normal text-white md:text-3xl">
+          <h1 className="mt-2 text-2xl font-semibold tracking-normal text-text-primary md:text-3xl">
             {title}
           </h1>
         </div>

@@ -27,7 +27,7 @@ export default function NotFound() {
       </p>
 
       {/* Mensaje principal */}
-      <h1 className="mt-3 text-3xl font-semibold text-white">
+      <h1 className="mt-3 text-3xl font-semibold text-text-primary">
         Page not found
       </h1>
       <p className="mt-3 max-w-sm text-text-secondary">

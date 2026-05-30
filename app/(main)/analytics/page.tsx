@@ -1,8 +1,9 @@
 import { getTransactions, getMonthlyHistory } from "@/lib/data";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
-import { Badge, Card, CardHeader, ProgressBar, SectionHeader, StatCard } from "@/components/ui";
+import { Badge, Card, CardHeader, EmptyState, ProgressBar, SectionHeader, StatCard } from "@/components/ui";
 import SpendingDonutChart from "@/components/dashboard/SpendingDonutChart";
 import CashFlowChart from "@/components/charts/CashFlowChart";
+import { ChartNoAxesCombined } from "lucide-react";
 
 export const metadata = { title: "Analytics" };
 
@@ -70,7 +71,15 @@ export default async function AnalyticsPage() {
             subtitle="Donut view of spending concentration by category"
             action={<Badge label={`${categoryRows.length} categories`} tone="info" />}
           />
-          <SpendingDonutChart data={categoryChartData} total={totalExpenses} />
+          {categoryRows.length === 0 ? (
+            <EmptyState
+              icon={<ChartNoAxesCombined aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
+              title="No expense mix yet"
+              description="Expense categories will appear here once spending data is available."
+            />
+          ) : (
+            <SpendingDonutChart data={categoryChartData} total={totalExpenses} />
+          )}
         </Card>
 
         <Card padded={false}>
@@ -79,14 +88,20 @@ export default async function AnalyticsPage() {
             subtitle="Expense concentration across the current mock period"
           />
           <div className="divide-y divide-white/10">
-            {categoryRows.map(([category, amount]) => {
+            {categoryRows.length === 0 ? (
+              <EmptyState
+                icon={<ChartNoAxesCombined aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
+                title="No category breakdown"
+                description="A ranked spending table will appear once categorized transactions exist."
+              />
+            ) : categoryRows.map(([category, amount]) => {
               const pct = totalExpenses > 0 ? amount / totalExpenses : 0;
 
               return (
                 <div className="px-5 py-4" key={category}>
                   <div className="mb-2 flex items-center justify-between gap-4">
-                    <p className="font-medium capitalize text-white">{category}</p>
-                    <p className="text-sm text-text-secondary">
+                    <p className="font-medium capitalize text-text-primary">{category}</p>
+                    <p className="text-sm tabular-nums text-text-secondary">
                       {formatCurrency(amount)} / {formatPercent(pct, 1)}
                     </p>
                   </div>

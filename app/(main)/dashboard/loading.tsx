@@ -37,8 +37,8 @@ export default function DashboardLoading() {
         <section className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
           <div className="rounded-xl border border-white/10 bg-surface-card">
             <div className="border-b border-white/10 px-5 py-4">
-              <div className="h-4 w-28 rounded-full bg-white/10" />
-              <div className="mt-2 h-3 w-56 rounded-full bg-white/[0.07]" />
+              <Skeleton className="h-4 w-28 rounded-full" />
+              <Skeleton className="mt-2 h-3 w-56 rounded-full" />
             </div>
             <div className="divide-y divide-white/10">
               {Array.from({ length: 4 }).map((_, index) => (
@@ -48,24 +48,24 @@ export default function DashboardLoading() {
           </div>
 
           <div className="rounded-xl border border-white/10 bg-surface-card p-5">
-            <div className="mb-5 flex items-center justify-between">
+            <div className="mb-4 flex items-center justify-between">
               <div className="space-y-2">
-                <div className="h-4 w-28 rounded-full bg-white/10" />
-                <div className="h-3 w-40 rounded-full bg-white/[0.07]" />
+                <Skeleton className="h-4 w-28 rounded-full" />
+                <Skeleton className="h-3 w-40 rounded-full" />
               </div>
-              <div className="h-4 w-12 rounded-full bg-white/10" />
+              <Skeleton className="h-4 w-12 rounded-full" />
             </div>
             <div className="space-y-4">
               {Array.from({ length: 3 }).map((_, index) => (
                 <div className="rounded-xl border border-white/10 bg-surface-raised p-4" key={index}>
                   <div className="flex items-center justify-between">
                     <div className="space-y-2">
-                      <div className="h-4 w-28 rounded-full bg-white/10" />
-                      <div className="h-3 w-36 rounded-full bg-white/[0.07]" />
+                      <Skeleton className="h-4 w-28 rounded-full" />
+                      <Skeleton className="h-3 w-36 rounded-full" />
                     </div>
-                    <div className="h-3 w-10 rounded-full bg-white/10" />
+                    <Skeleton className="h-3 w-10 rounded-full" />
                   </div>
-                  <div className="mt-4 h-2 rounded-full bg-white/10" />
+                  <Skeleton className="mt-4 h-2 rounded-full" />
                 </div>
               ))}
             </div>
@@ -75,8 +75,8 @@ export default function DashboardLoading() {
         <section className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
           <div className="rounded-xl border border-white/10 bg-surface-card">
             <div className="border-b border-white/10 px-5 py-4">
-              <div className="h-4 w-40 rounded-full bg-white/10" />
-              <div className="mt-2 h-3 w-52 rounded-full bg-white/[0.07]" />
+              <Skeleton className="h-4 w-40 rounded-full" />
+              <Skeleton className="mt-2 h-3 w-52 rounded-full" />
             </div>
             {Array.from({ length: 4 }).map((_, index) => (
               <SkeletonListRow compact key={index} />
@@ -84,15 +84,15 @@ export default function DashboardLoading() {
           </div>
 
           <div className="rounded-xl border border-white/10 bg-surface-card p-5">
-            <div className="mb-5 h-4 w-36 rounded-full bg-white/10" />
+            <Skeleton className="mb-4 h-4 w-36 rounded-full" />
             <div className="grid gap-4 md:grid-cols-2">
               {Array.from({ length: 4 }).map((_, index) => (
                 <div className="rounded-xl border border-white/10 bg-surface-raised p-4" key={index}>
-                  <div className="h-4 w-32 rounded-full bg-white/10" />
-                  <div className="mt-3 h-2 rounded-full bg-white/10" />
+                  <Skeleton className="h-4 w-32 rounded-full" />
+                  <Skeleton className="mt-3 h-2 rounded-full" />
                   <div className="mt-3 flex justify-between">
-                    <div className="h-3 w-16 rounded-full bg-white/[0.07]" />
-                    <div className="h-3 w-16 rounded-full bg-white/[0.07]" />
+                    <Skeleton className="h-3 w-16 rounded-full" />
+                    <Skeleton className="h-3 w-16 rounded-full" />
                   </div>
                 </div>
               ))}

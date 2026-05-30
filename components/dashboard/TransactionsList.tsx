@@ -64,10 +64,10 @@ export default function TransactionsList({
           {filterOptions.map((option) => (
             <button
               aria-pressed={activeFilter === option.value}
-              className={`rounded-lg border px-3 py-1.5 text-sm transition ${
+              className={`rounded-lg border px-3 py-1.5 text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 ${
                 activeFilter === option.value
                   ? "border-brand-400/40 bg-brand-500/15 text-brand-300"
-                  : "border-white/10 bg-white/[0.03] text-text-secondary hover:bg-white/[0.06] hover:text-white"
+                  : "border-white/10 bg-white/[0.03] text-text-secondary hover:bg-white/[0.06] hover:text-text-primary"
               }`}
               key={option.value}
               onClick={() => setActiveFilter(option.value)}
@@ -85,11 +85,11 @@ export default function TransactionsList({
             strokeWidth={1.8}
           />
           <input
-            className="w-full rounded-lg border border-white/10 bg-white/[0.03] py-1.5 pl-9 pr-3 text-sm text-white placeholder:text-text-muted transition focus:border-brand-400/40 focus:bg-brand-500/[0.05] focus:outline-none"
             aria-label="Search transactions"
+            className="w-full rounded-lg border border-white/10 bg-white/[0.03] py-1.5 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-muted transition focus:border-brand-400/40 focus:bg-brand-500/[0.05] focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Search transactions..."
-            type="text"
+            type="search"
             value={searchQuery}
           />
         </div>
@@ -133,7 +133,7 @@ export default function TransactionsList({
                   <TransactionBadge type={transaction.type} />
 
                   <div className="min-w-0">
-                    <p className="truncate font-medium text-white">
+                    <p className="truncate font-medium text-text-primary">
                       {transaction.description}
                     </p>
                     <p className="truncate text-sm text-text-secondary">
@@ -145,7 +145,7 @@ export default function TransactionsList({
                     </p>
                   </div>
 
-                  <p className={`text-right text-sm font-semibold ${amountTone(transaction.type)}`}>
+                  <p className={`text-right text-sm font-semibold tabular-nums ${amountTone(transaction.type)}`}>
                     {amountPrefix(transaction.type)}
                     {formatCurrency(transaction.amount, transaction.currency)}
                   </p>

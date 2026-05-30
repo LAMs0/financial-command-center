@@ -17,6 +17,7 @@
 
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -33,7 +34,7 @@ export default function Error({ error, reset }: ErrorProps) {
       <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
         Runtime Error
       </p>
-      <h2 className="mt-3 text-xl font-semibold text-white">
+      <h2 className="mt-3 text-xl font-semibold text-text-primary">
         Something went wrong
       </h2>
       <p className="mt-2 max-w-sm text-sm text-text-secondary">
@@ -41,16 +42,12 @@ export default function Error({ error, reset }: ErrorProps) {
       </p>
 
       <div className="mt-8 flex gap-3">
-        <button
-          className="rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25"
-          onClick={reset}
-          type="button"
-        >
+        <Button onClick={reset}>
           Try again
-        </button>
+        </Button>
         <Link
           href="/dashboard"
-          className="rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-text-secondary transition hover:bg-white/[0.08] hover:text-white"
+          className="rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-text-secondary transition hover:bg-white/[0.08] hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
         >
           Go to Dashboard
         </Link>
