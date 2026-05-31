@@ -25,17 +25,22 @@ export function ActiveMonthTick(
     y: string | number;
     payload: { value: string };
   }) {
-    const isActive = data.find((d) => d.label === payload.value)?.month === selectedMonth;
+    const snapshot = data.find((d) => d.label === payload.value);
+    const isActive = snapshot?.month === selectedMonth;
+    const label = String(payload.value);
+
+    const tickY = Number(y) + 18;
+
     return (
       <text
         fill={isActive ? "var(--color-text-primary)" : "var(--color-text-secondary)"}
-        fontSize={isActive ? 13 : 12}
+        fontSize={isActive ? 12 : 11}
         fontWeight={isActive ? 600 : 400}
         textAnchor="middle"
         x={Number(x)}
-        y={Number(y) + 12}
+        y={tickY}
       >
-        {payload.value}
+        {label}
       </text>
     );
   }

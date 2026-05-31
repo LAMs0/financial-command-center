@@ -1,7 +1,7 @@
 import Sidebar, { MobileNav } from "@/components/layout/Sidebar";
 import RouteTransition from "@/components/layout/RouteTransition";
 import { MonthProvider } from "@/contexts/MonthContext";
-import { getMonthlyHistory } from "@/lib/data";
+import { getMonthlyHistory, getNotifications } from "@/lib/data";
 import { auth, signOut } from "@/auth";
 
 /*
@@ -30,9 +30,10 @@ export default async function MainLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [monthlyHistory, session] = await Promise.all([
+  const [monthlyHistory, session, notifications] = await Promise.all([
     getMonthlyHistory(),
     auth(),
+    getNotifications(),
   ]);
   const defaultMonth = monthlyHistory[monthlyHistory.length - 1].month;
 
@@ -52,10 +53,10 @@ export default async function MainLayout({
   return (
     <MonthProvider history={monthlyHistory} defaultMonth={defaultMonth}>
       <div className="flex min-h-screen bg-[image:var(--app-shell-bg)] text-text-primary">
-        <Sidebar history={monthlyHistory} user={user} signOutAction={handleSignOut} />
+        <Sidebar history={monthlyHistory} user={user} signOutAction={handleSignOut} notifications={notifications} />
         {/* flex-1 hace que el contenido ocupe todo el ancho restante */}
         <div className="flex min-w-0 flex-1 flex-col">
-          <MobileNav user={user} signOutAction={handleSignOut} />
+          <MobileNav user={user} signOutAction={handleSignOut} notifications={notifications} />
           <RouteTransition>{children}</RouteTransition>
         </div>
       </div>

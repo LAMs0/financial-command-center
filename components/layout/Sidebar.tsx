@@ -10,15 +10,15 @@ import {
   LayoutDashboard,
   LineChart,
   LogOut,
-  Palette,
   PiggyBank,
   ReceiptText,
+  Upload,
   type LucideIcon,
 } from "lucide-react";
-import { Card, ThemeToggle } from "@/components/ui";
+import { Card, NotificationCenter, ThemeToggle } from "@/components/ui";
 import { useMonth } from "@/contexts/MonthContext";
 import { formatCompact } from "@/lib/formatters";
-import type { MonthlySnapshot } from "@/types/finance";
+import type { AppNotification, MonthlySnapshot } from "@/types/finance";
 
 type UserInfo = {
   name: string | null;
@@ -35,16 +35,17 @@ const navItems: { label: string; href: string; icon: LucideIcon }[] = [
   { label: "Goals", href: "/goals", icon: Flag },
   { label: "Budget", href: "/budget", icon: PiggyBank },
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
-  { label: "Styleguide", href: "/styleguide", icon: Palette },
+  { label: "Import", href: "/import", icon: Upload },
 ];
 
 interface SidebarProps {
   history: MonthlySnapshot[];
   user: UserInfo;
   signOutAction: () => Promise<void>;
+  notifications: AppNotification[];
 }
 
-export default function Sidebar({ history, user, signOutAction }: SidebarProps) {
+export default function Sidebar({ history, user, signOutAction, notifications }: SidebarProps) {
   const pathname = usePathname();
   const { snapshot } = useMonth();
   const currentSnapshot = snapshot ?? history[history.length - 1];
@@ -62,7 +63,10 @@ export default function Sidebar({ history, user, signOutAction }: SidebarProps) 
             <p className="text-xs text-text-secondary">Personal CFO workspace</p>
           </div>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <NotificationCenter notifications={notifications} panelAlign="left" />
+          <ThemeToggle />
+        </div>
       </div>
 
       <nav aria-label="Primary navigation" className="space-y-1">
@@ -164,9 +168,10 @@ export default function Sidebar({ history, user, signOutAction }: SidebarProps) 
 interface MobileNavProps {
   user: UserInfo;
   signOutAction: () => Promise<void>;
+  notifications: AppNotification[];
 }
 
-export function MobileNav({ user, signOutAction }: MobileNavProps) {
+export function MobileNav({ user, signOutAction, notifications }: MobileNavProps) {
   const pathname = usePathname();
 
   return (
@@ -181,7 +186,10 @@ export function MobileNav({ user, signOutAction }: MobileNavProps) {
             <p className="truncate text-xs text-text-secondary">Personal CFO workspace</p>
           </div>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <NotificationCenter notifications={notifications} />
+          <ThemeToggle />
+        </div>
       </div>
 
       <nav aria-label="Mobile primary navigation" className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 sm:gap-2">

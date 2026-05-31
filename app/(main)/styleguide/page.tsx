@@ -22,6 +22,7 @@ import {
   StatCard,
   TransactionBadge,
 } from "@/components/ui";
+import { notFound } from "next/navigation";
 
 export const metadata = { title: "Styleguide" };
 
@@ -40,6 +41,10 @@ const spacingScale = ["4px", "8px", "12px", "16px", "20px", "24px", "32px"];
 const radiusScale = ["4px", "6px", "8px", "12px"];
 
 export default function StyleguidePage() {
+  if (process.env.NODE_ENV === "production") {
+    notFound();
+  }
+
   return (
     <section className="flex flex-1 flex-col">
       <SectionHeader

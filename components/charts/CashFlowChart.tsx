@@ -112,6 +112,8 @@ export default function CashFlowChart({ data }: CashFlowChartProps) {
         <XAxis
           axisLine={false}
           dataKey="label"
+          height={36}
+          interval={0}
           tick={ActiveMonthTick(data, selectedMonth)}
           tickLine={false}
         />

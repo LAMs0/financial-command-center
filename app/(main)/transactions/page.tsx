@@ -16,7 +16,7 @@
 
 import { getAccounts, getTransactions } from "@/lib/data";
 import { formatCurrency } from "@/lib/formatters";
-import { Badge, SectionHeader, StatCard } from "@/components/ui";
+import { Badge, ExportMenu, SectionHeader, StatCard } from "@/components/ui";
 import TransactionsList from "@/components/dashboard/TransactionsList";
 
 export const metadata = { title: "Transactions" };
@@ -58,11 +58,10 @@ export default async function TransactionsPage() {
         eyebrowClassName="bg-gradient-to-r from-info-400 to-warning-400 bg-clip-text text-transparent"
         title="Transactions"
         actions={
-          <Badge
-            label={`${transactions.length} records`}
-            tone="info"
-            size="md"
-          />
+          <div className="flex items-center gap-3">
+            <Badge label={`${transactions.length} records`} tone="info" size="md" />
+            <ExportMenu datasets={["transactions"]} showReport={false} />
+          </div>
         }
       />
 

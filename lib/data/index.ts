@@ -39,6 +39,7 @@ import {
 } from "@/lib/mock-data";
 import type {
   Account,
+  AppNotification,
   CreditCard,
   Transaction,
   Investment,
@@ -50,6 +51,7 @@ import type {
   InvestmentType,
   GoalCategory,
 } from "@/types/finance";
+import { generateNotifications } from "@/lib/notifications";
 
 /** ¿Debemos leer de la base de datos real? */
 function useDatabase(): boolean {
@@ -240,6 +242,22 @@ export async function getBudgets(
     },
     mockBudgets
   );
+}
+
+// ── Notificaciones ───────────────────────────────────────────────────────────
+/*
+  Las notificaciones son derivadas — no tienen tabla propia en la DB.
+  Se generan on-the-fly desde los datos actuales del usuario.
+  Usamos Promise.all para las 3 fuentes de datos en paralelo.
+*/
+export async function getNotifications(): Promise<AppNotification[]> {
+  const [accounts, cards, goals, budgets] = await Promise.all([
+    getAccounts(),
+    getCards(),
+    getGoals(),
+    getBudgets(),
+  ]);
+  return generateNotifications({ accounts, cards, goals, budgets });
 }
 
 // ── Historial mensual ────────────────────────────────────────────────────────

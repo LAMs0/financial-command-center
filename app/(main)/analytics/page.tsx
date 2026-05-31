@@ -1,6 +1,6 @@
 import { getTransactions, getMonthlyHistory } from "@/lib/data";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
-import { Badge, Card, CardHeader, EmptyState, ProgressBar, SectionHeader, StatCard } from "@/components/ui";
+import { Badge, Card, CardHeader, EmptyState, ExportMenu, ProgressBar, SectionHeader, StatCard } from "@/components/ui";
 import SpendingDonutChart from "@/components/dashboard/SpendingDonutChart";
 import CashFlowChart from "@/components/charts/CashFlowChart";
 import { ChartNoAxesCombined } from "lucide-react";
@@ -39,7 +39,15 @@ export default async function AnalyticsPage() {
         eyebrow="Insights"
         eyebrowClassName="bg-gradient-to-r from-info-400 to-brand-300 bg-clip-text text-transparent"
         title="Analytics"
-        actions={<Badge label="Mock analysis" tone="neutral" size="md" />}
+        actions={
+          <div className="flex items-center gap-3">
+            <Badge label="Mock analysis" tone="neutral" size="md" />
+            <ExportMenu
+              datasets={["transactions", "accounts", "cards", "goals", "budgets"]}
+              showReport
+            />
+          </div>
+        }
       />
 
       <div className="space-y-6 px-4 py-6 md:px-8">

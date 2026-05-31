@@ -18,6 +18,13 @@ interface MonthSelectorProps {
   months: MonthlySnapshot[];
 }
 
+function formatFullMonth(month: string, fallback: string) {
+  const date = new Date(`${month}-01T00:00:00`);
+  if (Number.isNaN(date.getTime())) return fallback;
+
+  return new Intl.DateTimeFormat("en-US", { month: "long" }).format(date);
+}
+
 export default function MonthSelector({ months }: MonthSelectorProps) {
   const { selectedMonth, setSelectedMonth } = useMonth();
 
@@ -50,11 +57,13 @@ export default function MonthSelector({ months }: MonthSelectorProps) {
     >
       {months.map((snapshot, index) => {
         const isActive = snapshot.month === selectedMonth;
+        const fullMonth = formatFullMonth(snapshot.month, snapshot.label);
 
         return (
           <button
+            aria-label={fullMonth}
             aria-selected={isActive}
-            className={`shrink-0 rounded-lg border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 ${
+            className={`shrink-0 whitespace-nowrap rounded-lg border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 ${
               isActive
                 ? "border-brand-400/40 bg-brand-500/20 text-brand-300"
                 : "border-white/10 bg-white/[0.03] text-text-secondary hover:border-white/20 hover:bg-white/[0.06] hover:text-text-primary"

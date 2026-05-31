@@ -182,3 +182,17 @@ export interface AllocationDatum {
   value: number;
   color: string;
 }
+
+// ─── Notificaciones ────────────────────────────────────────────────────────────
+
+export type NotificationSeverity = "info" | "warning" | "critical";
+export type NotificationCategory = "budget" | "card" | "goal" | "account";
+
+export interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  severity: NotificationSeverity;
+  category: NotificationCategory;
+  href: string;
+}
