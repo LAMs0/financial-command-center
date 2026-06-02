@@ -61,7 +61,7 @@ export default function NotificationCenter({
         aria-label={`Notifications${badgeCount > 0 ? ` - ${badgeCount} unread` : ""}`}
         aria-expanded={open}
         aria-haspopup="dialog"
-        className="relative grid h-9 w-9 place-items-center rounded-lg border border-white/10 bg-white/[0.03] text-text-secondary transition hover:border-white/20 hover:bg-white/[0.08] hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+        className="relative grid h-9 w-9 place-items-center rounded-lg border border-white/10 bg-white/[0.03] text-text-secondary transition hover:border-white/20 hover:bg-white/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
         onClick={() => setOpen((v) => !v)}
         type="button"
       >
@@ -70,7 +70,7 @@ export default function NotificationCenter({
         {badgeCount > 0 && (
           <span
             aria-hidden="true"
-            className={`absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none text-white ${
+            className={`absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none text-text-primary ${
               criticalCount > 0 ? "bg-negative-500" : "bg-warning-500"
             }`}
           >
@@ -96,7 +96,7 @@ export default function NotificationCenter({
             </div>
             <button
               aria-label="Close notifications"
-              className="grid h-7 w-7 place-items-center rounded-lg text-text-muted transition hover:bg-white/[0.08] hover:text-text-primary"
+              className="grid h-7 w-7 place-items-center rounded-lg text-text-muted transition hover:bg-white/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
               onClick={() => setOpen(false)}
               type="button"
             >

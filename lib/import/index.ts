@@ -14,6 +14,7 @@
 
 import type { AccountType } from "@/types/finance";
 import type { ParsedStatement } from "./types";
+import type { PDFParseResult } from "./parsers/pdf";
 import { parseCSV } from "./parsers/csv";
 import { parseOFX } from "./parsers/ofx";
 import { parsePDF } from "./parsers/pdf";
@@ -46,6 +47,38 @@ export async function parsePDFStatement(
   filename: string
 ): Promise<ParsedStatement> {
   const result = await parsePDF(buffer);
+  return assembleFromImageLike(result, filename);
+}
+
+/** Variante async para imágenes/fotos (jpg, png, webp, heic...) vía OCR */
+export async function parseImageStatement(
+  buffer: Buffer,
+  filename: string
+): Promise<ParsedStatement> {
+  const { parseImage } = await import("./parsers/image");
+  const result = await parseImage(buffer);
+  return assembleFromImageLike(result, filename);
+}
+
+/** Variante async para Excel (xlsx/xls): se convierte a CSV y se reusa el flujo CSV */
+export async function parseXLSXStatement(
+  buffer: Buffer,
+  filename: string
+): Promise<ParsedStatement> {
+  const { xlsxToCSV } = await import("./parsers/xlsx");
+  const csv = await xlsxToCSV(buffer);
+  return parseCSVStatement(csv, filename);
+}
+
+/**
+ * Ensamblado compartido para resultados que vienen de un PDFParseResult
+ * (tanto PDF como imágenes OCR). Mantiene una sola fuente de verdad para
+ * la detección de tipo de cuenta, metas y rango de fechas.
+ */
+function assembleFromImageLike(
+  result: PDFParseResult,
+  filename: string
+): ParsedStatement {
   const warnings = [...result.warnings];
 
   const baseName = filename.replace(/\.[^.]+$/, "").replace(/[_-]/g, " ").trim();
@@ -59,7 +92,7 @@ export async function parsePDFStatement(
   );
 
   const goal = detectedType !== "credit_card"
-    ? detectGoalFromAccount(accountName, detectedType as import("@/types/finance").AccountType, result.finalBalance)
+    ? detectGoalFromAccount(accountName, detectedType as import("@/types/finance").AccountType, result.finalBalance, result.currency)
     : null;
 
   const kind = classifyAccountKind(detectedType, goal);
@@ -79,7 +112,7 @@ export async function parsePDFStatement(
       balance: Math.abs(result.finalBalance),
       ...(detectedType === "credit_card" && {
         lastFourDigits: lastFour || "0000",
-        limit: 0,
+        limit: result.cardLimit ?? 0,
         cutoffDay: 1,
         paymentDueDay: 20,
       }),
@@ -114,7 +147,7 @@ function parseCSVStatement(rawContent: string, filename: string): ParsedStatemen
   );
 
   const goal = detectedType !== "credit_card"
-    ? detectGoalFromAccount(accountName, detectedType as AccountType, result.finalBalance)
+    ? detectGoalFromAccount(accountName, detectedType as AccountType, result.finalBalance, result.currency)
     : null;
 
   const kind = classifyAccountKind(detectedType, goal);
@@ -165,7 +198,7 @@ function parseOFXStatement(rawContent: string, filename: string): ParsedStatemen
   const accountName = `${result.institution} ${result.accountType === "credit_card" ? "Tarjeta" : "Cuenta"} ${result.accountId.slice(-4)}`.trim();
 
   const goal = result.accountType === "savings"
-    ? detectGoalFromAccount(baseName, "savings", result.finalBalance)
+    ? detectGoalFromAccount(baseName, "savings", result.finalBalance, result.currency)
     : null;
 
   const kind = classifyAccountKind(result.accountType, goal);

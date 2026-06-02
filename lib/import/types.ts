@@ -11,6 +11,7 @@ import type { AccountType, Currency, GoalCategory, TransactionCategory, Transact
 // ── Banco detectado ────────────────────────────────────────────────────────
 
 export type DetectedBank =
+  // México
   | "bbva_mx"
   | "santander_mx"
   | "nu_mx"
@@ -18,6 +19,17 @@ export type DetectedBank =
   | "hsbc_mx"
   | "banorte_mx"
   | "scotiabank_mx"
+  // Estados Unidos
+  | "chase"
+  | "bofa"
+  | "wells_fargo"
+  | "citi_us"
+  | "capital_one"
+  | "amex_us"
+  | "discover"
+  | "us_bank"
+  | "pnc"
+  | "ally"
   | "generic";
 
 // ── Tipo de resultado de la cuenta detectada ───────────────────────────────

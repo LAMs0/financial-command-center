@@ -2,7 +2,8 @@ import { getGoals } from "@/lib/data";
 import { calculateGoalProgress } from "@/lib/calculations";
 import { formatCurrency, formatDate, formatPercent } from "@/lib/formatters";
 import { Badge, Card, EmptyState, ProgressBar, SectionHeader, StatCard } from "@/components/ui";
-import { Flag } from "lucide-react";
+import Link from "next/link";
+import { Flag, Upload } from "lucide-react";
 
 export const metadata = { title: "Goals" };
 
@@ -43,6 +44,15 @@ export default async function GoalsPage() {
               icon={<Flag aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
               title="No goals yet"
               description="Savings targets, debt payoff plans and milestone goals will be organized here."
+              action={
+                <Link
+                  className="inline-flex items-center gap-2 rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
+                  href="/import"
+                >
+                  <Upload aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
+                  Import data
+                </Link>
+              }
             />
           </Card>
         ) : active.length > 0 && (

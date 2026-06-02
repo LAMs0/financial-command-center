@@ -13,6 +13,8 @@
   cada card (verde para positivo, rojo para deuda, etc.).
 */
 
+import type { ReactNode } from "react";
+
 type StatCardTone = "positive" | "negative" | "warning" | "info" | "brand";
 
 const toneTextClass: Record<StatCardTone, string> = {
@@ -41,7 +43,7 @@ const toneStroke: Record<StatCardTone, string> = {
 
 interface StatCardProps {
   label: string;
-  value: string;
+  value: ReactNode;
   detail?: string;
   tone?: StatCardTone;
   /** Muestra la barra de color superior */

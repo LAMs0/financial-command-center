@@ -18,6 +18,7 @@
 import type { Currency } from "@/types/finance";
 import type { DetectedBank, ParsedTransaction } from "../types";
 import { inferCategory, inferType } from "../categorize";
+import { BANK_LOCALE, parseLocaleDate, resolveLocale } from "../locale";
 
 // ── Utilidades de parseo ───────────────────────────────────────────────────
 
@@ -71,58 +72,8 @@ function parseMXAmount(str: string): number {
   return parseFloat(str.replace(/[$\s]/g, "").replace(/,/g, "")) || 0;
 }
 
-/**
- * Parsea fechas de múltiples formatos:
- * DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD, "05-ene-2025", "05 enero 2025"
- */
-function parseDate(str: string): string {
-  const s = str.trim();
-
-  // Ya está en formato ISO
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-
-  // Meses en español abreviados/completos
-  const MONTHS: Record<string, string> = {
-    ene: "01", enero: "01",
-    feb: "02", febrero: "02",
-    mar: "03", marzo: "03",
-    abr: "04", abril: "04",
-    may: "05", mayo: "05",
-    jun: "06", junio: "06",
-    jul: "07", julio: "07",
-    ago: "08", agosto: "08",
-    sep: "09", septiembre: "09",
-    oct: "10", octubre: "10",
-    nov: "11", noviembre: "11",
-    dic: "12", diciembre: "12",
-  };
-
-  // "05-ene-2025" o "05 enero 2025"
-  const spanishMatch = s.match(/^(\d{1,2})[-\s]([a-záéíóú]+)[-\s](\d{4})$/i);
-  if (spanishMatch) {
-    const [, day, monthStr, year] = spanishMatch;
-    const month = MONTHS[norm(monthStr)] ?? "01";
-    return `${year}-${month}-${day.padStart(2, "0")}`;
-  }
-
-  // DD/MM/YYYY o DD-MM-YYYY
-  const dmyMatch = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
-  if (dmyMatch) {
-    const [, day, month, year] = dmyMatch;
-    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
-  }
-
-  // MM/DD/YYYY (algunos bancos en inglés)
-  const mdyMatch = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
-  if (mdyMatch) {
-    const [, m, d, y] = mdyMatch;
-    const year = y.length === 2 ? `20${y}` : y;
-    return `${year}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
-  }
-
-  // Fallback: fecha inválida → hoy
-  return new Date().toISOString().slice(0, 10);
-}
+// Las fechas se parsean con parseLocaleDate (lib/import/locale.ts), que
+// respeta el orden DD/MM (México) vs MM/DD (EE. UU.) según el banco detectado.
 
 // ── Fingerprints de bancos ─────────────────────────────────────────────────
 
@@ -150,6 +101,9 @@ type BankSchema = {
   // Al menos estos headers deben estar presentes para hacer match
   requiredHeaders: string[];
   resolveColumns: (headers: string[]) => ColMap | null;
+  // Para columna única de monto: si true, POSITIVO = cargo (gasto).
+  // Lo usan tarjetas de EE. UU. como Amex y Discover.
+  invertAmount?: boolean;
 };
 
 const BANK_SCHEMAS: BankSchema[] = [
@@ -262,6 +216,130 @@ const BANK_SCHEMAS: BankSchema[] = [
       return { date: dateIdx, description: descIdx, charge: chargeIdx, credit: creditIdx, balance: balanceIdx };
     },
   },
+
+  // ════════════════════ BANCOS DE ESTADOS UNIDOS ════════════════════════════
+
+  // ── Chase (checking/savings) ──────────────────────────────────────────────
+  // Details,Posting Date,Description,Amount,Type,Balance,Check or Slip #
+  {
+    bank: "chase",
+    label: "Chase",
+    requiredHeaders: ["posting date", "description", "amount", "balance"],
+    resolveColumns: (headers) => {
+      const h = headers.map(norm);
+      const dateIdx = h.findIndex((v) => v.includes("posting date") || v.includes("post date") || v === "date");
+      const descIdx = h.findIndex((v) => v === "description");
+      const amtIdx = h.findIndex((v) => v === "amount");
+      const balanceIdx = h.findIndex((v) => v === "balance");
+      if (dateIdx === -1 || descIdx === -1 || amtIdx === -1) return null;
+      return { date: dateIdx, description: descIdx, amount: amtIdx, balance: balanceIdx };
+    },
+  },
+  // ── Chase / genérico de tarjeta: Transaction Date,Post Date,Description,Category,Type,Amount
+  {
+    bank: "chase",
+    label: "Chase (tarjeta)",
+    requiredHeaders: ["transaction date", "description", "amount"],
+    resolveColumns: (headers) => {
+      const h = headers.map(norm);
+      const dateIdx = h.findIndex((v) => v.includes("transaction date"));
+      const descIdx = h.findIndex((v) => v === "description");
+      const amtIdx = h.findIndex((v) => v === "amount");
+      if (dateIdx === -1 || descIdx === -1 || amtIdx === -1) return null;
+      return { date: dateIdx, description: descIdx, amount: amtIdx };
+    },
+  },
+  // ── Bank of America: Date,Description,Amount,Running Bal. ──────────────────
+  {
+    bank: "bofa",
+    label: "Bank of America",
+    requiredHeaders: ["date", "description", "amount", "running bal"],
+    resolveColumns: (headers) => {
+      const h = headers.map(norm);
+      const dateIdx = h.findIndex((v) => v === "date");
+      const descIdx = h.findIndex((v) => v === "description");
+      const amtIdx = h.findIndex((v) => v === "amount");
+      const balanceIdx = h.findIndex((v) => v.includes("running bal"));
+      if (dateIdx === -1 || descIdx === -1 || amtIdx === -1) return null;
+      return { date: dateIdx, description: descIdx, amount: amtIdx, balance: balanceIdx };
+    },
+  },
+  // ── Capital One (tarjeta): Transaction Date,Posted Date,Card No.,Description,Category,Debit,Credit
+  {
+    bank: "capital_one",
+    label: "Capital One",
+    requiredHeaders: ["description", "debit", "credit"],
+    resolveColumns: (headers) => {
+      const h = headers.map(norm);
+      const dateIdx = h.findIndex((v) => v.includes("transaction date") || v.includes("posted date") || v === "date");
+      const descIdx = h.findIndex((v) => v === "description");
+      const chargeIdx = h.findIndex((v) => v === "debit");
+      const creditIdx = h.findIndex((v) => v === "credit");
+      if (dateIdx === -1 || descIdx === -1) return null;
+      return { date: dateIdx, description: descIdx, charge: chargeIdx, credit: creditIdx };
+    },
+  },
+  // ── American Express: Date,Description,Amount  (POSITIVO = cargo) ──────────
+  {
+    bank: "amex_us",
+    label: "American Express",
+    requiredHeaders: ["date", "description", "amount"],
+    invertAmount: true,
+    resolveColumns: (headers) => {
+      const h = headers.map(norm);
+      // Solo matchea si NO tiene "balance"/"running bal" (eso sería BofA/Chase)
+      if (h.some((v) => v.includes("balance") || v.includes("running bal") || v.includes("posting date") || v.includes("transaction date"))) return null;
+      const dateIdx = h.findIndex((v) => v === "date");
+      const descIdx = h.findIndex((v) => v === "description");
+      const amtIdx = h.findIndex((v) => v === "amount");
+      if (dateIdx === -1 || descIdx === -1 || amtIdx === -1) return null;
+      return { date: dateIdx, description: descIdx, amount: amtIdx };
+    },
+  },
+  // ── Discover: Trans. Date,Post Date,Description,Amount,Category (POSITIVO = cargo)
+  {
+    bank: "discover",
+    label: "Discover",
+    requiredHeaders: ["trans. date", "description", "amount"],
+    invertAmount: true,
+    resolveColumns: (headers) => {
+      const h = headers.map(norm);
+      const dateIdx = h.findIndex((v) => v.includes("trans. date") || v.includes("trans date"));
+      const descIdx = h.findIndex((v) => v === "description");
+      const amtIdx = h.findIndex((v) => v === "amount");
+      if (dateIdx === -1 || descIdx === -1 || amtIdx === -1) return null;
+      return { date: dateIdx, description: descIdx, amount: amtIdx };
+    },
+  },
+  // ── Citi (tarjeta): Status,Date,Description,Debit,Credit ───────────────────
+  {
+    bank: "citi_us",
+    label: "Citi",
+    requiredHeaders: ["status", "date", "description", "debit"],
+    resolveColumns: (headers) => {
+      const h = headers.map(norm);
+      const dateIdx = h.findIndex((v) => v === "date");
+      const descIdx = h.findIndex((v) => v === "description");
+      const chargeIdx = h.findIndex((v) => v === "debit");
+      const creditIdx = h.findIndex((v) => v === "credit");
+      if (dateIdx === -1 || descIdx === -1) return null;
+      return { date: dateIdx, description: descIdx, charge: chargeIdx, credit: creditIdx };
+    },
+  },
+  // ── US Bank: Date,Transaction,Name,Memo,Amount ────────────────────────────
+  {
+    bank: "us_bank",
+    label: "U.S. Bank",
+    requiredHeaders: ["date", "transaction", "name", "amount"],
+    resolveColumns: (headers) => {
+      const h = headers.map(norm);
+      const dateIdx = h.findIndex((v) => v === "date");
+      const descIdx = h.findIndex((v) => v === "name" || v === "memo");
+      const amtIdx = h.findIndex((v) => v === "amount");
+      if (dateIdx === -1 || descIdx === -1 || amtIdx === -1) return null;
+      return { date: dateIdx, description: descIdx, amount: amtIdx };
+    },
+  },
 ];
 
 // ── Detección de banco ─────────────────────────────────────────────────────
@@ -342,6 +420,12 @@ export function parseCSV(rawContent: string): CSVParseResult {
   const delimiter = detectDelimiter(lines.slice(0, 5).join("\n"));
   const allRows = lines.map((l) => parseCSVLine(l, delimiter));
 
+  // ── Caso especial: CSV SIN encabezados (Wells Fargo) ──────────────────────
+  // Formato: Fecha, Monto, "*", "", Descripción  (sin fila de títulos)
+  if (looksLikeWellsFargoCSV(allRows)) {
+    return parseWellsFargoCSV(allRows, warnings);
+  }
+
   // Buscar la fila de encabezados (puede haber filas de metadata antes)
   const headerRowIdx = findHeaderRow(allRows, delimiter);
   const preamble = lines.slice(0, headerRowIdx);
@@ -354,14 +438,18 @@ export function parseCSV(rawContent: string): CSVParseResult {
   const schema = detectBankSchema(headerRow);
   if (!schema) {
     warnings.push("No se reconoció el formato del banco. Se aplicó detección genérica.");
-    return parseGeneric(dataRows, headerRow, accountMeta, warnings);
+    return parseGeneric(dataRows, headerRow, accountMeta, warnings, content);
   }
 
   const colMap = schema.resolveColumns(headerRow);
   if (!colMap) {
     warnings.push("Se detectó el banco pero no se pudo mapear las columnas.");
-    return parseGeneric(dataRows, headerRow, accountMeta, warnings);
+    return parseGeneric(dataRows, headerRow, accountMeta, warnings, content);
   }
+
+  // Locale (moneda + orden de fecha) según el banco detectado
+  const locale = BANK_LOCALE[schema.bank];
+  const { currency, dateOrder } = locale;
 
   // Parsear filas de datos
   const transactions: ParsedTransaction[] = [];
@@ -372,7 +460,7 @@ export function parseCSV(rawContent: string): CSVParseResult {
     const rawDate = row[colMap.date];
     if (!rawDate || rawDate.trim() === "") continue;
 
-    const date = parseDate(rawDate);
+    const date = parseLocaleDate(rawDate, dateOrder);
     const description = row[colMap.description] ?? "";
     if (!description.trim()) continue;
 
@@ -388,6 +476,10 @@ export function parseCSV(rawContent: string): CSVParseResult {
       if (movCol !== undefined && movCol >= 0) {
         const movimiento = norm(row[movCol] ?? "");
         isCredit = movimiento.includes("abono") || movimiento.includes("deposito") || movimiento.includes("credito");
+        amount = Math.abs(raw);
+      } else if (schema.invertAmount) {
+        // Amex / Discover: positivo = cargo (gasto), negativo = abono/pago
+        isCredit = raw < 0;
         amount = Math.abs(raw);
       } else {
         // Nu y genéricos: negativo = gasto
@@ -419,7 +511,7 @@ export function parseCSV(rawContent: string): CSVParseResult {
       amount,
       type,
       category,
-      currency: "MXN",
+      currency,
       rawLine: row.join(delimiter),
     });
   }
@@ -433,7 +525,7 @@ export function parseCSV(rawContent: string): CSVParseResult {
     bankLabel: schema.label,
     transactions,
     finalBalance,
-    currency: "MXN",
+    currency,
     confidence: 0.9,
     warnings,
     accountMeta,
@@ -446,9 +538,14 @@ function parseGeneric(
   dataRows: string[][],
   headerRow: string[],
   accountMeta: { accountName?: string; accountNumber?: string },
-  warnings: string[]
+  warnings: string[],
+  fullContent = ""
 ): CSVParseResult {
   const h = headerRow.map(norm);
+
+  // Resolver moneda + orden de fecha por heurística (banco desconocido)
+  const sample = fullContent.slice(0, 4000) + " " + dataRows.slice(0, 10).map((r) => r.join(" ")).join(" ");
+  const { currency, dateOrder } = resolveLocale("generic", sample);
 
   // Intentar adivinar columnas por keywords
   const dateIdx = h.findIndex((v) => v.includes("fecha") || v === "date");
@@ -475,7 +572,7 @@ function parseGeneric(
 
   for (const row of dataRows) {
     if (!row[dateIdx] || !row[descIdx]) continue;
-    const date = parseDate(row[dateIdx]);
+    const date = parseLocaleDate(row[dateIdx], dateOrder);
     const description = row[descIdx].trim();
     if (!description) continue;
 
@@ -503,7 +600,7 @@ function parseGeneric(
     const type = inferType(description, amount, isCredit);
     const category = inferCategory(description, type);
 
-    transactions.push({ date, description, amount, type, category, currency: "MXN", rawLine: row.join(",") });
+    transactions.push({ date, description, amount, type, category, currency, rawLine: row.join(",") });
   }
 
   return {
@@ -511,10 +608,79 @@ function parseGeneric(
     bankLabel: "Banco desconocido",
     transactions,
     finalBalance,
-    currency: "MXN",
+    currency,
     confidence: 0.5,
     warnings,
     accountMeta,
+  };
+}
+
+// ── Wells Fargo: CSV sin encabezados ───────────────────────────────────────
+/*
+  Wells Fargo exporta el CSV SIN fila de títulos, con 5 columnas:
+    "04/16/2026","-71.99","*","","MONEY TRANSFER AUTHORIZED ON ..."
+  Col 0 = Fecha (MM/DD/YYYY), Col 1 = Monto (negativo = retiro, positivo = depósito),
+  Col 4 = Descripción. Las columnas 2 y 3 casi siempre son "*" y "".
+*/
+
+function looksLikeWellsFargoCSV(rows: string[][]): boolean {
+  // Tomamos una muestra de las primeras filas con datos.
+  const sample = rows.slice(0, 8).filter((r) => r.length >= 4);
+  if (sample.length < 2) return false;
+
+  let matches = 0;
+  for (const r of sample) {
+    const dateOk = /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test((r[0] ?? "").trim());
+    const amtOk = /^-?\$?[\d,]+\.\d{2}$/.test((r[1] ?? "").trim());
+    if (dateOk && amtOk) matches++;
+  }
+  // La gran mayoría de las filas de muestra deben cumplir el patrón.
+  return matches >= Math.ceil(sample.length * 0.7);
+}
+
+function parseWellsFargoCSV(rows: string[][], warnings: string[]): CSVParseResult {
+  const transactions: ParsedTransaction[] = [];
+
+  for (const r of rows) {
+    if (r.length < 5) continue;
+    const rawDate = (r[0] ?? "").trim();
+    const rawAmt = (r[1] ?? "").trim();
+    const description = (r[4] ?? "").trim();
+    if (!rawDate || !rawAmt || !description) continue;
+
+    const date = parseLocaleDate(rawDate, "mdy"); // EE. UU. → MM/DD/YYYY
+    const signed = parseFloat(rawAmt.replace(/[$,\s]/g, ""));
+    if (!signed || Number.isNaN(signed)) continue;
+
+    const amount = Math.abs(signed);
+    const isCredit = signed > 0; // positivo = depósito/adición
+    const type = inferType(description, amount, isCredit);
+    const category = inferCategory(description, type);
+
+    transactions.push({
+      date,
+      description: description.slice(0, 200),
+      amount,
+      type,
+      category,
+      currency: "USD",
+      rawLine: r.join(","),
+    });
+  }
+
+  if (transactions.length === 0) {
+    warnings.push("No se encontraron transacciones en el CSV de Wells Fargo.");
+  }
+
+  return {
+    bank: "wells_fargo",
+    bankLabel: "Wells Fargo",
+    transactions,
+    finalBalance: 0, // El CSV de WF no incluye saldo; el usuario lo ajusta.
+    currency: "USD",
+    confidence: transactions.length > 0 ? 0.88 : 0,
+    warnings,
+    accountMeta: {},
   };
 }
 

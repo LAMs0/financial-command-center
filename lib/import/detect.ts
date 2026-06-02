@@ -24,16 +24,23 @@ function norm(s: string): string {
 const CREDIT_CARD_KEYWORDS = [
   "tarjeta", "credito", "tc ", "tc_", "amex", "american express",
   "visa", "mastercard", "gold", "platinum", "clasica", "azul", "oro",
+  // Inglés / EE. UU.
+  "credit card", "creditcard", "card ending", "rewards card", "sapphire",
+  "freedom", "quicksilver", "venture", "discover it", "blue cash",
 ];
 
 const SAVINGS_KEYWORDS = [
   "ahorro", "saving", "cete", "rendimiento", "plazo fijo",
   "inversion", "deposito", "fondo", "caixinha",
+  // Inglés / EE. UU.
+  "savings", "high yield", "hysa", "money market", "cd account", "certificate of deposit",
 ];
 
 const CHECKING_KEYWORDS = [
   "nomina", "debito", "debit", "cheque", "chequera", "cuenta corriente",
   "banco", "eje", "transfer",
+  // Inglés / EE. UU.
+  "checking", "check card", "debit card", "total checking", "everyday checking",
 ];
 
 /** Detecta si el balance final o las transacciones sugieren tarjeta de crédito */
@@ -102,13 +109,13 @@ export function detectAccountType(
 // ── Detección de metas ─────────────────────────────────────────────────────
 
 const GOAL_PATTERNS: Array<{ pattern: RegExp; category: GoalCategory; icon: string }> = [
-  { pattern: /emergencia|fondo.?emergencia|colchon/i, category: "emergency_fund", icon: "🛡️" },
-  { pattern: /viaje|vacacion|trip|japan|europa|cancun|playa/i, category: "vacation", icon: "✈️" },
-  { pattern: /casa|depa|departamento|hipoteca|vivienda|hogar/i, category: "home", icon: "🏠" },
-  { pattern: /auto|carro|moto|vehiculo|coche/i, category: "vehicle", icon: "🚗" },
-  { pattern: /retiro|pension|jubilacion|afore/i, category: "retirement", icon: "🌅" },
-  { pattern: /universidad|maestria|carrera|educacion|curso|estudio/i, category: "education", icon: "🎓" },
-  { pattern: /deuda|pagar|liquidar|tarjeta/i, category: "debt_payoff", icon: "💳" },
+  { pattern: /emergencia|fondo.?emergencia|colchon|emergency|rainy day/i, category: "emergency_fund", icon: "🛡️" },
+  { pattern: /viaje|vacacion|trip|japan|europa|cancun|playa|vacation|travel|holiday/i, category: "vacation", icon: "✈️" },
+  { pattern: /casa|depa|departamento|hipoteca|vivienda|hogar|house|home|down ?payment|mortgage/i, category: "home", icon: "🏠" },
+  { pattern: /auto|carro|moto|vehiculo|coche|\bcar\b|vehicle|truck/i, category: "vehicle", icon: "🚗" },
+  { pattern: /retiro|pension|jubilacion|afore|retirement|401k|\bira\b|roth/i, category: "retirement", icon: "🌅" },
+  { pattern: /universidad|maestria|carrera|educacion|curso|estudio|education|college|tuition|school/i, category: "education", icon: "🎓" },
+  { pattern: /deuda|pagar|liquidar|tarjeta|debt|payoff|pay off/i, category: "debt_payoff", icon: "💳" },
   // Nu Caixinhas y BBVA "metas"
   { pattern: /meta|objetivo|ahorro.?(para|especial)/i, category: "custom", icon: "🎯" },
 ];
@@ -120,7 +127,8 @@ const GOAL_PATTERNS: Array<{ pattern: RegExp; category: GoalCategory; icon: stri
 export function detectGoalFromAccount(
   accountName: string,
   accountType: AccountType | "credit_card",
-  balance: number
+  balance: number,
+  currency: import("@/types/finance").Currency = "MXN"
 ): DetectedGoal | null {
   // Las metas son cuentas de ahorro, no cuentas corrientes ni tarjetas
   if (accountType === "checking" || accountType === "credit_card") return null;
@@ -133,7 +141,7 @@ export function detectGoalFromAccount(
         name,
         category,
         currentAmount: Math.max(balance, 0),
-        currency: "MXN",
+        currency,
         icon,
       };
     }

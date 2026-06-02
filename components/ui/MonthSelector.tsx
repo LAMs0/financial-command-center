@@ -52,7 +52,7 @@ export default function MonthSelector({ months }: MonthSelectorProps) {
   return (
     <div
       aria-label="Select month"
-      className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5"
+      className="flex max-w-full gap-1.5 overflow-x-auto overscroll-x-contain px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       role="tablist"
     >
       {months.map((snapshot, index) => {
@@ -63,7 +63,7 @@ export default function MonthSelector({ months }: MonthSelectorProps) {
           <button
             aria-label={fullMonth}
             aria-selected={isActive}
-            className={`shrink-0 whitespace-nowrap rounded-lg border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 ${
+            className={`shrink-0 whitespace-nowrap rounded-lg border px-3 py-1.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50 ${
               isActive
                 ? "border-brand-400/40 bg-brand-500/20 text-brand-300"
                 : "border-white/10 bg-white/[0.03] text-text-secondary hover:border-white/20 hover:bg-white/[0.06] hover:text-text-primary"

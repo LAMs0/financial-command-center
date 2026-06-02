@@ -5,7 +5,11 @@ import {
   getInvestments,
   getTransactions,
   getMonthlyHistory,
+  getOnboardingState,
 } from "@/lib/data";
+import { auth } from "@/auth";
+import WelcomeOnboarding from "@/components/onboarding/WelcomeOnboarding";
+import SampleDataBanner from "@/components/onboarding/SampleDataBanner";
 import {
   calculateCardUtilization,
   calculateGoalProgress,
@@ -30,7 +34,7 @@ import {
   TransactionBadge,
 } from "@/components/ui";
 import Link from "next/link";
-import { CreditCard, Flag, Landmark, ReceiptText } from "lucide-react";
+import { CreditCard, Flag, Landmark, ReceiptText, Upload } from "lucide-react";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import NetWorthChart from "@/components/charts/NetWorthChart";
 
@@ -42,6 +46,16 @@ export default async function DashboardPage() {
     Promise.all corre todas las queries en paralelo en vez de en serie —
     más rápido que await uno por uno.
   */
+  /*
+    Onboarding: si el usuario no tiene NINGÚN dato todavía, mostramos la
+    pantalla de bienvenida en lugar de un dashboard lleno de tarjetas vacías.
+  */
+  const onboarding = await getOnboardingState();
+  if (!onboarding.hasData) {
+    const session = await auth();
+    return <WelcomeOnboarding userName={session?.user?.name} />;
+  }
+
   const [accounts, cards, goals, investments, transactions, monthlyHistory] =
     await Promise.all([
       getAccounts(),
@@ -90,6 +104,11 @@ export default async function DashboardPage() {
       />
 
       <div className="space-y-6 px-4 py-6 md:px-8">
+        {onboarding.usingSampleData && (
+          <AnimateIn>
+            <SampleDataBanner />
+          </AnimateIn>
+        )}
         {/*
           DashboardStats es un Client Component que lee MonthContext.
           Le pasamos todos los datos históricos como props para que el servidor
@@ -137,6 +156,15 @@ export default async function DashboardPage() {
                   icon={<Landmark aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
                   title="No accounts connected"
                   description="Connected accounts will populate this balance register."
+                  action={
+                    <Link
+                      className="inline-flex items-center gap-2 rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
+                      href="/import"
+                    >
+                      <Upload aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
+                      Import data
+                    </Link>
+                  }
                 />
               ) : topAccounts.map((account) => (
                 <div
@@ -175,6 +203,15 @@ export default async function DashboardPage() {
                   icon={<CreditCard aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
                   title="No credit lines"
                   description="Credit utilization and due date cards will appear here."
+                  action={
+                    <Link
+                      className="inline-flex items-center gap-2 rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
+                      href="/import"
+                    >
+                      <Upload aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
+                      Import data
+                    </Link>
+                  }
                 />
               ) : cards.map((card) => {
                 const utilization = calculateCardUtilization(card);
@@ -214,6 +251,15 @@ export default async function DashboardPage() {
                   icon={<ReceiptText aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
                   title="No recent activity"
                   description="Incoming, outgoing and transfer records will appear in this feed."
+                  action={
+                    <Link
+                      className="inline-flex items-center gap-2 rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
+                      href="/import"
+                    >
+                      <Upload aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
+                      Import data
+                    </Link>
+                  }
                 />
               ) : recentTransactions.map((transaction) => (
                 <div
@@ -249,6 +295,15 @@ export default async function DashboardPage() {
                   icon={<Flag aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
                   title="No goals yet"
                   description="Priority savings goals will appear here once planning starts."
+                  action={
+                    <Link
+                      className="inline-flex items-center gap-2 rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
+                      href="/import"
+                    >
+                      <Upload aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
+                      Import data
+                    </Link>
+                  }
                 />
               ) : goals.map((goal) => {
                 const progress = calculateGoalProgress(goal.currentAmount, goal.targetAmount);

@@ -39,7 +39,7 @@ export default function Button({
   return (
     <button
       className={[
-        "inline-flex items-center justify-center gap-2 rounded-lg border font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 disabled:cursor-not-allowed disabled:opacity-70",
+        "inline-flex items-center justify-center gap-2 rounded-lg border font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50 disabled:cursor-not-allowed disabled:opacity-70",
         toneClasses[tone],
         sizeClasses[size],
         className,

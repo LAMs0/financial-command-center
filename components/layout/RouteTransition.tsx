@@ -11,7 +11,7 @@ export default function RouteTransition({ children }: { children: ReactNode }) {
   return (
     <motion.div
       animate={{ opacity: 1, y: 0 }}
-      className="flex min-w-0 flex-1 flex-col"
+      className="flex min-w-0 w-full flex-1 flex-col"
       initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
       key={pathname}
       transition={

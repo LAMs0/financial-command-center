@@ -14,6 +14,7 @@
 */
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import type { ImportPayload } from "@/lib/import/types";
@@ -129,6 +130,13 @@ export async function saveImportedStatement(payload: ImportPayload): Promise<{ e
   } catch (err) {
     console.error("[saveImportedStatement]", err);
     return { error: "Error saving to database. Please try again." };
+  }
+
+  // Invalidar la caché de TODAS las páginas que muestran datos derivados,
+  // para que el dashboard, net worth, cash flow, cuentas, tarjetas y
+  // transacciones reflejen lo recién importado (no la versión en caché).
+  for (const path of ["/dashboard", "/accounts", "/cards", "/transactions", "/budget", "/analytics", "/goals"]) {
+    revalidatePath(path);
   }
 
   // Redirigir a la página correspondiente

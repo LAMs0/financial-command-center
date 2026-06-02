@@ -20,6 +20,8 @@ import { useMonth } from "@/contexts/MonthContext";
 import { formatCompact } from "@/lib/formatters";
 import type { AppNotification, MonthlySnapshot } from "@/types/finance";
 
+const FOCUS_RING = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50";
+
 type UserInfo = {
   name: string | null;
   email: string | null;
@@ -77,7 +79,7 @@ export default function Sidebar({ history, user, signOutAction, notifications }:
           return (
             <Link
               aria-current={isActive ? "page" : undefined}
-              className={`group flex items-center justify-between rounded-lg border-l-2 px-3 py-2.5 text-sm transition duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 ${
+              className={`group flex items-center justify-between rounded-lg border-l-2 px-3 py-2.5 text-sm transition duration-200 ${FOCUS_RING} ${
                 isActive
                   ? "border-brand-400 bg-white/10 text-text-primary"
                   : "border-transparent text-text-secondary hover:border-white/20 hover:bg-white/[0.08] hover:text-text-primary"
@@ -150,7 +152,7 @@ export default function Sidebar({ history, user, signOutAction, notifications }:
               <span className="text-xs text-text-muted">Session active</span>
               <form action={signOutAction}>
                 <button
-                  className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-text-secondary transition hover:border-negative-400/30 hover:bg-negative-900 hover:text-negative-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+                  className={`inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-text-secondary transition hover:border-negative-400/30 hover:bg-negative-900 hover:text-negative-400 ${FOCUS_RING}`}
                   type="submit"
                 >
                   <LogOut aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.8} />
@@ -192,7 +194,7 @@ export function MobileNav({ user, signOutAction, notifications }: MobileNavProps
         </div>
       </div>
 
-      <nav aria-label="Mobile primary navigation" className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 sm:gap-2">
+      <nav aria-label="Mobile primary navigation" className="flex max-w-full gap-1.5 overflow-x-auto overscroll-x-contain px-1 pb-1 [scrollbar-width:none] sm:gap-2 [&::-webkit-scrollbar]:hidden">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -201,7 +203,7 @@ export function MobileNav({ user, signOutAction, notifications }: MobileNavProps
             <Link
               aria-current={isActive ? "page" : undefined}
               aria-label={item.label}
-              className={`flex shrink-0 items-center gap-2 rounded-lg border px-2.5 py-2 text-sm transition hover:bg-white/[0.08] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 sm:px-3 ${
+              className={`flex shrink-0 items-center gap-2 rounded-lg border px-2.5 py-2 text-sm transition hover:bg-white/[0.08] sm:px-3 ${FOCUS_RING} ${
                 isActive
                   ? "border-brand-400/30 bg-brand-500/15 text-brand-300"
                   : "border-white/10 bg-white/[0.03] text-text-secondary"
@@ -220,7 +222,7 @@ export function MobileNav({ user, signOutAction, notifications }: MobileNavProps
           <form action={signOutAction} className="shrink-0">
             <button
               aria-label="Sign out"
-              className="flex h-full items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-2 text-sm text-text-secondary transition hover:border-negative-400/30 hover:bg-negative-900 hover:text-negative-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 sm:px-3"
+              className={`flex h-full items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-2 text-sm text-text-secondary transition hover:border-negative-400/30 hover:bg-negative-900 hover:text-negative-400 sm:px-3 ${FOCUS_RING}`}
               title="Sign out"
               type="submit"
             >

@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useRef, useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   AlertCircle,
   AlertTriangle,
@@ -18,6 +19,8 @@ import {
 import type { DetectedAccount, ParsedStatement, ParsedTransaction } from "@/lib/import/types";
 import { saveImportedStatement } from "@/app/(main)/import/actions";
 import { formatCurrency } from "@/lib/formatters";
+
+const FOCUS_RING = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50";
 
 // ── Tipos de paso del wizard ───────────────────────────────────────────────
 
@@ -105,15 +108,12 @@ function UploadStep({ onParsed }: { onParsed: (r: ParsedStatement) => void }) {
     }
   }
 
-  const onDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      setIsDragging(false);
-      const file = e.dataTransfer.files[0];
-      if (file) processFile(file);
-    },
-    []
-  );
+  function onDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) processFile(file);
+  }
 
   return (
     <div className="space-y-6">
@@ -140,10 +140,10 @@ function UploadStep({ onParsed }: { onParsed: (r: ParsedStatement) => void }) {
             </div>
             <p className="text-lg font-semibold text-text-primary">Drop your bank statement here</p>
             <p className="mt-1 text-sm text-text-secondary">
-              CSV, OFX o PDF — BBVA, Santander, Nu, Banamex, HSBC, Banorte y más
+              CSV, Excel, OFX, PDF o foto/imagen — Chase, Bank of America, Wells Fargo, Amex, BBVA, Santander y más
             </p>
             <button
-              className="mt-5 inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-4 py-2 text-sm font-medium text-text-primary transition hover:bg-white/[0.1]"
+              className={`mt-5 inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-4 py-2 text-sm font-medium text-text-primary transition hover:bg-white/[0.1] ${FOCUS_RING}`}
               onClick={() => inputRef.current?.click()}
               type="button"
             >
@@ -151,7 +151,7 @@ function UploadStep({ onParsed }: { onParsed: (r: ParsedStatement) => void }) {
               Browse files
             </button>
             <input
-              accept=".csv,.ofx,.qfx,.txt,.pdf"
+              accept=".csv,.ofx,.qfx,.txt,.pdf,.xlsx,.xls,.png,.jpg,.jpeg,.webp,.gif,.bmp,.tif,.tiff,.heic,.heif,image/*"
               className="hidden"
               onChange={(e) => { const f = e.target.files?.[0]; if (f) processFile(f); }}
               ref={inputRef}
@@ -169,15 +169,16 @@ function UploadStep({ onParsed }: { onParsed: (r: ParsedStatement) => void }) {
       )}
 
       {/* Info de formatos */}
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid items-stretch gap-3 sm:grid-cols-2">
         {[
-          { title: "CSV", desc: "Banca en línea → Movimientos → Exportar CSV. El formato más común." },
+          { title: "CSV / Excel", desc: "Banca en línea → Movimientos → Exportar. El formato más confiable." },
           { title: "OFX / QFX", desc: "Estándar bancario. Compatible con Banamex, HSBC y bancos internacionales." },
-          { title: "PDF", desc: "Extracto en PDF con texto seleccionable. No soporta PDFs escaneados (imagen)." },
+          { title: "PDF", desc: "Extracto en PDF. Si está escaneado, se lee automáticamente con OCR." },
+          { title: "Foto / Imagen", desc: "Sube una foto o captura del estado de cuenta — se lee con OCR." },
         ].map((f) => (
           <div
             key={f.title}
-            className="rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3"
+            className="h-full rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3"
           >
             <p className="text-sm font-semibold text-text-primary">{f.title}</p>
             <p className="mt-1 text-xs text-text-muted">{f.desc}</p>
@@ -223,22 +224,31 @@ function ReviewStep({
     parsed.confidence >= 0.6  ? "Medium confidence" :
     "Low confidence — please review";
 
-  const confidenceColor =
-    parsed.confidence >= 0.85 ? "text-positive-400" :
-    parsed.confidence >= 0.6  ? "text-warning-400" :
-    "text-negative-400";
+  const confidence = getConfidencePresentation(parsed.confidence);
+  const ConfidenceIcon = confidence.icon;
 
   return (
     <div className="space-y-5">
       {/* Header de resultado */}
-      <div className="rounded-xl border border-white/10 bg-surface-card p-5">
+      <div className={`rounded-xl border bg-surface-card p-5 ${confidence.border}`}>
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <BankIcon bank={parsed.bank} />
               <p className="font-semibold text-text-primary">{parsed.bankLabel}</p>
             </div>
-            <p className={`mt-1 text-xs ${confidenceColor}`}>{confidenceLabel}</p>
+            <div className="mt-2 flex items-center gap-2">
+              <span className={`grid h-6 w-6 place-items-center rounded-lg ${confidence.bg}`}>
+                <ConfidenceIcon
+                  aria-hidden="true"
+                  className={`h-3.5 w-3.5 ${confidence.text}`}
+                  strokeWidth={2}
+                />
+              </span>
+              <p className={`text-xs font-medium ${confidence.text}`}>
+                {confidenceLabel}
+              </p>
+            </div>
           </div>
           <div className="text-right">
             <p className="text-xs text-text-muted">
@@ -291,7 +301,7 @@ function ReviewStep({
               <span className="text-xs text-text-muted">Import as goal</span>
               <input
                 checked={importGoals}
-                className="h-4 w-4 cursor-pointer accent-brand-500"
+                className={`h-4 w-4 cursor-pointer accent-brand-500 ${FOCUS_RING}`}
                 onChange={(e) => onImportGoalsChange(e.target.checked)}
                 type="checkbox"
               />
@@ -315,7 +325,7 @@ function ReviewStep({
       {/* Acciones */}
       <div className="flex items-center justify-between gap-3">
         <button
-          className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-text-secondary transition hover:bg-white/[0.08]"
+          className={`inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-text-secondary transition hover:bg-white/[0.08] ${FOCUS_RING}`}
           onClick={onBack}
           type="button"
         >
@@ -323,13 +333,18 @@ function ReviewStep({
           Cancel
         </button>
         <button
-          className="inline-flex items-center gap-2 rounded-lg border border-brand-400/30 bg-brand-500/15 px-5 py-2 text-sm font-semibold text-brand-300 transition hover:bg-brand-500/25 disabled:cursor-not-allowed disabled:opacity-50"
+          className={`inline-flex items-center gap-2 rounded-lg border border-brand-400/30 bg-brand-500/15 px-5 py-2 text-sm font-semibold text-brand-300 transition hover:bg-brand-500/25 disabled:cursor-not-allowed disabled:opacity-60 ${FOCUS_RING}`}
           disabled={isSaving}
           onClick={onSave}
           type="button"
         >
           {isSaving ? (
-            <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+            <span
+              aria-hidden="true"
+              className="grid h-5 w-5 place-items-center rounded-full bg-brand-500/20"
+            >
+              <Loader2 className="h-4 w-4 animate-spin text-brand-300" strokeWidth={2.4} />
+            </span>
           ) : (
             <ArrowRight aria-hidden="true" className="h-4 w-4" strokeWidth={2} />
           )}
@@ -370,7 +385,7 @@ function AccountConfig({
         <div>
           <label className="mb-1.5 block text-xs text-text-muted" htmlFor="acc-name">Name</label>
           <input
-            className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-brand-400/50 focus:outline-none"
+            className={`w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-brand-400/50 focus:outline-none ${FOCUS_RING}`}
             id="acc-name"
             onChange={(e) => onChange({ ...account, name: e.target.value })}
             type="text"
@@ -382,7 +397,7 @@ function AccountConfig({
         <div>
           <label className="mb-1.5 block text-xs text-text-muted" htmlFor="acc-inst">Institution</label>
           <input
-            className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-brand-400/50 focus:outline-none"
+            className={`w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-brand-400/50 focus:outline-none ${FOCUS_RING}`}
             id="acc-inst"
             onChange={(e) => onChange({ ...account, institution: e.target.value })}
             type="text"
@@ -397,7 +412,7 @@ function AccountConfig({
             <div className="flex flex-col gap-1.5">
               {kindOptions.map((opt) => (
                 <button
-                  className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${
+                  className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${FOCUS_RING} ${
                     account.kind === opt.value
                       ? "border-brand-400/40 bg-brand-500/10 text-brand-300"
                       : "border-white/10 bg-white/[0.02] text-text-secondary hover:border-white/20"
@@ -420,7 +435,7 @@ function AccountConfig({
               <div className="flex flex-col gap-1.5">
                 {accountTypeOptions.map((opt) => (
                   <button
-                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${
+                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition ${FOCUS_RING} ${
                       account.accountType === opt.value
                         ? "border-brand-400/40 bg-brand-500/10 text-brand-300"
                         : "border-white/10 bg-white/[0.02] text-text-secondary hover:border-white/20"
@@ -441,7 +456,7 @@ function AccountConfig({
             <div>
               <label className="mb-1.5 block text-xs text-text-muted" htmlFor="cc-last4">Last 4 digits</label>
               <input
-                className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-text-primary focus:border-brand-400/50 focus:outline-none"
+                className={`w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-text-primary focus:border-brand-400/50 focus:outline-none ${FOCUS_RING}`}
                 id="cc-last4"
                 maxLength={4}
                 onChange={(e) => onChange({ ...account, lastFourDigits: e.target.value })}
@@ -451,7 +466,7 @@ function AccountConfig({
               />
               <label className="mb-1.5 mt-3 block text-xs text-text-muted" htmlFor="cc-limit">Credit limit</label>
               <input
-                className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-text-primary focus:border-brand-400/50 focus:outline-none"
+                className={`w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-text-primary focus:border-brand-400/50 focus:outline-none ${FOCUS_RING}`}
                 id="cc-limit"
                 min={0}
                 onChange={(e) => onChange({ ...account, limit: parseFloat(e.target.value) || 0 })}
@@ -504,7 +519,7 @@ function TransactionPreview({
       </div>
       {transactions.length > 4 && (
         <button
-          className="flex w-full items-center justify-center gap-1.5 py-3 text-xs text-text-muted transition hover:text-text-secondary"
+          className={`flex w-full items-center justify-center gap-1.5 py-3 text-xs text-text-muted transition hover:text-text-secondary ${FOCUS_RING}`}
           onClick={() => setShowAll((v) => !v)}
           type="button"
         >
@@ -519,11 +534,34 @@ function TransactionPreview({
 // ── Paso 3: Éxito ──────────────────────────────────────────────────────────
 
 function SuccessStep({ parsed }: { parsed: ParsedStatement }) {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
-    <div className="flex flex-col items-center gap-6 py-12 text-center">
-      <div className="grid h-16 w-16 place-items-center rounded-2xl border border-positive-400/30 bg-positive-900">
+    <motion.div
+      animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+      className="relative overflow-hidden rounded-2xl border border-positive-400/20 bg-surface-card px-6 py-12 text-center shadow-2xl shadow-black/20"
+      initial={shouldReduceMotion ? undefined : { opacity: 0, y: 12, scale: 0.98 }}
+      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {!shouldReduceMotion && (
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-8 top-8 flex justify-between">
+          {[0, 1, 2, 3, 4].map((index) => (
+            <motion.span
+              animate={{ opacity: [0, 1, 0], y: [0, -18, -34] }}
+              className="h-1.5 w-1.5 rounded-full bg-brand-400"
+              key={index}
+              transition={{ duration: 1.25, delay: index * 0.09, ease: "easeOut" }}
+            />
+          ))}
+        </div>
+      )}
+      <motion.div
+        animate={shouldReduceMotion ? undefined : { scale: [0.92, 1.06, 1] }}
+        className="mx-auto mb-6 grid h-16 w-16 place-items-center rounded-2xl border border-positive-400/30 bg-positive-900"
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+      >
         <CheckCircle2 aria-hidden="true" className="h-8 w-8 text-positive-400" strokeWidth={1.5} />
-      </div>
+      </motion.div>
       <div>
         <p className="text-xl font-semibold text-text-primary">Import successful!</p>
         <p className="mt-2 text-sm text-text-secondary">
@@ -535,30 +573,61 @@ function SuccessStep({ parsed }: { parsed: ParsedStatement }) {
           </p>
         )}
       </div>
-      <div className="flex gap-3">
+      <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
         <a
-          className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-text-secondary transition hover:bg-white/[0.08]"
+          className={`inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-text-secondary transition hover:bg-white/[0.08] ${FOCUS_RING}`}
           href="/accounts"
         >
           View accounts
         </a>
         <a
-          className="inline-flex items-center gap-2 rounded-lg border border-brand-400/30 bg-brand-500/15 px-4 py-2 text-sm font-semibold text-brand-300 transition hover:bg-brand-500/25"
+          className={`inline-flex items-center gap-2 rounded-lg border border-brand-400/30 bg-brand-500/15 px-4 py-2 text-sm font-semibold text-brand-300 transition hover:bg-brand-500/25 ${FOCUS_RING}`}
           href="/transactions"
         >
           View transactions
           <ArrowRight aria-hidden="true" className="h-4 w-4" strokeWidth={2} />
         </a>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 // ── Helper: ícono de banco ─────────────────────────────────────────────────
 
+function getConfidencePresentation(confidence: number) {
+  if (confidence >= 0.85) {
+    return {
+      bg: "bg-positive-900",
+      border: "border-positive-400/25",
+      icon: CheckCircle2,
+      text: "text-positive-400",
+    };
+  }
+
+  if (confidence >= 0.6) {
+    return {
+      bg: "bg-warning-900",
+      border: "border-warning-400/25",
+      icon: AlertTriangle,
+      text: "text-warning-400",
+    };
+  }
+
+  return {
+    bg: "bg-negative-900",
+    border: "border-negative-400/25",
+    icon: AlertCircle,
+    text: "text-negative-400",
+  };
+}
+
 function BankIcon({ bank }: { bank: string }) {
   return (
-    <div className="grid h-7 w-7 place-items-center rounded-lg border border-white/10 bg-white/[0.04]">
+    <div
+      aria-label={bank}
+      className="grid h-7 w-7 place-items-center rounded-lg border border-white/10 bg-white/[0.04]"
+      role="img"
+    >
       <Landmark aria-hidden="true" className="h-3.5 w-3.5 text-text-muted" strokeWidth={1.8} />
     </div>
   );

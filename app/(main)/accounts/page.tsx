@@ -1,7 +1,8 @@
 import { getAccounts } from "@/lib/data";
 import { formatAccountType, formatCurrency, formatDate } from "@/lib/formatters";
-import { Badge, Card, CardHeader, EmptyState, SectionHeader, StatCard } from "@/components/ui";
-import { Landmark } from "lucide-react";
+import { AnimateIn, Badge, Card, CardHeader, EmptyState, SectionHeader, StatCard } from "@/components/ui";
+import Link from "next/link";
+import { Landmark, Upload } from "lucide-react";
 
 export const metadata = { title: "Accounts" };
 
@@ -23,7 +24,7 @@ export default async function AccountsPage() {
       />
 
       <div className="space-y-6 px-4 py-6 md:px-8">
-        <section className="grid gap-4 md:grid-cols-3">
+        <AnimateIn className="grid gap-4 md:grid-cols-3">
           <StatCard label="Total balance" value={formatCurrency(total)} detail="Across all accounts" tone="positive" />
           <StatCard label="Liquid cash" value={formatCurrency(liquid)} detail="Checking, savings and cash" tone="brand" />
           <StatCard
@@ -32,8 +33,9 @@ export default async function AccountsPage() {
             detail={largestAccount ? formatCurrency(largestAccount.balance, largestAccount.currency) : undefined}
             tone="info"
           />
-        </section>
+        </AnimateIn>
 
+        <AnimateIn delay={0.05}>
         <Card padded={false}>
           <CardHeader
             title="Account Register"
@@ -45,10 +47,20 @@ export default async function AccountsPage() {
                 icon={<Landmark aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
                 title="No accounts connected"
                 description="Bank, cash and investment accounts will appear here once a data source is connected."
+                action={
+                  <Link
+                    className="inline-flex items-center gap-2 rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
+                    href="/import"
+                  >
+                    <Upload aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
+                    Import data
+                  </Link>
+                }
               />
-            ) : accounts.map((account) => (
-              <div
+            ) : accounts.map((account, index) => (
+              <AnimateIn
                 className="grid gap-4 px-5 py-4 transition hover:bg-white/[0.04] md:grid-cols-[1fr_auto]"
+                delay={Math.min(index, 8) * 0.025}
                 key={account.id}
               >
                 <div className="flex min-w-0 items-center gap-4">
@@ -66,10 +78,11 @@ export default async function AccountsPage() {
                 <p className="text-left text-lg font-semibold tabular-nums text-text-primary md:text-right">
                   {formatCurrency(account.balance, account.currency)}
                 </p>
-              </div>
+              </AnimateIn>
             ))}
           </div>
         </Card>
+        </AnimateIn>
       </div>
     </section>
   );

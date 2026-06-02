@@ -12,11 +12,28 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { parseStatement, parsePDFStatement } from "@/lib/import";
+import {
+  parseStatement,
+  parsePDFStatement,
+  parseImageStatement,
+  parseXLSXStatement,
+} from "@/lib/import";
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+// El OCR de imágenes/PDFs escaneados puede tardar varios segundos por página.
+export const maxDuration = 120;
 
-const SUPPORTED_EXTENSIONS = ["csv", "ofx", "qfx", "txt", "pdf"];
+const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15 MB (imágenes/escaneos pesan más)
+
+const TEXT_EXTENSIONS = ["csv", "ofx", "qfx", "txt"];
+const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "webp", "gif", "bmp", "tif", "tiff", "heic", "heif"];
+const XLSX_EXTENSIONS = ["xlsx", "xls"];
+
+const SUPPORTED_EXTENSIONS = [
+  ...TEXT_EXTENSIONS,
+  ...IMAGE_EXTENSIONS,
+  ...XLSX_EXTENSIONS,
+  "pdf",
+];
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -43,24 +60,44 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Detectar el tipo real por extensión o por MIME (a veces la extensión
+  // viene vacía, p. ej. al subir una imagen pegada del portapapeles).
   const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
-  if (!SUPPORTED_EXTENSIONS.includes(ext)) {
+  const mime = file.type || "";
+  const isImage = IMAGE_EXTENSIONS.includes(ext) || mime.startsWith("image/");
+  const isPDF = ext === "pdf" || mime === "application/pdf";
+  const isXLSX = XLSX_EXTENSIONS.includes(ext) ||
+    mime.includes("spreadsheetml") || mime === "application/vnd.ms-excel";
+  const isText = TEXT_EXTENSIONS.includes(ext);
+
+  if (!SUPPORTED_EXTENSIONS.includes(ext) && !isImage && !isPDF && !isXLSX) {
     return NextResponse.json(
-      { error: "Unsupported format. Upload a CSV, OFX, QFX or PDF file." },
+      { error: "Formato no soportado. Sube un CSV, OFX, Excel, PDF o una imagen/foto del estado de cuenta." },
       { status: 415 }
     );
   }
 
   try {
-    if (ext === "pdf") {
-      // PDF: leer como ArrayBuffer y convertir a Buffer de Node.js
-      const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+    if (isPDF) {
+      const buffer = Buffer.from(await file.arrayBuffer());
       const parsed = await parsePDFStatement(buffer, file.name);
       return NextResponse.json(parsed);
     }
 
+    if (isImage) {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const parsed = await parseImageStatement(buffer, file.name);
+      return NextResponse.json(parsed);
+    }
+
+    if (isXLSX) {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const parsed = await parseXLSXStatement(buffer, file.name);
+      return NextResponse.json(parsed);
+    }
+
     // CSV / OFX / QFX / TXT: leer como texto
+    void isText;
     const rawContent = await file.text();
     const parsed = parseStatement(rawContent, file.name);
     return NextResponse.json(parsed);

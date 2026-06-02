@@ -15,7 +15,7 @@
 */
 
 import { useMonth } from "@/contexts/MonthContext";
-import { StatCard, MonthSelector } from "@/components/ui";
+import { CountUpValue, StatCard, MonthSelector } from "@/components/ui";
 import { formatCurrency, formatPercent, formatCompact } from "@/lib/formatters";
 import type { MonthlySnapshot } from "@/types/finance";
 
@@ -62,28 +62,33 @@ export default function DashboardStats({ history, staticData }: DashboardStatsPr
         <StatCard
           className="xl:col-span-2"
           label="Net worth"
-          value={formatCurrency(current.netWorth)}
+          value={<CountUpValue value={current.netWorth} format={formatCurrency} />}
           detail={`${netWorthTrend >= 0 ? "+" : ""}${formatPercent(netWorthTrend)} vs prev month`}
           tone={netWorthTrend >= 0 ? "positive" : "negative"}
           sparkline={sparklineNetWorth}
         />
         <StatCard
           label="Cash flow"
-          value={formatCurrency(netCashFlow)}
+          value={<CountUpValue value={netCashFlow} format={formatCurrency} />}
           detail={`${formatCompact(current.income)} in / ${formatCompact(current.expenses)} out — ${formatPercent(savingsRate, 0)} saved`}
           tone={netCashFlow >= 0 ? "positive" : "negative"}
           sparkline={sparklineCashFlow}
         />
         <StatCard
           label="Debt"
-          value={formatCurrency(staticData.totalCreditBalance)}
+          value={<CountUpValue value={staticData.totalCreditBalance} format={formatCurrency} />}
           detail={`${staticData.numCards} active credit lines`}
           tone="warning"
           sparkline={sparklineDebt}
         />
         <StatCard
           label="Credit utilization"
-          value={formatPercent(staticData.creditUtilization)}
+          value={
+            <CountUpValue
+              value={staticData.creditUtilization}
+              format={(value) => formatPercent(value)}
+            />
+          }
           detail={`${formatCompact(staticData.totalCreditLimit)} total limit`}
           tone={staticData.creditUtilization > 0.3 ? "warning" : "positive"}
           sparkline={sparklineUtil}

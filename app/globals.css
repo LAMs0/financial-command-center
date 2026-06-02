@@ -85,9 +85,13 @@ html:not(.dark) {
   --color-info-900: #dbeafe;
 }
 
+html.dark {
+  color-scheme: dark;
+}
+
 /* ── Estilos base globales ──────────────────────────────────── */
 html {
-  color-scheme: dark;
+  color-scheme: light dark;
 }
 
 body {
@@ -101,8 +105,8 @@ body {
 }
 
 :where(a, button, input, select, textarea, [role="button"], [role="tab"]):focus-visible {
-  outline: 2px solid var(--color-brand-400);
-  outline-offset: 3px;
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-brand-400) 50%, transparent);
 }
 
 ::selection {

@@ -52,10 +52,10 @@ export default async function MainLayout({
 
   return (
     <MonthProvider history={monthlyHistory} defaultMonth={defaultMonth}>
-      <div className="flex min-h-screen bg-[image:var(--app-shell-bg)] text-text-primary">
+      <div className="flex min-h-dvh overflow-x-hidden bg-[image:var(--app-shell-bg)] text-text-primary">
         <Sidebar history={monthlyHistory} user={user} signOutAction={handleSignOut} notifications={notifications} />
         {/* flex-1 hace que el contenido ocupe todo el ancho restante */}
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col xl:max-w-[calc(100vw-18rem)]">
           <MobileNav user={user} signOutAction={handleSignOut} notifications={notifications} />
           <RouteTransition>{children}</RouteTransition>
         </div>

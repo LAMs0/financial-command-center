@@ -59,6 +59,11 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Onboarding — true mientras el usuario explora con datos de ejemplo
+  // (cargados desde la pantalla de bienvenida). Permite mostrar el banner
+  // "estás viendo datos de ejemplo" y distinguir demo de datos reales.
+  usingSampleData Boolean @default(false)
+
   // Relaciones — todos los datos financieros pertenecen a un User
   financialAccounts FinancialAccount[]
   cards             CreditCard[]

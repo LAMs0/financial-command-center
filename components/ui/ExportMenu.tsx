@@ -17,6 +17,8 @@ type ExportItem = {
   filename: string;
 };
 
+const FOCUS_RING = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50";
+
 interface ExportMenuProps {
   /** Qué datasets CSV mostrar en el menú */
   datasets?: Array<"transactions" | "accounts" | "cards" | "goals" | "budgets">;
@@ -116,7 +118,7 @@ export default function ExportMenu({
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label="Export data"
-        className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm font-medium text-text-secondary transition hover:border-white/20 hover:bg-white/[0.08] hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 disabled:cursor-not-allowed disabled:opacity-50"
+        className={`inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm font-medium text-text-secondary transition hover:border-white/20 hover:bg-white/[0.08] hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-50 ${FOCUS_RING}`}
         disabled={isLoading}
         onClick={() => setOpen((v) => !v)}
         type="button"
@@ -137,7 +139,7 @@ export default function ExportMenu({
       {open && (
         <div
           aria-label="Export options"
-          className="absolute right-0 top-11 z-50 w-64 overflow-hidden rounded-xl border border-white/10 bg-surface-card shadow-2xl shadow-black/40"
+          className="absolute right-0 top-11 z-50 w-[min(16rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-white/10 bg-surface-card shadow-2xl shadow-black/40"
           role="menu"
         >
           <div className="border-b border-white/[0.06] px-3 py-2.5">
@@ -149,7 +151,7 @@ export default function ExportMenu({
           <div className="p-1">
             {items.map((item) => (
               <button
-                className="flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition hover:bg-white/[0.06] focus-visible:outline-2 focus-visible:outline-brand-400"
+                className={`flex w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition hover:bg-white/[0.06] ${FOCUS_RING}`}
                 disabled={loading === item.filename}
                 key={item.filename}
                 onClick={() => handleDownload(item)}

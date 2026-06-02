@@ -52,9 +52,10 @@ import type {
   GoalCategory,
 } from "@/types/finance";
 import { generateNotifications } from "@/lib/notifications";
+import { calculateNetWorth } from "@/lib/calculations";
 
 /** ¿Debemos leer de la base de datos real? */
-function useDatabase(): boolean {
+function shouldUseDatabase(): boolean {
   return process.env.DATA_SOURCE === "database";
 }
 
@@ -78,7 +79,7 @@ async function withFallback<T>(
   loader: () => Promise<T>,
   mock: T
 ): Promise<T> {
-  if (!useDatabase()) return mock;
+  if (!shouldUseDatabase()) return mock;
   try {
     return await loader();
   } catch (error) {
@@ -262,10 +263,136 @@ export async function getNotifications(): Promise<AppNotification[]> {
 
 // ── Historial mensual ────────────────────────────────────────────────────────
 /*
-  El historial de net worth/cash flow se deriva (no hay tabla propia todavía).
-  De momento siempre devuelve el mock; cuando tengamos snapshots reales en DB
-  esta función será el único punto a cambiar.
+  El historial de net worth/cash flow se DERIVA (no hay tabla de snapshots).
+  Con datos reales en la DB lo reconstruimos a partir de:
+   - El net worth ACTUAL (cuentas + inversiones − tarjetas).
+   - Las transacciones agrupadas por mes → ingresos/gastos por mes.
+   - El net worth de meses anteriores se calcula "hacia atrás": el net worth
+     del mes previo = net worth de este mes − (ingresos − gastos) de este mes.
+  Así el dashboard refleja lo importado en vez de números mock fijos.
 */
+const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function monthLabel(ym: string): string {
+  const mm = parseInt(ym.slice(5, 7), 10);
+  return MONTH_LABELS[mm - 1] ?? ym;
+}
+
 export async function getMonthlyHistory(): Promise<MonthlySnapshot[]> {
-  return mockMonthlyHistory;
+  if (!shouldUseDatabase()) return mockMonthlyHistory;
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return emptyMonthlyHistory();
+
+    const [accounts, cards, investments, transactions] = await Promise.all([
+      getAccounts(),
+      getCards(),
+      getInvestments(),
+      getTransactions(),
+    ]);
+
+    // Sin datos reales todavía → devolver un histórico VACÍO (ceros), nunca
+    // los datos mock. Un usuario real recién registrado debe ver su patrimonio
+    // real ($0), no un gráfico de demostración con cifras inventadas.
+    if (accounts.length === 0 && cards.length === 0 && transactions.length === 0) {
+      return emptyMonthlyHistory();
+    }
+
+    const nw = calculateNetWorth(accounts, cards, investments);
+    const currency = (accounts[0]?.currency ?? cards[0]?.currency ?? "USD") as Currency;
+
+    // Agrupar ingresos/gastos por mes (YYYY-MM). Las transferencias no cuentan.
+    const byMonth = new Map<string, { income: number; expenses: number }>();
+    for (const t of transactions) {
+      const ym = t.date.slice(0, 7);
+      const g = byMonth.get(ym) ?? { income: 0, expenses: 0 };
+      if (t.type === "income") g.income += t.amount;
+      else if (t.type === "expense") g.expenses += t.amount;
+      byMonth.set(ym, g);
+    }
+
+    // Rango de meses: desde la transacción más antigua hasta el mes actual.
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    const months = [...new Set([...byMonth.keys(), currentMonth])].sort().slice(-12);
+
+    const snapshots: MonthlySnapshot[] = months.map((ym) => {
+      const g = byMonth.get(ym) ?? { income: 0, expenses: 0 };
+      return {
+        month: ym,
+        label: monthLabel(ym),
+        income: g.income,
+        expenses: g.expenses,
+        assets: nw.totalAssets,
+        liabilities: nw.totalLiabilities,
+        netWorth: 0,
+        currency,
+      };
+    });
+
+    // Net worth hacia atrás desde el valor actual.
+    let running = nw.netWorth;
+    for (let i = snapshots.length - 1; i >= 0; i--) {
+      snapshots[i].netWorth = Math.round(running);
+      running -= snapshots[i].income - snapshots[i].expenses;
+    }
+
+    return snapshots;
+  } catch (error) {
+    console.warn("[lib/data] getMonthlyHistory falló, devolviendo histórico vacío.", error);
+    return emptyMonthlyHistory();
+  }
+}
+
+/*
+  Histórico vacío honesto: los últimos 6 meses con ceros.
+  Se usa para usuarios sin datos (recién registrados) — así el layout y los
+  gráficos renderizan sin romperse y SIN mostrar cifras de demostración.
+*/
+function emptyMonthlyHistory(): MonthlySnapshot[] {
+  const now = new Date();
+  const snapshots: MonthlySnapshot[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    snapshots.push({
+      month: ym,
+      label: monthLabel(ym),
+      income: 0,
+      expenses: 0,
+      assets: 0,
+      liabilities: 0,
+      netWorth: 0,
+    });
+  }
+  return snapshots;
+}
+
+/*
+  Estado de onboarding del usuario actual.
+   - hasData: ¿tiene CUALQUIER dato financiero? (cuentas, tarjetas, txs, etc.)
+   - usingSampleData: ¿cargó el set de ejemplo desde la bienvenida?
+  El dashboard lo usa para decidir si muestra la pantalla de bienvenida
+  o el banner de "datos de ejemplo".
+*/
+export async function getOnboardingState(): Promise<{ hasData: boolean; usingSampleData: boolean }> {
+  if (!shouldUseDatabase()) return { hasData: true, usingSampleData: false };
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return { hasData: true, usingSampleData: false };
+
+    const [accounts, cards, transactions, investments, goals, user] = await Promise.all([
+      prisma.financialAccount.count({ where: { userId } }),
+      prisma.creditCard.count({ where: { userId } }),
+      prisma.transaction.count({ where: { userId } }),
+      prisma.investment.count({ where: { userId } }),
+      prisma.goal.count({ where: { userId } }),
+      prisma.user.findUnique({ where: { id: userId }, select: { usingSampleData: true } }),
+    ]);
+
+    const hasData = accounts + cards + transactions + investments + goals > 0;
+    return { hasData, usingSampleData: user?.usingSampleData ?? false };
+  } catch (error) {
+    console.warn("[lib/data] getOnboardingState falló.", error);
+    // Ante un fallo, asumimos que tiene datos para no bloquear con la bienvenida.
+    return { hasData: true, usingSampleData: false };
+  }
 }

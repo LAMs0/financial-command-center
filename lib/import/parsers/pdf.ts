@@ -19,6 +19,8 @@
 import type { Currency } from "@/types/finance";
 import type { DetectedBank, ParsedTransaction } from "../types";
 import { inferCategory, inferType } from "../categorize";
+import { parseLocaleDate, resolveLocale } from "../locale";
+import { parseWellsFargo, parseWellsFargoCreditCard, isWellsFargoCreditCard } from "./wellsfargo";
 
 // ── Tipos internos ─────────────────────────────────────────────────────────
 
@@ -30,6 +32,8 @@ export interface PDFParseResult {
   currency: Currency;
   confidence: number;
   warnings: string[];
+  /** Límite de crédito detectado (tarjetas). El ensamblado lo usa para autollenar. */
+  cardLimit?: number;
   accountMeta: {
     accountName?: string;
     accountNumber?: string;
@@ -48,51 +52,31 @@ function parseMXAmount(s: string): number {
   return parseFloat(clean) || 0;
 }
 
-/**
- * Parsea fechas en los formatos más comunes de extractos PDF mexicanos:
- * DD/MM/YYYY, DD-MM-YYYY, DD/MM/YY, "05 ene 2025", "05-ENE-25"
- */
-function parseDate(raw: string): string {
-  const s = raw.trim();
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-
-  const MONTHS: Record<string, string> = {
-    ene: "01", feb: "02", mar: "03", abr: "04",
-    may: "05", jun: "06", jul: "07", ago: "08",
-    sep: "09", oct: "10", nov: "11", dic: "12",
-    jan: "01", apr: "04", aug: "08", dec: "12",
-  };
-
-  // "05-ENE-25" o "05 ene 2025"
-  const spanishMatch = s.match(/^(\d{1,2})[-\/\s]([a-záéíóú]{3,})[-\/\s](\d{2,4})$/i);
-  if (spanishMatch) {
-    const [, day, mon, yr] = spanishMatch;
-    const month = MONTHS[norm(mon.slice(0, 3))] ?? "01";
-    const year = yr.length === 2 ? `20${yr}` : yr;
-    return `${year}-${month}-${day.padStart(2, "0")}`;
-  }
-
-  // DD/MM/YYYY o DD/MM/YY
-  const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
-  if (dmy) {
-    const [, d, m, y] = dmy;
-    const year = y.length === 2 ? `20${y}` : y;
-    return `${year}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
-  }
-
-  return new Date().toISOString().slice(0, 10);
-}
+// Las fechas se parsean con parseLocaleDate (lib/import/locale.ts), que
+// respeta el orden DD/MM (México) vs MM/DD (EE. UU.) según el banco.
 
 // ── Detección de banco por texto del PDF ───────────────────────────────────
 
 function detectBankFromText(text: string): { bank: DetectedBank; bankLabel: string } {
   const t = norm(text.slice(0, 2000)); // Solo analizar el inicio del documento
 
+  // ── Estados Unidos (revisar primero los nombres más específicos) ──────────
+  if (t.includes("bank of america") || t.includes("bankofamerica")) return { bank: "bofa", bankLabel: "Bank of America" };
+  if (t.includes("wells fargo")) return { bank: "wells_fargo", bankLabel: "Wells Fargo" };
+  if (t.includes("capital one")) return { bank: "capital_one", bankLabel: "Capital One" };
+  if (t.includes("american express") || t.includes("americanexpress") || t.includes("amex")) return { bank: "amex_us", bankLabel: "American Express" };
+  if (t.includes("discover")) return { bank: "discover", bankLabel: "Discover" };
+  if (t.includes("u.s. bank") || t.includes("us bank") || t.includes("usbank")) return { bank: "us_bank", bankLabel: "U.S. Bank" };
+  if (t.includes("pnc bank") || /\bpnc\b/.test(t)) return { bank: "pnc", bankLabel: "PNC Bank" };
+  if (t.includes("ally bank") || /\bally\b/.test(t)) return { bank: "ally", bankLabel: "Ally Bank" };
+  if (t.includes("jpmorgan") || t.includes("chase")) return { bank: "chase", bankLabel: "Chase" };
+
+  // ── México ────────────────────────────────────────────────────────────────
   if (t.includes("bbva")) return { bank: "bbva_mx", bankLabel: "BBVA México" };
   if (t.includes("santander")) return { bank: "santander_mx", bankLabel: "Santander México" };
   if (t.includes("nubank") || t.includes("nu mexico") || t.includes("nu financial")) return { bank: "nu_mx", bankLabel: "Nu México" };
-  if (t.includes("banamex") || t.includes("citibanamex") || t.includes("citi")) return { bank: "banamex", bankLabel: "Banamex (Citibanamex)" };
+  if (t.includes("citibanamex") || t.includes("banamex")) return { bank: "banamex", bankLabel: "Banamex (Citibanamex)" };
+  if (t.includes("citibank") || t.includes("citi ")) return { bank: "citi_us", bankLabel: "Citi" };
   if (t.includes("hsbc")) return { bank: "hsbc_mx", bankLabel: "HSBC México" };
   if (t.includes("banorte")) return { bank: "banorte_mx", bankLabel: "Banorte" };
   if (t.includes("scotiabank")) return { bank: "scotiabank_mx", bankLabel: "Scotiabank México" };
@@ -186,7 +170,8 @@ function isAmount(token: string): boolean {
 const DATE_AT_START = /^(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}|\d{1,2}[-\s][a-záéíóú]{3}[-\s]\d{2,4})\s+/i;
 
 function parseTransactionLine(
-  line: string
+  line: string,
+  dateOrder: "dmy" | "mdy" = "dmy"
 ): { date: string; description: string; charge: number; credit: number } | null {
   const trimmed = line.trim();
   if (trimmed.length < 10) return null;
@@ -194,7 +179,7 @@ function parseTransactionLine(
   const dateMatch = trimmed.match(DATE_AT_START);
   if (!dateMatch) return null;
 
-  const date = parseDate(dateMatch[1]);
+  const date = parseLocaleDate(dateMatch[1], dateOrder);
   const rest = trimmed.slice(dateMatch[0].length).trim();
 
   // Dividir en tokens por espacios de 2+ caracteres (heurística para separar columnas)
@@ -255,34 +240,115 @@ export async function parsePDF(buffer: Buffer): Promise<PDFParseResult> {
   const { PDFParse } = await import("pdf-parse");
   const warnings: string[] = [];
 
-  let pdfData: { text: string; numpages: number };
+  // ── Paso 1: intentar extraer la capa de texto (PDFs digitales) ──────────
+  let rawText = "";
+  let numpages = 0;
+  let textLayerFailed = false;
+
   try {
     const parser = new PDFParse({ data: new Uint8Array(buffer) });
     const textResult = await parser.getText();
-    pdfData = { text: textResult.text, numpages: textResult.pages.length };
-  } catch {
-    return {
-      bank: "generic", bankLabel: "No detectado",
-      transactions: [], finalBalance: 0, currency: "MXN",
-      confidence: 0,
-      warnings: ["No se pudo leer el PDF. Asegúrate de que no esté protegido con contraseña."],
-      accountMeta: {},
-    };
+    rawText = textResult.text ?? "";
+    numpages = textResult.pages.length;
+  } catch (err) {
+    // No abortamos: puede ser un PDF escaneado. Caemos al OCR abajo.
+    textLayerFailed = true;
+    console.warn("[parsePDF] getText falló, intentando OCR:", (err as Error)?.message);
   }
 
-  const rawText = pdfData.text;
+  // ── Paso 2: fallback OCR para PDFs escaneados (imagen sin texto) ─────────
+  let ocrUsed = false;
   if (!rawText || rawText.trim().length < 50) {
+    try {
+      const { ocrPdfBuffer } = await import("./ocr");
+      const ocrText = await ocrPdfBuffer(buffer);
+      if (ocrText && ocrText.trim().length >= 20) {
+        rawText = ocrText;
+        ocrUsed = true;
+        warnings.push("PDF escaneado: el texto se reconstruyó con OCR. Revisa los montos y fechas con cuidado.");
+      }
+    } catch (err) {
+      console.warn("[parsePDF] OCR falló:", (err as Error)?.message);
+    }
+  }
+
+  // ── Si después de todo no hay texto, reportamos el motivo más útil ──────
+  if (!rawText || rawText.trim().length < 20) {
     return {
       bank: "generic", bankLabel: "No detectado",
       transactions: [], finalBalance: 0, currency: "MXN",
       confidence: 0,
-      warnings: ["El PDF no contiene texto extraíble. Puede ser un PDF escaneado (imagen). Por ahora solo se soportan PDFs con texto seleccionable."],
+      warnings: [
+        textLayerFailed
+          ? "No se pudo leer el PDF. Puede estar protegido con contraseña o dañado."
+          : "El PDF no contiene texto legible, ni siquiera con OCR. Si es una foto borrosa, intenta con una imagen más nítida o exporta el CSV desde tu banca en línea.",
+      ],
       accountMeta: {},
     };
   }
 
+  const result = buildPDFResult(rawText, numpages, warnings);
+  // El OCR es menos confiable que la capa de texto nativa.
+  if (ocrUsed) result.confidence = Math.min(result.confidence, 0.55);
+  return result;
+}
+
+/**
+ * Construye el PDFParseResult a partir del texto plano (venga de la capa
+ * de texto del PDF o de OCR). Separar esto permite reusar exactamente la
+ * misma lógica de detección de banco + extracción de transacciones para
+ * ambos orígenes y también para imágenes sueltas.
+ */
+export function buildPDFResult(
+  rawText: string,
+  numpages: number,
+  warnings: string[] = []
+): PDFParseResult {
   const { bank, bankLabel } = detectBankFromText(rawText);
   const meta = extractAccountMetaFromText(rawText);
+
+  // Locale (moneda + orden de fecha): por banco, o heurística si es genérico
+  const { currency, dateOrder } = resolveLocale(bank, rawText.slice(0, 4000));
+
+  // ── Wells Fargo usa layouts propios → parsers dedicados ───────────────────
+  if (bank === "wells_fargo") {
+    // Tarjeta de crédito: tabla "Payments / Purchases" de una línea por tx.
+    if (isWellsFargoCreditCard(rawText)) {
+      const cc = parseWellsFargoCreditCard(rawText);
+      if (cc.transactions.length > 0) {
+        // Nombre con "Visa" para que detectAccountType lo marque como tarjeta.
+        const cardNameMatch = rawText.match(/(wells fargo[^\n]*\b(?:visa|mastercard|active cash|autograph|reflect)[^\n]*?card)/i);
+        const cardName = cardNameMatch ? cardNameMatch[1].replace(/®|™/g, "").replace(/\s+/g, " ").trim() : "Wells Fargo Credit Card";
+        return {
+          bank,
+          bankLabel,
+          transactions: cc.transactions,
+          finalBalance: cc.newBalance,
+          currency,
+          confidence: 0.85,
+          warnings,
+          cardLimit: cc.creditLimit,
+          accountMeta: { accountName: cardName, accountNumber: cc.lastFour || meta.accountNumber, institution: bankLabel },
+        };
+      }
+    }
+
+    // Cuenta de cheques/ahorro: layout multilínea "Historial de transacciones".
+    const wf = parseWellsFargo(rawText);
+    if (wf.transactions.length > 0) {
+      return {
+        bank,
+        bankLabel,
+        transactions: wf.transactions,
+        finalBalance: wf.finalBalance,
+        currency,
+        confidence: 0.85,
+        warnings,
+        accountMeta: { accountNumber: meta.accountNumber, institution: bankLabel },
+      };
+    }
+    // Si los parsers dedicados no encontraron nada, caemos al genérico de abajo.
+  }
 
   const lines = rawText.split("\n");
   const zoneStart = findTransactionZoneStart(lines);
@@ -290,10 +356,9 @@ export async function parsePDF(buffer: Buffer): Promise<PDFParseResult> {
 
   const transactions: ParsedTransaction[] = [];
   let finalBalance = meta.finalBalance ?? 0;
-  let lastBalance = 0;
 
   for (const line of transactionLines) {
-    const parsed = parseTransactionLine(line);
+    const parsed = parseTransactionLine(line, dateOrder);
     if (!parsed) continue;
 
     const { date, description, charge, credit } = parsed;
@@ -310,7 +375,7 @@ export async function parsePDF(buffer: Buffer): Promise<PDFParseResult> {
       amount,
       type,
       category,
-      currency: "MXN",
+      currency,
       rawLine: line.trim(),
     });
   }
@@ -329,8 +394,8 @@ export async function parsePDF(buffer: Buffer): Promise<PDFParseResult> {
     if (lastLine) finalBalance = parseMXAmount(lastLine[1]);
   }
 
-  if (pdfData.numpages > 20) {
-    warnings.push(`El PDF tiene ${pdfData.numpages} páginas. Solo se procesaron los movimientos encontrados.`);
+  if (numpages > 20) {
+    warnings.push(`El PDF tiene ${numpages} páginas. Solo se procesaron los movimientos encontrados.`);
   }
 
   return {
@@ -338,7 +403,7 @@ export async function parsePDF(buffer: Buffer): Promise<PDFParseResult> {
     bankLabel,
     transactions,
     finalBalance,
-    currency: "MXN",
+    currency,
     confidence: transactions.length > 0 ? (bank !== "generic" ? 0.82 : 0.6) : 0,
     warnings,
     accountMeta: {

@@ -4,6 +4,7 @@ import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type Theme = "dark" | "light";
+type MountedTheme = Theme | null;
 
 function applyTheme(theme: Theme) {
   document.documentElement.classList.toggle("dark", theme === "dark");
@@ -11,7 +12,7 @@ function applyTheme(theme: Theme) {
 }
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<MountedTheme>(null);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -31,21 +32,28 @@ export default function ThemeToggle() {
   }, []);
 
   function toggleTheme() {
-    const next = theme === "dark" ? "light" : "dark";
+    const current: Theme =
+      theme ??
+      (document.documentElement.classList.contains("dark") ? "dark" : "light");
+    const next = current === "dark" ? "light" : "dark";
     setTheme(next);
     applyTheme(next);
     window.localStorage.setItem("fcc-theme", next);
   }
 
-  const isDark = theme === "dark";
+  const isDark = theme === null || theme === "dark";
   const Icon = isDark ? Moon : Sun;
+  const label =
+    theme === null
+      ? "Toggle color mode"
+      : `Switch to ${isDark ? "light" : "dark"} mode`;
 
   return (
     <button
-      aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-text-secondary transition hover:bg-white/[0.08] hover:text-text-primary active:bg-white/[0.1] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+      aria-label={label}
+      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-text-secondary transition hover:bg-white/[0.08] hover:text-text-primary active:bg-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
       onClick={toggleTheme}
-      title={`Switch to ${isDark ? "light" : "dark"} mode`}
+      title={label}
       type="button"
     >
       <Icon aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />

@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { RotateCcw, Search, SearchX } from "lucide-react";
+import Link from "next/link";
+import { motion, useReducedMotion } from "framer-motion";
+import { RotateCcw, Search, SearchX, Upload } from "lucide-react";
 import { Button, EmptyState, TransactionBadge } from "@/components/ui";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { Transaction, TransactionType } from "@/types/finance";
@@ -36,6 +38,7 @@ export default function TransactionsList({
 }: TransactionsListProps) {
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const shouldReduceMotion = useReducedMotion();
 
   const filtered = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLowerCase();
@@ -64,7 +67,7 @@ export default function TransactionsList({
           {filterOptions.map((option) => (
             <button
               aria-pressed={activeFilter === option.value}
-              className={`rounded-lg border px-3 py-1.5 text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 ${
+              className={`rounded-lg border px-3 py-1.5 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50 ${
                 activeFilter === option.value
                   ? "border-brand-400/40 bg-brand-500/15 text-brand-300"
                   : "border-white/10 bg-white/[0.03] text-text-secondary hover:bg-white/[0.06] hover:text-text-primary"
@@ -86,7 +89,7 @@ export default function TransactionsList({
           />
           <input
             aria-label="Search transactions"
-            className="w-full rounded-lg border border-white/10 bg-white/[0.03] py-1.5 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-muted transition focus:border-brand-400/40 focus:bg-brand-500/[0.05] focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+            className="w-full rounded-lg border border-white/10 bg-white/[0.03] py-1.5 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-muted transition focus:border-brand-400/40 focus:bg-brand-500/[0.05] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Search transactions..."
             type="search"
@@ -101,6 +104,15 @@ export default function TransactionsList({
             icon={<SearchX aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
             title="No transactions yet"
             description="Once activity is connected, incoming, outgoing and transfer records will appear here."
+            action={
+              <Link
+                className="inline-flex items-center gap-2 rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
+                href="/import"
+              >
+                <Upload aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
+                Import data
+              </Link>
+            }
           />
         ) : filtered.length === 0 ? (
           <EmptyState
@@ -125,10 +137,17 @@ export default function TransactionsList({
             </div>
 
             <div className="divide-y divide-white/10">
-              {filtered.map((transaction) => (
-                <div
+              {filtered.map((transaction, index) => (
+                <motion.div
+                  animate={{ opacity: 1, y: 0 }}
                   className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-5 py-4 transition hover:bg-white/[0.04]"
+                  initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
                   key={transaction.id}
+                  transition={
+                    shouldReduceMotion
+                      ? { duration: 0 }
+                      : { duration: 0.24, delay: Math.min(index, 8) * 0.025 }
+                  }
                 >
                   <TransactionBadge type={transaction.type} />
 
@@ -149,7 +168,7 @@ export default function TransactionsList({
                     {amountPrefix(transaction.type)}
                     {formatCurrency(transaction.amount, transaction.currency)}
                   </p>
-                </div>
+                </motion.div>
               ))}
             </div>
           </>

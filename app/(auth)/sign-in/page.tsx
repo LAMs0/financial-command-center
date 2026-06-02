@@ -79,9 +79,9 @@ export default async function SignInPage({
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
                   <ShieldCheck aria-hidden="true" className="h-5 w-5 text-brand-300" strokeWidth={1.8} />
-                  <p className="mt-4 text-sm font-medium text-text-primary">Owner-only</p>
+                  <p className="mt-4 text-sm font-medium text-text-primary">Private by default</p>
                   <p className="mt-1 text-xs leading-5 text-text-secondary">
-                    Protected entry before the dashboard shell loads.
+                    Your data is yours alone — isolated to your account.
                   </p>
                 </div>
               </div>
@@ -106,13 +106,13 @@ export default async function SignInPage({
 
             <div className="rounded-2xl border border-white/10 bg-surface-card p-5 shadow-2xl shadow-black/20 sm:p-7">
               <p className="text-xs uppercase tracking-[0.22em] text-brand-300">
-                Sign in
+                Sign in or sign up
               </p>
               <h2 className="mt-3 text-2xl font-semibold tracking-normal text-text-primary">
-                Access your workspace
+                Create your workspace
               </h2>
               <p className="mt-2 text-sm leading-6 text-text-secondary">
-                Continue with the account authorized for this Financial Command Center.
+                Continue with Google to set up your personal Financial Command Center. New here? Your account is created automatically.
               </p>
 
               <form
@@ -123,7 +123,7 @@ export default async function SignInPage({
                 className="mt-7"
               >
                 <button
-                  className="group flex w-full items-center justify-center gap-3 rounded-xl border border-white/15 bg-white/[0.06] px-4 py-3 text-sm font-medium text-text-primary transition hover:border-brand-400/30 hover:bg-brand-500/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+                  className="group flex w-full items-center justify-center gap-3 rounded-xl border border-white/15 bg-white/[0.06] px-4 py-3 text-sm font-medium text-text-primary transition hover:border-brand-400/30 hover:bg-brand-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
                   type="submit"
                 >
                   <svg aria-hidden="true" height="18" viewBox="0 0 24 24" width="18">
@@ -155,7 +155,7 @@ export default async function SignInPage({
 
               <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
                 <p className="text-xs leading-5 text-text-muted">
-                  Access is restricted to the owner account. Authentication is handled through Google OAuth.
+                  Authentication is handled securely through Google OAuth. We only use it to identify your workspace — we never see your password.
                 </p>
               </div>
             </div>
