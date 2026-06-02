@@ -12,12 +12,17 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { rateLimit } from "@/lib/rate-limit";
 import {
   parseStatement,
   parsePDFStatement,
   parseImageStatement,
   parseXLSXStatement,
 } from "@/lib/import";
+
+// Cuota anti-abuso: el parseo/OCR es caro (hasta 120 s). Limitamos por usuario.
+const IMPORT_LIMIT = 15;            // peticiones...
+const IMPORT_WINDOW_MS = 60_000;    // ...por minuto
 
 // El OCR de imágenes/PDFs escaneados puede tardar varios segundos por página.
 export const maxDuration = 120;
@@ -37,8 +42,18 @@ const SUPPORTED_EXTENSIONS = [
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session?.user) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Rate limit por usuario (defensa contra abuso de CPU/costo del OCR).
+  const { ok, retryAfterMs } = rateLimit(`import:${session.user.id}`, IMPORT_LIMIT, IMPORT_WINDOW_MS);
+  if (!ok) {
+    const retryAfter = Math.ceil(retryAfterMs / 1000);
+    return NextResponse.json(
+      { error: `Demasiadas importaciones seguidas. Intenta de nuevo en ${retryAfter} s.` },
+      { status: 429, headers: { "Retry-After": String(retryAfter) } }
+    );
   }
 
   let formData: FormData;

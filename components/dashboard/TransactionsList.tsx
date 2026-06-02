@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { RotateCcw, Search, SearchX, Upload } from "lucide-react";
+import { RotateCcw, Search, SearchX } from "lucide-react";
 import { Button, EmptyState, TransactionBadge } from "@/components/ui";
+import EmptyStateActions from "@/components/onboarding/EmptyStateActions";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { Transaction, TransactionType } from "@/types/finance";
 
@@ -104,15 +104,7 @@ export default function TransactionsList({
             icon={<SearchX aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
             title="No transactions yet"
             description="Once activity is connected, incoming, outgoing and transfer records will appear here."
-            action={
-              <Link
-                className="inline-flex items-center gap-2 rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
-                href="/import"
-              >
-                <Upload aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
-                Import data
-              </Link>
-            }
+            action={<EmptyStateActions />}
           />
         ) : filtered.length === 0 ? (
           <EmptyState

@@ -4,6 +4,7 @@ import { Badge, Card, CardHeader, EmptyState, ExportMenu, ProgressBar, SectionHe
 import SpendingDonutChart from "@/components/dashboard/SpendingDonutChart";
 import CashFlowChart from "@/components/charts/CashFlowChart";
 import { ChartNoAxesCombined } from "lucide-react";
+import EmptyStateActions from "@/components/onboarding/EmptyStateActions";
 
 export const metadata = { title: "Analytics" };
 
@@ -32,6 +33,7 @@ export default async function AnalyticsPage() {
   const savingsRate = totalIncome === 0 ? 0 : (totalIncome - totalExpenses) / totalIncome;
 
   const largestCategory = categoryRows[0];
+  const hasTransactions = transactions.length > 0;
 
   return (
     <section className="flex flex-1 flex-col">
@@ -41,7 +43,11 @@ export default async function AnalyticsPage() {
         title="Analytics"
         actions={
           <div className="flex items-center gap-3">
-            <Badge label="Mock analysis" tone="neutral" size="md" />
+            <Badge
+              label={hasTransactions ? "Live analysis" : "No analysis yet"}
+              tone={hasTransactions ? "info" : "neutral"}
+              size="md"
+            />
             <ExportMenu
               datasets={["transactions", "accounts", "cards", "goals", "budgets"]}
               showReport
@@ -84,6 +90,7 @@ export default async function AnalyticsPage() {
               icon={<ChartNoAxesCombined aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
               title="No expense mix yet"
               description="Expense categories will appear here once spending data is available."
+              action={<EmptyStateActions />}
             />
           ) : (
             <SpendingDonutChart data={categoryChartData} total={totalExpenses} />
@@ -101,6 +108,7 @@ export default async function AnalyticsPage() {
                 icon={<ChartNoAxesCombined aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
                 title="No category breakdown"
                 description="A ranked spending table will appear once categorized transactions exist."
+                action={<EmptyStateActions />}
               />
             ) : categoryRows.map(([category, amount]) => {
               const pct = totalExpenses > 0 ? amount / totalExpenses : 0;

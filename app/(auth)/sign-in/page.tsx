@@ -38,19 +38,20 @@ export default async function SignInPage({
                 </div>
               </div>
 
-              <Badge label="Secure dashboard access" tone="info" size="md" />
+              <Badge label="Create your workspace" tone="info" size="md" />
               <h1 className="mt-5 max-w-xl text-4xl font-semibold leading-tight tracking-normal text-text-primary">
-                Your financial command center, ready when you are.
+                Build a private command center for your finances.
               </h1>
               <p className="mt-4 max-w-lg text-sm leading-6 text-text-secondary">
-                Review net worth, cash flow, credit exposure and portfolio allocation from a focused workspace built for fast financial decisions.
+                Import statements, review cash flow, monitor credit exposure and
+                plan goals from a focused workspace built for fast decisions.
               </p>
             </div>
 
             <div className="grid gap-4">
               <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
                 <div className="mb-4 flex items-center justify-between">
-                  <p className="text-xs uppercase tracking-[0.2em] text-text-muted">Snapshot</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-text-muted">Product preview</p>
                   <TrendingUp aria-hidden="true" className="h-4 w-4 text-positive-400" strokeWidth={1.8} />
                 </div>
                 <div className="grid grid-cols-3 gap-3">
@@ -101,7 +102,7 @@ export default async function SignInPage({
                   <p className="text-xs text-text-secondary">Personal CFO workspace</p>
                 </div>
               </div>
-              <Badge label="Secure dashboard access" tone="info" />
+              <Badge label="Create your workspace" tone="info" />
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-surface-card p-5 shadow-2xl shadow-black/20 sm:p-7">

@@ -21,6 +21,7 @@ import type { DetectedBank, ParsedTransaction } from "../types";
 import { inferCategory, inferType } from "../categorize";
 import { parseLocaleDate, resolveLocale } from "../locale";
 import { parseWellsFargo, parseWellsFargoCreditCard, isWellsFargoCreditCard } from "./wellsfargo";
+import { capParseText } from "../limits";
 
 // ── Tipos internos ─────────────────────────────────────────────────────────
 
@@ -300,10 +301,12 @@ export async function parsePDF(buffer: Buffer): Promise<PDFParseResult> {
  * ambos orígenes y también para imágenes sueltas.
  */
 export function buildPDFResult(
-  rawText: string,
+  rawTextRaw: string,
   numpages: number,
   warnings: string[] = []
 ): PDFParseResult {
+  // Cota de seguridad: acotar el texto antes de cualquier regex (anti-ReDoS/DoS).
+  const rawText = capParseText(rawTextRaw, warnings);
   const { bank, bankLabel } = detectBankFromText(rawText);
   const meta = extractAccountMetaFromText(rawText);
 

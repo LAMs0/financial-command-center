@@ -18,6 +18,7 @@ import type { PDFParseResult } from "./parsers/pdf";
 import { parseCSV } from "./parsers/csv";
 import { parseOFX } from "./parsers/ofx";
 import { parsePDF } from "./parsers/pdf";
+import { capParseText } from "./limits";
 import {
   classifyAccountKind,
   detectAccountType,
@@ -31,9 +32,11 @@ let colorIdx = 0;
 function nextColor() { return ACCOUNT_COLORS[colorIdx++ % ACCOUNT_COLORS.length]; }
 
 export function parseStatement(
-  rawContent: string,
+  rawContentRaw: string,
   filename: string
 ): ParsedStatement {
+  // Cota de seguridad: acotar el texto antes de cualquier regex (anti-ReDoS/DoS).
+  const rawContent = capParseText(rawContentRaw);
   const ext = filename.split(".").pop()?.toLowerCase() ?? "";
   const isOFX = ext === "ofx" || ext === "qfx" || rawContent.trim().startsWith("OFXHEADER");
 

@@ -3,8 +3,8 @@ import { calculateInvestmentGain, calculatePortfolioSummary, buildAllocationData
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 import { Badge, Card, CardHeader, EmptyState, SectionHeader, StatCard } from "@/components/ui";
 import PortfolioAllocationChart from "@/components/charts/PortfolioAllocationChart";
-import Link from "next/link";
-import { LineChart, Upload } from "lucide-react";
+import EmptyStateActions from "@/components/onboarding/EmptyStateActions";
+import { LineChart } from "lucide-react";
 
 export const metadata = { title: "Investments" };
 
@@ -46,15 +46,7 @@ export default async function InvestmentsPage() {
               icon={<LineChart aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
               title="No investments tracked"
               description="Positions, cost basis and allocation charts will appear here when investments are added."
-              action={
-                <Link
-                  className="inline-flex items-center gap-2 rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
-                  href="/import"
-                >
-                  <Upload aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
-                  Import data
-                </Link>
-              }
+              action={<EmptyStateActions />}
             />
           </Card>
         ) : (
@@ -76,15 +68,7 @@ export default async function InvestmentsPage() {
                 icon={<LineChart aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
                 title="No positions"
                 description="Holdings will be listed here with institution metadata and unrealized return."
-                action={
-                  <Link
-                    className="inline-flex items-center gap-2 rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
-                    href="/import"
-                  >
-                    <Upload aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
-                    Import data
-                  </Link>
-                }
+                action={<EmptyStateActions />}
               />
             ) : investments.map((investment) => {
               const { absoluteGain, percentageGain } = gainsById.get(investment.id)!;

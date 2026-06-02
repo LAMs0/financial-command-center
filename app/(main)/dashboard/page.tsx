@@ -10,6 +10,7 @@ import {
 import { auth } from "@/auth";
 import WelcomeOnboarding from "@/components/onboarding/WelcomeOnboarding";
 import SampleDataBanner from "@/components/onboarding/SampleDataBanner";
+import EmptyStateActions from "@/components/onboarding/EmptyStateActions";
 import {
   calculateCardUtilization,
   calculateGoalProgress,
@@ -34,7 +35,7 @@ import {
   TransactionBadge,
 } from "@/components/ui";
 import Link from "next/link";
-import { CreditCard, Flag, Landmark, ReceiptText, Upload } from "lucide-react";
+import { CreditCard, Flag, Landmark, ReceiptText } from "lucide-react";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import NetWorthChart from "@/components/charts/NetWorthChart";
 
@@ -156,15 +157,7 @@ export default async function DashboardPage() {
                   icon={<Landmark aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
                   title="No accounts connected"
                   description="Connected accounts will populate this balance register."
-                  action={
-                    <Link
-                      className="inline-flex items-center gap-2 rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
-                      href="/import"
-                    >
-                      <Upload aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
-                      Import data
-                    </Link>
-                  }
+                  action={<EmptyStateActions />}
                 />
               ) : topAccounts.map((account) => (
                 <div
@@ -203,15 +196,7 @@ export default async function DashboardPage() {
                   icon={<CreditCard aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
                   title="No credit lines"
                   description="Credit utilization and due date cards will appear here."
-                  action={
-                    <Link
-                      className="inline-flex items-center gap-2 rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
-                      href="/import"
-                    >
-                      <Upload aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
-                      Import data
-                    </Link>
-                  }
+                  action={<EmptyStateActions />}
                 />
               ) : cards.map((card) => {
                 const utilization = calculateCardUtilization(card);
@@ -251,15 +236,7 @@ export default async function DashboardPage() {
                   icon={<ReceiptText aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
                   title="No recent activity"
                   description="Incoming, outgoing and transfer records will appear in this feed."
-                  action={
-                    <Link
-                      className="inline-flex items-center gap-2 rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
-                      href="/import"
-                    >
-                      <Upload aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
-                      Import data
-                    </Link>
-                  }
+                  action={<EmptyStateActions />}
                 />
               ) : recentTransactions.map((transaction) => (
                 <div
@@ -295,15 +272,7 @@ export default async function DashboardPage() {
                   icon={<Flag aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
                   title="No goals yet"
                   description="Priority savings goals will appear here once planning starts."
-                  action={
-                    <Link
-                      className="inline-flex items-center gap-2 rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
-                      href="/import"
-                    >
-                      <Upload aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
-                      Import data
-                    </Link>
-                  }
+                  action={<EmptyStateActions />}
                 />
               ) : goals.map((goal) => {
                 const progress = calculateGoalProgress(goal.currentAmount, goal.targetAmount);

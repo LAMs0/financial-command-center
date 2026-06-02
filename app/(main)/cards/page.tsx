@@ -2,8 +2,8 @@ import { getCards } from "@/lib/data";
 import { calculateCardUtilization } from "@/lib/calculations";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 import { AnimateIn, Badge, Card, EmptyState, ProgressBar, SectionHeader, StatCard } from "@/components/ui";
-import Link from "next/link";
-import { CreditCard, Upload } from "lucide-react";
+import EmptyStateActions from "@/components/onboarding/EmptyStateActions";
+import { CreditCard } from "lucide-react";
 
 export const metadata = { title: "Cards" };
 export const dynamic = "force-dynamic";
@@ -59,15 +59,7 @@ export default async function CardsPage() {
               icon={<CreditCard aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
               title="No credit cards connected"
               description="Credit lines, payment dates and utilization alerts will appear here once cards are connected."
-              action={
-                <Link
-                  className="inline-flex items-center gap-2 rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
-                  href="/import"
-                >
-                  <Upload aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
-                  Import data
-                </Link>
-              }
+              action={<EmptyStateActions />}
             />
           </Card>
         ) : (

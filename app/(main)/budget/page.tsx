@@ -9,6 +9,7 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
+import EmptyStateActions from "@/components/onboarding/EmptyStateActions";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 import {
   Badge,
@@ -126,6 +127,30 @@ export default async function BudgetPage() {
   const atRisk = budgetsWithRatio.filter((b) => b.ratio >= 0.7 && b.ratio < 1);
   const overBudget = budgetsWithRatio.filter((b) => b.ratio >= 1);
 
+  if (budgets.length === 0) {
+    return (
+      <section className="flex flex-1 flex-col">
+        <SectionHeader
+          eyebrow="Planning"
+          eyebrowClassName="bg-gradient-to-r from-brand-300 to-warning-400 bg-clip-text text-transparent"
+          title="Budget"
+          actions={<Badge label="No categories" tone="neutral" size="md" />}
+        />
+
+        <div className="px-4 py-6 md:px-8">
+          <Card padded={false}>
+            <EmptyState
+              icon={<Zap aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
+              title="No budget categories"
+              description="Monthly category budgets will appear here once you import transactions or load sample data."
+              action={<EmptyStateActions />}
+            />
+          </Card>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="flex flex-1 flex-col">
       <SectionHeader
@@ -238,18 +263,6 @@ export default async function BudgetPage() {
           </section>
         )}
       </div>
-
-      {budgets.length === 0 && (
-        <div className="px-4 pb-8 md:px-8">
-          <Card padded={false}>
-            <EmptyState
-              icon={<Zap aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-              title="No budget categories"
-              description="Monthly category budgets will appear here once a planning period has been configured."
-            />
-          </Card>
-        </div>
-      )}
     </section>
   );
 }
