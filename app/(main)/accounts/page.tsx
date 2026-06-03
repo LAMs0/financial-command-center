@@ -4,7 +4,7 @@ import { AnimateIn, Badge, Card, CardHeader, EmptyState, SectionHeader, StatCard
 import EmptyStateActions from "@/components/onboarding/EmptyStateActions";
 import { Landmark } from "lucide-react";
 
-export const metadata = { title: "Accounts" };
+export const metadata = { title: "Cuentas" };
 
 export default async function AccountsPage() {
   const accounts = await getAccounts();
@@ -19,17 +19,17 @@ export default async function AccountsPage() {
       <SectionHeader
         eyebrow="Finances"
         eyebrowClassName="bg-gradient-to-r from-info-400 to-brand-300 bg-clip-text text-transparent"
-        title="Accounts"
-        actions={<Badge label={`${accounts.length} connected`} tone="info" size="md" />}
+        title="Cuentas"
+        actions={<Badge label={`${accounts.length} conectadas`} tone="info" size="md" />}
       />
 
       <div className="space-y-6 px-4 py-6 md:px-8">
         <AnimateIn className="grid gap-4 md:grid-cols-3">
-          <StatCard label="Total balance" value={formatCurrency(total)} detail="Across all accounts" tone="positive" />
-          <StatCard label="Liquid cash" value={formatCurrency(liquid)} detail="Checking, savings and cash" tone="brand" />
+          <StatCard label="Balance total" value={formatCurrency(total)} detail="En todas las cuentas" tone="positive" />
+          <StatCard label="Liquidez" value={formatCurrency(liquid)} detail="Cheques, ahorro y efectivo" tone="brand" />
           <StatCard
-            label="Largest account"
-            value={largestAccount?.name ?? "No accounts"}
+            label="Cuenta principal"
+            value={largestAccount?.name ?? "Sin cuentas"}
             detail={largestAccount ? formatCurrency(largestAccount.balance, largestAccount.currency) : undefined}
             tone="info"
           />
@@ -38,15 +38,15 @@ export default async function AccountsPage() {
         <AnimateIn delay={0.05}>
         <Card padded={false}>
           <CardHeader
-            title="Account Register"
-            subtitle="Balances, institution metadata and last refresh"
+            title="Registro de cuentas"
+            subtitle="Balances, instituciones y ultima actualizacion"
           />
           <div className="divide-y divide-white/10">
             {accounts.length === 0 ? (
               <EmptyState
                 icon={<Landmark aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-                title="No accounts connected"
-                description="Bank, cash and investment accounts will appear here once a data source is connected."
+                title="No hay cuentas conectadas"
+                description="Las cuentas bancarias, efectivo e inversiones apareceran aqui cuando conectes una fuente de datos."
                 action={<EmptyStateActions />}
               />
             ) : accounts.map((account, index) => (
@@ -63,7 +63,7 @@ export default async function AccountsPage() {
                   <div className="min-w-0">
                     <p className="truncate font-medium text-text-primary">{account.name}</p>
                     <p className="text-sm text-text-secondary">
-                      {account.institution} / {formatAccountType(account.type)} / Updated {formatDate(account.lastUpdated)}
+                      {account.institution} / {formatAccountType(account.type)} / Actualizado {formatDate(account.lastUpdated)}
                     </p>
                   </div>
                 </div>

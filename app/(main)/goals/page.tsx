@@ -5,7 +5,7 @@ import { Badge, Card, EmptyState, ProgressBar, SectionHeader, StatCard } from "@
 import EmptyStateActions from "@/components/onboarding/EmptyStateActions";
 import { Flag } from "lucide-react";
 
-export const metadata = { title: "Goals" };
+export const metadata = { title: "Metas" };
 
 export default async function GoalsPage() {
   const goals = await getGoals();
@@ -27,31 +27,31 @@ export default async function GoalsPage() {
       <SectionHeader
         eyebrow="Planning"
         eyebrowClassName="bg-gradient-to-r from-brand-300 to-warning-400 bg-clip-text text-transparent"
-        title="Financial Goals"
-        actions={<Badge label={`${completed.length} completed`} tone="positive" size="md" />}
+        title="Metas financieras"
+        actions={<Badge label={`${completed.length} completadas`} tone="positive" size="md" />}
       />
 
       <div className="space-y-8 px-4 py-6 md:px-8">
         <section className="grid gap-4 md:grid-cols-3">
-          <StatCard label="Saved" value={formatCurrency(totalSaved)} detail="Across all goals" tone="positive" />
-          <StatCard label="Target" value={formatCurrency(totalTarget)} detail="Total planned capital" tone="brand" />
-          <StatCard label="Progress" value={formatPercent(aggregateProgress, 0)} detail={`${active.length} active goals`} tone="info" />
+          <StatCard label="Ahorrado" value={formatCurrency(totalSaved)} detail="En todas las metas" tone="positive" />
+          <StatCard label="Objetivo" value={formatCurrency(totalTarget)} detail="Capital planeado" tone="brand" />
+          <StatCard label="Progreso" value={formatPercent(aggregateProgress, 0)} detail={`${active.length} metas activas`} tone="info" />
         </section>
 
         {goals.length === 0 ? (
           <Card padded={false}>
             <EmptyState
               icon={<Flag aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-              title="No goals yet"
-              description="Savings targets, debt payoff plans and milestone goals will be organized here."
+              title="Aun no hay metas"
+              description="Tus objetivos de ahorro, pagos de deuda y metas importantes se organizaran aqui."
               action={<EmptyStateActions />}
             />
           </Card>
         ) : active.length > 0 && (
           <section>
             <div className="mb-4 flex items-center justify-between">
-              <p className="text-xs uppercase tracking-[0.22em] text-text-muted">In progress</p>
-              <Badge ariaLabel={`${active.length} active goals`} label={`${active.length} active`} tone="neutral" />
+              <p className="text-xs uppercase tracking-[0.22em] text-text-muted">En progreso</p>
+              <Badge ariaLabel={`${active.length} metas activas`} label={`${active.length} activas`} tone="neutral" />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               {active.map((goal) => (
@@ -60,7 +60,7 @@ export default async function GoalsPage() {
                     <div>
                       <p className="font-semibold text-text-primary">{goal.name}</p>
                       <p className="mt-1 text-sm text-text-secondary">
-                        Target {formatDate(goal.targetDate)}
+                        Objetivo {formatDate(goal.targetDate)}
                       </p>
                     </div>
                     <Badge label={formatPercent(goal.progress, 0)} tone="info" />
@@ -79,8 +79,8 @@ export default async function GoalsPage() {
         {completed.length > 0 && (
           <section>
             <div className="mb-4 flex items-center justify-between">
-              <p className="text-xs uppercase tracking-[0.22em] text-text-muted">Completed</p>
-              <Badge label="Locked in" tone="positive" />
+              <p className="text-xs uppercase tracking-[0.22em] text-text-muted">Completadas</p>
+              <Badge label="Logradas" tone="positive" />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               {completed.map((goal) => (
@@ -89,10 +89,10 @@ export default async function GoalsPage() {
                     <div>
                       <p className="font-semibold text-text-primary">{goal.name}</p>
                       <p className="mt-1 text-sm tabular-nums text-text-secondary">
-                        {formatCurrency(goal.targetAmount, goal.currency)} reached
+                        {formatCurrency(goal.targetAmount, goal.currency)} alcanzado
                       </p>
                     </div>
-                    <Badge label="Done" tone="positive" />
+                    <Badge label="Lista" tone="positive" />
                   </div>
                   <ProgressBar value={1} color={goal.color} size="md" className="mt-5" />
                 </Card>

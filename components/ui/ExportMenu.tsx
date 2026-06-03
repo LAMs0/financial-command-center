@@ -27,11 +27,11 @@ interface ExportMenuProps {
 }
 
 const DATASET_META: Record<string, { label: string; description: string }> = {
-  transactions: { label: "Transactions CSV",  description: "All transaction records" },
-  accounts:     { label: "Accounts CSV",       description: "Bank account balances" },
-  cards:        { label: "Credit Cards CSV",   description: "Card balances & utilization" },
-  goals:        { label: "Goals CSV",          description: "Savings goals progress" },
-  budgets:      { label: "Budget CSV",         description: "Category budget vs spent" },
+  transactions: { label: "Transacciones CSV",  description: "Todos los movimientos" },
+  accounts:     { label: "Cuentas CSV",        description: "Balances de cuentas" },
+  cards:        { label: "Tarjetas CSV",       description: "Balances y utilizacion" },
+  goals:        { label: "Metas CSV",          description: "Progreso de metas de ahorro" },
+  budgets:      { label: "Presupuesto CSV",    description: "Presupuesto vs gasto por categoria" },
 };
 
 export default function ExportMenu({
@@ -72,8 +72,8 @@ export default function ExportMenu({
     })),
     ...(showReport
       ? [{
-          label: "Monthly Report PDF",
-          description: "Full financial summary (2 pages)",
+          label: "Reporte mensual PDF",
+          description: "Resumen financiero completo",
           icon: <FileText aria-hidden="true" className="h-4 w-4 text-info-400" strokeWidth={1.8} />,
           url: "/api/export/report",
           filename: "report",
@@ -117,7 +117,7 @@ export default function ExportMenu({
       <button
         aria-expanded={open}
         aria-haspopup="menu"
-        aria-label="Export data"
+        aria-label="Exportar datos"
         className={`inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm font-medium text-text-secondary transition hover:border-white/20 hover:bg-white/[0.08] hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-50 ${FOCUS_RING}`}
         disabled={isLoading}
         onClick={() => setOpen((v) => !v)}
@@ -128,7 +128,7 @@ export default function ExportMenu({
         ) : (
           <Download aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
         )}
-        <span>{isLoading ? "Exporting…" : "Export"}</span>
+        <span>{isLoading ? "Exportando..." : "Exportar"}</span>
         <ChevronDown
           aria-hidden="true"
           className={`h-3.5 w-3.5 transition-transform duration-150 ${open ? "rotate-180" : ""}`}
@@ -138,13 +138,13 @@ export default function ExportMenu({
 
       {open && (
         <div
-          aria-label="Export options"
+          aria-label="Opciones de exportacion"
           className="absolute right-0 top-11 z-50 w-[min(16rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-white/10 bg-surface-card shadow-2xl shadow-black/40"
           role="menu"
         >
           <div className="border-b border-white/[0.06] px-3 py-2.5">
             <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">
-              Export options
+              Opciones de exportacion
             </p>
           </div>
 

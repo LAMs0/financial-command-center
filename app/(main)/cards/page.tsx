@@ -5,7 +5,7 @@ import { AnimateIn, Badge, Card, EmptyState, ProgressBar, SectionHeader, StatCar
 import EmptyStateActions from "@/components/onboarding/EmptyStateActions";
 import { CreditCard } from "lucide-react";
 
-export const metadata = { title: "Cards" };
+export const metadata = { title: "Tarjetas" };
 export const dynamic = "force-dynamic";
 
 function daysUntilPayment(paymentDueDay: number) {
@@ -42,23 +42,23 @@ export default async function CardsPage() {
       <SectionHeader
         eyebrow="Finances"
         eyebrowClassName="bg-gradient-to-r from-info-400 to-brand-300 bg-clip-text text-transparent"
-        title="Credit Cards"
-        actions={<Badge label={`${formatPercent(aggregateUtilization)} utilization`} tone={aggregateUtilization > 0.3 ? "warning" : "positive"} size="md" />}
+        title="Tarjetas de credito"
+        actions={<Badge label={`${formatPercent(aggregateUtilization)} utilizado`} tone={aggregateUtilization > 0.3 ? "warning" : "positive"} size="md" />}
       />
 
       <div className="space-y-6 px-4 py-6 md:px-8">
         <AnimateIn className="grid gap-4 md:grid-cols-3">
-          <StatCard label="Total debt" value={formatCurrency(totalDebt)} detail={`${cards.length} active credit lines`} tone="warning" />
-          <StatCard label="Total limit" value={formatCurrency(totalLimit)} detail="Available credit ceiling" tone="info" />
-          <StatCard label="Minimum due" value={formatCurrency(totalMinimumPayment)} detail="Next payment cycle" tone="brand" />
+          <StatCard label="Deuda total" value={formatCurrency(totalDebt)} detail={`${cards.length} lineas activas`} tone="warning" />
+          <StatCard label="Limite total" value={formatCurrency(totalLimit)} detail="Credito disponible" tone="info" />
+          <StatCard label="Pago minimo" value={formatCurrency(totalMinimumPayment)} detail="Siguiente ciclo" tone="brand" />
         </AnimateIn>
 
         {cards.length === 0 ? (
           <Card padded={false}>
             <EmptyState
               icon={<CreditCard aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-              title="No credit cards connected"
-              description="Credit lines, payment dates and utilization alerts will appear here once cards are connected."
+              title="No hay tarjetas conectadas"
+              description="Las lineas de credito, fechas de pago y alertas de utilizacion apareceran aqui."
               action={<EmptyStateActions />}
             />
           </Card>
@@ -75,7 +75,7 @@ export default async function CardsPage() {
                   <div>
                     <p className="font-semibold text-text-primary">{card.name}</p>
                     <p className="mt-1 text-sm text-text-secondary">
-                      {card.institution} / Ends {card.lastFourDigits}
+                      {card.institution} / Termina en {card.lastFourDigits}
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-2">
@@ -84,7 +84,7 @@ export default async function CardsPage() {
                       tone={utilization > 0.3 ? "warning" : "positive"}
                     />
                     <Badge
-                      label={`Next payment in ${daysRemaining}d`}
+                      label={`Pago en ${daysRemaining}d`}
                       tone={paymentTone(daysRemaining)}
                     />
                   </div>
@@ -94,18 +94,18 @@ export default async function CardsPage() {
 
                 <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                   <div className="rounded-lg bg-white/[0.03] p-3">
-                    <p className="text-text-secondary">Used</p>
+                    <p className="text-text-secondary">Usado</p>
                     <p className="mt-1 font-semibold tabular-nums text-text-primary">{formatCurrency(card.balance, card.currency)}</p>
                   </div>
                   <div className="rounded-lg bg-white/[0.03] p-3">
-                    <p className="text-text-secondary">Limit</p>
+                    <p className="text-text-secondary">Limite</p>
                     <p className="mt-1 font-semibold tabular-nums text-text-primary">{formatCurrency(card.limit, card.currency)}</p>
                   </div>
                 </div>
 
                 <div className="mt-4 flex justify-between text-sm tabular-nums text-text-secondary">
-                  <span>Cutoff day {card.cutoffDay}</span>
-                  <span>Due day {card.paymentDueDay}</span>
+                  <span>Corte dia {card.cutoffDay}</span>
+                  <span>Pago dia {card.paymentDueDay}</span>
                 </div>
               </Card>
               </AnimateIn>

@@ -44,7 +44,7 @@ export default async function AnalyticsPage() {
         actions={
           <div className="flex items-center gap-3">
             <Badge
-              label={hasTransactions ? "Live analysis" : "No analysis yet"}
+              label={hasTransactions ? "Analisis activo" : "Sin analisis"}
               tone={hasTransactions ? "info" : "neutral"}
               size="md"
             />
@@ -58,21 +58,21 @@ export default async function AnalyticsPage() {
 
       <div className="space-y-6 px-4 py-6 md:px-8">
         <section className="grid gap-4 md:grid-cols-3">
-          <StatCard label="Income" value={formatCurrency(totalIncome)} detail="Recorded inflow" tone="positive" />
-          <StatCard label="Expenses" value={formatCurrency(totalExpenses)} detail="Categorized outflow" tone="negative" />
+          <StatCard label="Ingresos" value={formatCurrency(totalIncome)} detail="Entradas registradas" tone="positive" />
+          <StatCard label="Gastos" value={formatCurrency(totalExpenses)} detail="Salidas categorizadas" tone="negative" />
           <StatCard
-            label="Savings rate"
+            label="Tasa de ahorro"
             value={formatPercent(savingsRate, 1)}
-            detail={largestCategory ? `Top spend: ${largestCategory[0]}` : "No expenses"}
+            detail={largestCategory ? `Mayor gasto: ${largestCategory[0]}` : "Sin gastos"}
             tone="info"
           />
         </section>
 
         <Card padded={false}>
           <CardHeader
-            title="Cash Flow — 6 Months"
-            subtitle="Monthly income vs expenses trend"
-            action={<Badge label="Last 6 months" tone="neutral" />}
+            title="Flujo de caja - 6 meses"
+            subtitle="Tendencia mensual de ingresos vs gastos"
+            action={<Badge label="Ultimos 6 meses" tone="neutral" />}
           />
           <div className="px-2 pb-5">
             <CashFlowChart data={monthlyHistory} />
@@ -81,15 +81,15 @@ export default async function AnalyticsPage() {
 
         <Card padded={false}>
           <CardHeader
-            title="Expense Mix"
-            subtitle="Donut view of spending concentration by category"
-            action={<Badge label={`${categoryRows.length} categories`} tone="info" />}
+            title="Mezcla de gastos"
+            subtitle="Concentracion de gastos por categoria"
+            action={<Badge label={`${categoryRows.length} categorias`} tone="info" />}
           />
           {categoryRows.length === 0 ? (
             <EmptyState
               icon={<ChartNoAxesCombined aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-              title="No expense mix yet"
-              description="Expense categories will appear here once spending data is available."
+              title="Aun no hay mezcla de gastos"
+              description="Las categorias de gasto apareceran aqui cuando tengas datos disponibles."
               action={<EmptyStateActions />}
             />
           ) : (
@@ -99,15 +99,15 @@ export default async function AnalyticsPage() {
 
         <Card padded={false}>
           <CardHeader
-            title="Spending by Category"
-            subtitle="Expense concentration across the current mock period"
+            title="Gasto por categoria"
+            subtitle="Concentracion de gasto del periodo actual"
           />
           <div className="divide-y divide-white/10">
             {categoryRows.length === 0 ? (
               <EmptyState
                 icon={<ChartNoAxesCombined aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-                title="No category breakdown"
-                description="A ranked spending table will appear once categorized transactions exist."
+                title="No hay desglose por categoria"
+                description="La tabla de gastos por categoria aparecera cuando existan transacciones categorizadas."
                 action={<EmptyStateActions />}
               />
             ) : categoryRows.map(([category, amount]) => {

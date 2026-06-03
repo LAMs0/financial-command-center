@@ -11,10 +11,10 @@ import type { Transaction, TransactionType } from "@/types/finance";
 type FilterType = TransactionType | "all";
 
 const filterOptions: { value: FilterType; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "income", label: "Income" },
-  { value: "expense", label: "Expenses" },
-  { value: "transfer", label: "Transfers" },
+  { value: "all", label: "Todo" },
+  { value: "income", label: "Ingresos" },
+  { value: "expense", label: "Gastos" },
+  { value: "transfer", label: "Transferencias" },
 ];
 
 interface TransactionsListProps {
@@ -88,10 +88,10 @@ export default function TransactionsList({
             strokeWidth={1.8}
           />
           <input
-            aria-label="Search transactions"
+            aria-label="Buscar transacciones"
             className="w-full rounded-lg border border-white/10 bg-white/[0.03] py-1.5 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-muted transition focus:border-brand-400/40 focus:bg-brand-500/[0.05] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
             onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Search transactions..."
+            placeholder="Buscar transacciones..."
             type="search"
             value={searchQuery}
           />
@@ -102,21 +102,21 @@ export default function TransactionsList({
         {transactions.length === 0 ? (
           <EmptyState
             icon={<SearchX aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-            title="No transactions yet"
-            description="Once activity is connected, incoming, outgoing and transfer records will appear here."
+            title="Aun no hay transacciones"
+            description="Cuando conectes datos, los ingresos, gastos y transferencias apareceran aqui."
             action={<EmptyStateActions />}
           />
         ) : filtered.length === 0 ? (
           <EmptyState
             icon={<SearchX aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-            title="No matching transactions"
-            description="Try a broader search term or switch back to all activity to restore the full ledger."
+            title="No hay transacciones con esos filtros"
+            description="Prueba una busqueda mas amplia o vuelve a todo el historial."
             action={
               <Button
                 icon={<RotateCcw aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />}
                 onClick={resetFilters}
               >
-                Reset filters
+                Limpiar filtros
               </Button>
             }
           />
@@ -124,7 +124,7 @@ export default function TransactionsList({
           <>
             <div className="border-b border-white/10 px-5 py-3">
               <p className="text-xs text-text-muted">
-                {filtered.length} of {transactions.length} transactions
+                {filtered.length} de {transactions.length} transacciones
               </p>
             </div>
 

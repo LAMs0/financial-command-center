@@ -12,7 +12,7 @@ export default function EmptyStateActions() {
         href="/import"
       >
         <Upload aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
-        Import data
+        Importar datos
       </Link>
       <LoadSampleDataButton />
     </div>

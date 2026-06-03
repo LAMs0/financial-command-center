@@ -21,7 +21,7 @@ import {
 } from "@/components/ui";
 import type { Budget } from "@/types/finance";
 
-export const metadata = { title: "Budget" };
+export const metadata = { title: "Presupuesto" };
 
 /*
   Semáforo de presupuesto:
@@ -36,10 +36,10 @@ function budgetTone(ratio: number): "positive" | "warning" | "negative" {
 }
 
 function budgetStatusLabel(ratio: number): string {
-  if (ratio >= 1) return "Over budget";
-  if (ratio >= 0.9) return "Critical";
-  if (ratio >= 0.7) return "Warning";
-  return "On track";
+  if (ratio >= 1) return "Rebasado";
+  if (ratio >= 0.9) return "Critico";
+  if (ratio >= 0.7) return "Atencion";
+  return "En rango";
 }
 
 const budgetIcons: Record<string, LucideIcon> = {
@@ -80,7 +80,7 @@ function BudgetCard({ budget }: { budget: Budget }) {
           <div className="min-w-0">
             <p className="font-semibold text-text-primary">{budget.label}</p>
             <p className="mt-0.5 text-sm tabular-nums text-text-secondary">
-              {formatCurrency(budget.spent, budget.currency)} of{" "}
+              {formatCurrency(budget.spent, budget.currency)} de{" "}
               {formatCurrency(budget.allocated, budget.currency)}
             </p>
           </div>
@@ -100,11 +100,11 @@ function BudgetCard({ budget }: { budget: Budget }) {
         <span className="font-medium text-text-primary">{formatPercent(ratio, 1)}</span>
         {isOver ? (
           <span className="text-negative-400">
-            +{formatCurrency(Math.abs(remaining), budget.currency)} over
+            +{formatCurrency(Math.abs(remaining), budget.currency)} excedido
           </span>
         ) : (
           <span className="text-text-secondary">
-            {formatCurrency(remaining, budget.currency)} left
+            {formatCurrency(remaining, budget.currency)} disponible
           </span>
         )}
       </div>
@@ -133,16 +133,16 @@ export default async function BudgetPage() {
         <SectionHeader
           eyebrow="Planning"
           eyebrowClassName="bg-gradient-to-r from-brand-300 to-warning-400 bg-clip-text text-transparent"
-          title="Budget"
-          actions={<Badge label="No categories" tone="neutral" size="md" />}
+          title="Presupuesto"
+          actions={<Badge label="Sin categorias" tone="neutral" size="md" />}
         />
 
         <div className="px-4 py-6 md:px-8">
           <Card padded={false}>
             <EmptyState
               icon={<Zap aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-              title="No budget categories"
-              description="Monthly category budgets will appear here once you import transactions or load sample data."
+              title="No hay categorias de presupuesto"
+              description="Tus presupuestos mensuales por categoria apareceran aqui cuando importes transacciones o cargues datos de ejemplo."
               action={<EmptyStateActions />}
             />
           </Card>
@@ -156,13 +156,13 @@ export default async function BudgetPage() {
       <SectionHeader
         eyebrow="Planning"
         eyebrowClassName="bg-gradient-to-r from-brand-300 to-warning-400 bg-clip-text text-transparent"
-        title="Budget"
+        title="Presupuesto"
         actions={
           <Badge
             label={
               overBudget.length > 0
-                ? `${overBudget.length} over budget`
-                : "All on track"
+                ? `${overBudget.length} rebasadas`
+                : "Todo en rango"
             }
             tone={overBudget.length > 0 ? "negative" : "positive"}
             size="md"
@@ -174,27 +174,27 @@ export default async function BudgetPage() {
         {/* ── Resumen global ── */}
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
-            label="Total budget"
+            label="Presupuesto total"
             value={formatCurrency(totalAllocated)}
-            detail={`${budgets.length} categories`}
+            detail={`${budgets.length} categorias`}
             tone="brand"
           />
           <StatCard
-            label="Spent"
+            label="Gastado"
             value={formatCurrency(totalSpent)}
-            detail={formatPercent(overallRatio, 1) + " of budget"}
+            detail={formatPercent(overallRatio, 1) + " del presupuesto"}
             tone={overallRatio >= 1 ? "negative" : overallRatio >= 0.7 ? "warning" : "positive"}
           />
           <StatCard
-            label="Remaining"
+            label="Disponible"
             value={formatCurrency(Math.abs(totalRemaining))}
-            detail={totalRemaining < 0 ? "Over budget" : "Available to spend"}
+            detail={totalRemaining < 0 ? "Presupuesto rebasado" : "Disponible para gastar"}
             tone={totalRemaining < 0 ? "negative" : "positive"}
           />
           <StatCard
-            label="Categories at risk"
+            label="Categorias en riesgo"
             value={String(atRisk.length + overBudget.length)}
-            detail={`${onTrack.length} on track`}
+            detail={`${onTrack.length} en rango`}
             tone={overBudget.length > 0 ? "negative" : "warning"}
           />
         </section>
@@ -202,13 +202,13 @@ export default async function BudgetPage() {
         {/* ── Progress global ── */}
         <Card>
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm font-medium text-text-primary">Overall spending</p>
+            <p className="text-sm font-medium text-text-primary">Gasto total</p>
             <p className="text-sm tabular-nums text-text-secondary">{formatPercent(overallRatio, 1)}</p>
           </div>
           <ProgressBar value={Math.min(overallRatio, 1)} autoColor size="md" />
           <div className="mt-3 flex justify-between text-xs tabular-nums text-text-muted">
-            <span>{formatCurrency(totalSpent)} spent</span>
-            <span>{formatCurrency(totalAllocated)} budget</span>
+            <span>{formatCurrency(totalSpent)} gastado</span>
+            <span>{formatCurrency(totalAllocated)} presupuestado</span>
           </div>
         </Card>
 
@@ -217,9 +217,9 @@ export default async function BudgetPage() {
           <section>
             <div className="mb-4 flex items-center justify-between">
               <p className="text-xs uppercase tracking-[0.22em] text-text-muted">
-                Over budget
+                Rebasado
               </p>
-              <Badge label={`${overBudget.length} categories`} tone="negative" />
+              <Badge label={`${overBudget.length} categorias`} tone="negative" />
             </div>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {overBudget.map((b) => (
@@ -234,9 +234,9 @@ export default async function BudgetPage() {
           <section>
             <div className="mb-4 flex items-center justify-between">
               <p className="text-xs uppercase tracking-[0.22em] text-text-muted">
-                Approaching limit
+                Cerca del limite
               </p>
-              <Badge label={`${atRisk.length} categories`} tone="warning" />
+              <Badge label={`${atRisk.length} categorias`} tone="warning" />
             </div>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {atRisk.map((b) => (
@@ -251,9 +251,9 @@ export default async function BudgetPage() {
           <section>
             <div className="mb-4 flex items-center justify-between">
               <p className="text-xs uppercase tracking-[0.22em] text-text-muted">
-                On track
+                En rango
               </p>
-              <Badge label={`${onTrack.length} categories`} tone="positive" />
+              <Badge label={`${onTrack.length} categorias`} tone="positive" />
             </div>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {onTrack.map((b) => (

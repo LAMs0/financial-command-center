@@ -35,7 +35,7 @@ export default function LoadSampleDataButton() {
         ) : (
           <Sparkles aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
         )}
-        {isPending ? "Loading sample..." : "Try sample data"}
+        {isPending ? "Cargando ejemplo..." : "Probar con datos de ejemplo"}
       </button>
       {error && (
         <p className="text-xs text-negative-400" role="alert">

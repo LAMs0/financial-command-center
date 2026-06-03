@@ -44,15 +44,15 @@ function CustomTooltip({ active, payload, label }: ChartTooltipProps) {
       <p className="mb-2 text-xs uppercase tracking-[0.18em] text-text-secondary">{label}</p>
       <div className="space-y-1.5 text-sm tabular-nums">
         <div className="flex justify-between gap-6">
-          <span className="text-text-secondary">Income</span>
+          <span className="text-text-secondary">Ingresos</span>
           <span className="font-medium text-positive-400">{formatCurrency(Number(income))}</span>
         </div>
         <div className="flex justify-between gap-6">
-          <span className="text-text-secondary">Expenses</span>
+          <span className="text-text-secondary">Gastos</span>
           <span className="font-medium text-negative-400">{formatCurrency(Number(expenses))}</span>
         </div>
         <div className="mt-1 flex justify-between gap-6 border-t border-white/10 pt-1.5">
-          <span className="text-text-secondary">Saved</span>
+          <span className="text-text-secondary">Ahorrado</span>
           <span className={`font-semibold ${savings >= 0 ? "text-positive-400" : "text-negative-400"}`}>
             {savings >= 0 ? "+" : ""}{formatCurrency(savings)}
           </span>
@@ -66,10 +66,10 @@ function CustomLegend() {
   return (
     <div className="flex justify-end gap-5 pb-1 pr-2 text-xs text-text-secondary">
       <span className="flex items-center gap-1.5">
-        <span className="inline-block h-2.5 w-2.5 rounded-sm bg-positive-500" /> Income
+        <span className="inline-block h-2.5 w-2.5 rounded-sm bg-positive-500" /> Ingresos
       </span>
       <span className="flex items-center gap-1.5">
-        <span className="inline-block h-2.5 w-2.5 rounded-sm bg-negative-500" /> Expenses
+        <span className="inline-block h-2.5 w-2.5 rounded-sm bg-negative-500" /> Gastos
       </span>
     </div>
   );
@@ -95,7 +95,7 @@ export default function CashFlowChart({ data }: CashFlowChartProps) {
   }
 
   return (
-    <div aria-label="Cash flow chart showing income and expenses by month" role="img">
+    <div aria-label="Grafica de flujo de caja con ingresos y gastos por mes" role="img">
     <ResponsiveContainer height={256} width="100%">
       <BarChart
         barCategoryGap="28%"

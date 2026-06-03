@@ -29,15 +29,15 @@ type UserInfo = {
 } | null;
 
 const navItems: { label: string; href: string; icon: LucideIcon }[] = [
-  { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Accounts", href: "/accounts", icon: Landmark },
-  { label: "Cards", href: "/cards", icon: CreditCard },
-  { label: "Investments", href: "/investments", icon: LineChart },
-  { label: "Transactions", href: "/transactions", icon: ReceiptText },
-  { label: "Goals", href: "/goals", icon: Flag },
-  { label: "Budget", href: "/budget", icon: PiggyBank },
-  { label: "Analytics", href: "/analytics", icon: BarChart3 },
-  { label: "Import", href: "/import", icon: Upload },
+  { label: "Resumen", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Cuentas", href: "/accounts", icon: Landmark },
+  { label: "Tarjetas", href: "/cards", icon: CreditCard },
+  { label: "Inversiones", href: "/investments", icon: LineChart },
+  { label: "Transacciones", href: "/transactions", icon: ReceiptText },
+  { label: "Metas", href: "/goals", icon: Flag },
+  { label: "Presupuesto", href: "/budget", icon: PiggyBank },
+  { label: "Analitica", href: "/analytics", icon: BarChart3 },
+  { label: "Importar", href: "/import", icon: Upload },
 ];
 
 interface SidebarProps {
@@ -62,7 +62,7 @@ export default function Sidebar({ history, user, signOutAction, notifications }:
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold tracking-wide">Financial Command</p>
-            <p className="text-xs text-text-secondary">Personal CFO workspace</p>
+            <p className="text-xs text-text-secondary">Espacio CFO personal</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -71,7 +71,7 @@ export default function Sidebar({ history, user, signOutAction, notifications }:
         </div>
       </div>
 
-      <nav aria-label="Primary navigation" className="space-y-1">
+      <nav aria-label="Navegacion principal" className="space-y-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -109,13 +109,13 @@ export default function Sidebar({ history, user, signOutAction, notifications }:
 
       <Card className="mt-10" padded>
         <p className="text-xs uppercase tracking-[0.22em] text-text-muted">
-          Monthly pulse
+          Pulso mensual
         </p>
         <p className="mt-3 text-2xl font-semibold tabular-nums">
           {formatCompact(netCashFlow)}
         </p>
         <p className="mt-1 text-sm text-text-secondary">
-          {currentSnapshot.label} free cash after expenses.
+          {currentSnapshot.label}: flujo libre despues de gastos.
         </p>
       </Card>
 
@@ -126,7 +126,7 @@ export default function Sidebar({ history, user, signOutAction, notifications }:
               <div className="relative shrink-0">
                 {user.image ? (
                   <div
-                    aria-label={user.name ?? "User"}
+                  aria-label={user.name ?? "Usuario"}
                     className="h-10 w-10 rounded-full bg-cover bg-center ring-1 ring-white/15"
                     role="img"
                     style={{ backgroundImage: `url(${user.image})` }}
@@ -137,7 +137,7 @@ export default function Sidebar({ history, user, signOutAction, notifications }:
                   </div>
                 )}
                 <span
-                  aria-label="Active session"
+                  aria-label="Sesion activa"
                   className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-surface-card bg-positive-400"
                 />
               </div>
@@ -149,14 +149,14 @@ export default function Sidebar({ history, user, signOutAction, notifications }:
             </div>
 
             <div className="mt-3 flex items-center justify-between gap-3 border-t border-white/10 pt-3">
-              <span className="text-xs text-text-muted">Session active</span>
+              <span className="text-xs text-text-muted">Sesion activa</span>
               <form action={signOutAction}>
                 <button
                   className={`inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-text-secondary transition hover:border-negative-400/30 hover:bg-negative-900 hover:text-negative-400 ${FOCUS_RING}`}
                   type="submit"
                 >
                   <LogOut aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.8} />
-                  Sign out
+                  Salir
                 </button>
               </form>
             </div>
@@ -185,7 +185,7 @@ export function MobileNav({ user, signOutAction, notifications }: MobileNavProps
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-text-primary">Financial Command</p>
-            <p className="truncate text-xs text-text-secondary">Personal CFO workspace</p>
+            <p className="truncate text-xs text-text-secondary">Espacio CFO personal</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -194,7 +194,7 @@ export function MobileNav({ user, signOutAction, notifications }: MobileNavProps
         </div>
       </div>
 
-      <nav aria-label="Mobile primary navigation" className="flex max-w-full gap-1.5 overflow-x-auto overscroll-x-contain px-1 pb-1 [scrollbar-width:none] sm:gap-2 [&::-webkit-scrollbar]:hidden">
+      <nav aria-label="Navegacion principal movil" className="flex max-w-full gap-1.5 overflow-x-auto overscroll-x-contain px-1 pb-1 [scrollbar-width:none] sm:gap-2 [&::-webkit-scrollbar]:hidden">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -221,13 +221,13 @@ export function MobileNav({ user, signOutAction, notifications }: MobileNavProps
         {user && (
           <form action={signOutAction} className="shrink-0">
             <button
-              aria-label="Sign out"
+              aria-label="Salir"
               className={`flex h-full items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-2 text-sm text-text-secondary transition hover:border-negative-400/30 hover:bg-negative-900 hover:text-negative-400 sm:px-3 ${FOCUS_RING}`}
-              title="Sign out"
+              title="Salir"
               type="submit"
             >
               <LogOut aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
-              <span className="hidden sm:inline">Sign out</span>
+              <span className="hidden sm:inline">Salir</span>
             </button>
           </form>
         )}

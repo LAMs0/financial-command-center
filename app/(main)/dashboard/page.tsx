@@ -93,13 +93,13 @@ export default async function DashboardPage() {
       <SectionHeader
         eyebrow="Command Center"
         eyebrowClassName="bg-gradient-to-r from-brand-300 to-info-400 bg-clip-text text-transparent"
-        title="Financial Overview"
+        title="Resumen financiero"
         actions={
           <Link
             className="rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25"
             href="/investments"
           >
-            Review portfolio
+            Revisar portafolio
           </Link>
         }
       />
@@ -130,8 +130,8 @@ export default async function DashboardPage() {
         <AnimateIn delay={0.04}>
           <Card padded={false}>
             <CardHeader
-              title="Net Worth"
-              subtitle="Patrimonio neto — selecciona un mes para resaltar"
+              title="Patrimonio neto"
+              subtitle="Selecciona un mes para resaltar"
               action={
                 <p className="text-sm font-medium tabular-nums text-positive-400">
                   {formatCurrency(netWorth.netWorth)}
@@ -147,16 +147,16 @@ export default async function DashboardPage() {
         <AnimateIn className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]" delay={0.06}>
           <Card padded={false}>
             <CardHeader
-              title="Accounts"
-              subtitle="Liquid balances across institutions"
-              action={<p className="text-sm text-text-secondary">{accounts.length} connected</p>}
+              title="Cuentas"
+              subtitle="Balances liquidos por institucion"
+              action={<p className="text-sm text-text-secondary">{accounts.length} conectadas</p>}
             />
             <div className="divide-y divide-white/10">
               {topAccounts.length === 0 ? (
                 <EmptyState
                   icon={<Landmark aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-                  title="No accounts connected"
-                  description="Connected accounts will populate this balance register."
+                  title="No hay cuentas conectadas"
+                  description="Las cuentas conectadas llenaran este registro de balances."
                   action={<EmptyStateActions />}
                 />
               ) : topAccounts.map((account) => (
@@ -172,7 +172,7 @@ export default async function DashboardPage() {
                     <div className="min-w-0">
                       <p className="truncate font-medium text-text-primary">{account.name}</p>
                       <p className="text-sm text-text-secondary">
-                        {account.institution} / {formatAccountType(account.type)} / Updated {formatDate(account.lastUpdated)}
+                        {account.institution} / {formatAccountType(account.type)} / Actualizado {formatDate(account.lastUpdated)}
                       </p>
                     </div>
                   </div>
@@ -186,16 +186,16 @@ export default async function DashboardPage() {
 
           <Card>
             <CardHeader
-              title="Credit Lines"
-              subtitle="Utilization and due dates"
+              title="Lineas de credito"
+              subtitle="Utilizacion y fechas de pago"
               action={<p className="text-sm font-medium tabular-nums text-warning-400">{formatPercent(creditUtilization)}</p>}
             />
             <div className="space-y-4">
               {cards.length === 0 ? (
                 <EmptyState
                   icon={<CreditCard aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-                  title="No credit lines"
-                  description="Credit utilization and due date cards will appear here."
+                  title="No hay lineas de credito"
+                  description="La utilizacion y fechas de pago apareceran aqui."
                   action={<EmptyStateActions />}
                 />
               ) : cards.map((card) => {
@@ -207,15 +207,15 @@ export default async function DashboardPage() {
                       <div>
                         <p className="font-medium text-text-primary">{card.name}</p>
                         <p className="text-sm text-text-secondary">
-                          Ends {card.lastFourDigits} / Due day {card.paymentDueDay}
+                          Termina en {card.lastFourDigits} / Pago dia {card.paymentDueDay}
                         </p>
                       </div>
                       <p className="text-sm tabular-nums text-text-secondary">{formatPercent(utilization)}</p>
                     </div>
                     <ProgressBar value={utilization} autoColor size="md" className="mt-4" />
                     <div className="mt-3 flex justify-between text-sm tabular-nums text-text-secondary">
-                      <span>{formatCompact(card.balance, card.currency)} used</span>
-                      <span>{formatCompact(card.limit, card.currency)} limit</span>
+                      <span>{formatCompact(card.balance, card.currency)} usado</span>
+                      <span>{formatCompact(card.limit, card.currency)} limite</span>
                     </div>
                   </Card>
                 );
@@ -227,15 +227,15 @@ export default async function DashboardPage() {
         <AnimateIn className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]" delay={0.12}>
           <Card padded={false}>
             <CardHeader
-              title="Recent Transactions"
-              subtitle="Latest activity across accounts"
+              title="Transacciones recientes"
+              subtitle="Actividad mas reciente entre cuentas"
             />
             <div className="divide-y divide-white/10">
               {recentTransactions.length === 0 ? (
                 <EmptyState
                   icon={<ReceiptText aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-                  title="No recent activity"
-                  description="Incoming, outgoing and transfer records will appear in this feed."
+                  title="No hay actividad reciente"
+                  description="Los ingresos, gastos y transferencias apareceran en este feed."
                   action={<EmptyStateActions />}
                 />
               ) : recentTransactions.map((transaction) => (
@@ -261,17 +261,17 @@ export default async function DashboardPage() {
 
           <Card>
             <CardHeader
-              title="Financial Goals"
-              subtitle="Progress toward priority targets"
-              action={<p className="text-sm text-text-secondary">{goals.length} goals</p>}
+              title="Metas financieras"
+              subtitle="Progreso hacia tus objetivos prioritarios"
+              action={<p className="text-sm text-text-secondary">{goals.length} metas</p>}
             />
 
             <div className="grid gap-4 md:grid-cols-2">
               {goals.length === 0 ? (
                 <EmptyState
                   icon={<Flag aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-                  title="No goals yet"
-                  description="Priority savings goals will appear here once planning starts."
+                  title="Aun no hay metas"
+                  description="Tus objetivos prioritarios de ahorro apareceran aqui cuando empieces a planear."
                   action={<EmptyStateActions />}
                 />
               ) : goals.map((goal) => {
@@ -283,7 +283,7 @@ export default async function DashboardPage() {
                       <div>
                         <p className="font-medium text-text-primary">{goal.name}</p>
                         <p className="mt-1 text-sm text-text-secondary">
-                          Target {formatDate(goal.targetDate)}
+                          Objetivo {formatDate(goal.targetDate)}
                         </p>
                       </div>
                       <p className="text-sm font-semibold tabular-nums text-text-primary">

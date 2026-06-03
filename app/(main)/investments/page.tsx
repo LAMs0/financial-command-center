@@ -6,7 +6,7 @@ import PortfolioAllocationChart from "@/components/charts/PortfolioAllocationCha
 import EmptyStateActions from "@/components/onboarding/EmptyStateActions";
 import { LineChart } from "lucide-react";
 
-export const metadata = { title: "Investments" };
+export const metadata = { title: "Inversiones" };
 
 export default async function InvestmentsPage() {
   const investments = await getInvestments();
@@ -24,50 +24,50 @@ export default async function InvestmentsPage() {
       <SectionHeader
         eyebrow="Portfolio"
         eyebrowClassName="bg-gradient-to-r from-info-400 to-positive-400 bg-clip-text text-transparent"
-        title="Investments"
-        actions={<Badge label={`${investments.length} positions`} tone="info" size="md" />}
+        title="Inversiones"
+        actions={<Badge label={`${investments.length} posiciones`} tone="info" size="md" />}
       />
 
       <div className="space-y-6 px-4 py-6 md:px-8">
         <section className="grid gap-4 md:grid-cols-3">
-          <StatCard label="Portfolio value" value={formatCurrency(totalValue)} detail="Marked to mock prices" tone="info" />
+          <StatCard label="Valor del portafolio" value={formatCurrency(totalValue)} detail="Valuado con precios actuales" tone="info" />
           <StatCard
-            label="Unrealized gain"
+            label="Ganancia no realizada"
             value={formatCurrency(totalGain)}
             detail={formatPercent(totalGainPercent)}
             tone={totalGain >= 0 ? "positive" : "negative"}
           />
-          <StatCard label="Cost basis" value={formatCurrency(costBasis)} detail="Original capital deployed" tone="brand" />
+          <StatCard label="Costo base" value={formatCurrency(costBasis)} detail="Capital invertido" tone="brand" />
         </section>
 
         {investments.length === 0 ? (
           <Card padded={false}>
             <EmptyState
               icon={<LineChart aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-              title="No investments tracked"
-              description="Positions, cost basis and allocation charts will appear here when investments are added."
+              title="No hay inversiones registradas"
+              description="Las posiciones, costos base y graficas de asignacion apareceran aqui."
               action={<EmptyStateActions />}
             />
           </Card>
         ) : (
         <Card padded={false}>
           <CardHeader
-            title="Portfolio Allocation"
+            title="Asignacion del portafolio"
             subtitle="Composición del portafolio por tipo de activo"
-            action={<Badge label={`${allocationData.length} asset types`} tone="info" />}
+            action={<Badge label={`${allocationData.length} tipos de activo`} tone="info" />}
           />
           <PortfolioAllocationChart data={allocationData} total={totalValue} />
         </Card>
         )}
 
         <Card padded={false}>
-          <CardHeader title="Positions" subtitle="Holdings, institutions and unrealized return" />
+          <CardHeader title="Posiciones" subtitle="Activos, instituciones y rendimiento no realizado" />
           <div className="divide-y divide-white/10">
             {investments.length === 0 ? (
               <EmptyState
                 icon={<LineChart aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-                title="No positions"
-                description="Holdings will be listed here with institution metadata and unrealized return."
+                title="No hay posiciones"
+                description="Tus activos apareceran aqui con institucion y rendimiento no realizado."
                 action={<EmptyStateActions />}
               />
             ) : investments.map((investment) => {
@@ -86,7 +86,7 @@ export default async function InvestmentsPage() {
                       <Badge label={investment.ticker ?? investment.type} tone="neutral" />
                     </div>
                     <p className="mt-1 text-sm text-text-secondary">
-                      {investment.institution} / {investment.quantity} units / Avg {formatCurrency(investment.purchasePrice, investment.currency)}
+                      {investment.institution} / {investment.quantity} unidades / Prom. {formatCurrency(investment.purchasePrice, investment.currency)}
                     </p>
                   </div>
                   <div className="text-left tabular-nums md:text-right">

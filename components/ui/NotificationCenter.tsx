@@ -58,7 +58,7 @@ export default function NotificationCenter({
   return (
     <div className="relative" ref={containerRef}>
       <button
-        aria-label={`Notifications${badgeCount > 0 ? ` - ${badgeCount} unread` : ""}`}
+        aria-label={`Notificaciones${badgeCount > 0 ? ` - ${badgeCount} sin leer` : ""}`}
         aria-expanded={open}
         aria-haspopup="dialog"
         className="relative grid h-9 w-9 place-items-center rounded-lg border border-white/10 bg-white/[0.03] text-text-secondary transition hover:border-white/20 hover:bg-white/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
@@ -81,21 +81,21 @@ export default function NotificationCenter({
 
       {open && (
         <div
-          aria-label="Notifications"
+          aria-label="Notificaciones"
           className={`absolute ${panelPosition} top-11 z-50 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-white/10 bg-surface-card shadow-2xl shadow-black/40`}
           role="dialog"
         >
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
             <div>
-              <p className="text-sm font-semibold text-text-primary">Notifications</p>
+              <p className="text-sm font-semibold text-text-primary">Notificaciones</p>
               <p className="text-xs text-text-muted">
                 {badgeCount === 0
-                  ? "All clear"
-                  : `${badgeCount} alert${badgeCount !== 1 ? "s" : ""}`}
+                  ? "Todo en orden"
+                  : `${badgeCount} alerta${badgeCount !== 1 ? "s" : ""}`}
               </p>
             </div>
             <button
-              aria-label="Close notifications"
+              aria-label="Cerrar notificaciones"
               className="grid h-7 w-7 place-items-center rounded-lg text-text-muted transition hover:bg-white/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
               onClick={() => setOpen(false)}
               type="button"
@@ -115,10 +115,10 @@ export default function NotificationCenter({
                   />
                 </div>
                 <p className="text-sm font-medium text-text-primary">
-                  You&apos;re all caught up
+                  Todo esta al dia
                 </p>
                 <p className="text-xs text-text-muted">
-                  No financial alerts at the moment.
+                  No hay alertas financieras por ahora.
                 </p>
               </div>
             ) : (
@@ -170,8 +170,8 @@ function severityText(severity: NotificationSeverity): string {
 }
 
 function severityLabel(severity: NotificationSeverity): string {
-  if (severity === "critical") return "Critical";
-  if (severity === "warning") return "Warning";
+  if (severity === "critical") return "Critica";
+  if (severity === "warning") return "Advertencia";
   return "Info";
 }
 

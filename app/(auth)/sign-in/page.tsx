@@ -1,9 +1,24 @@
 import { auth, signIn } from "@/auth";
-import { AnimateIn, Badge, ThemeToggle } from "@/components/ui";
-import { ArrowRight, BarChart3, ShieldCheck, TrendingUp } from "lucide-react";
+import { AnimateIn, ThemeToggle } from "@/components/ui";
+import { ArrowRight, BarChart3, LockKeyhole, ShieldCheck, TrendingUp } from "lucide-react";
+import Image from "next/image";
 import { redirect } from "next/navigation";
+import type { CSSProperties } from "react";
 
 export const metadata = { title: "Sign in | Financial Command Center" };
+
+const authTheme = {
+  "--color-primary": "#6ee7b7",
+  "--color-primary-container": "#10b981",
+  "--color-on-primary-container": "#022c22",
+  "--color-background": "#141313",
+  "--color-on-background": "#e5e2e1",
+  "--color-on-surface": "#e5e2e1",
+  "--color-on-surface-variant": "#b9d8cc",
+  "--color-surface-container": "#201f1f",
+  "--color-surface-container-low": "#1c1b1b",
+  "--color-outline-variant": "#24483d",
+} as CSSProperties;
 
 export default async function SignInPage({
   searchParams,
@@ -17,72 +32,92 @@ export default async function SignInPage({
   const destination = callbackUrl ?? "/dashboard";
 
   return (
-    <main className="relative flex min-h-screen w-full items-center justify-center overflow-hidden px-4 py-6 sm:px-6 lg:px-8">
+    <main
+      className="relative flex min-h-dvh w-full items-center justify-center overflow-hidden bg-background px-4 py-6 text-on-surface sm:px-6 sm:py-10 lg:px-8 lg:py-24"
+      style={authTheme}
+    >
+      <div aria-hidden="true" className="absolute inset-0 overflow-hidden">
+        <Image
+          alt=""
+          className="data-mountain data-mountain-hero h-full w-full object-cover object-center opacity-75"
+          fill
+          priority
+          sizes="100vw"
+          src="/landing/data-terrain.svg"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(20,19,19,0.58)_0%,rgba(20,19,19,0.78)_45%,rgba(20,19,19,0.96)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(20,19,19,0.96)_0%,rgba(20,19,19,0.42)_50%,rgba(20,19,19,0.96)_100%)]" />
+        <div className="absolute inset-0 grid-background opacity-25" />
+      </div>
+
       <div className="absolute right-4 top-4 z-20 sm:right-6 sm:top-6">
         <ThemeToggle />
       </div>
 
-      <div className="grid w-full max-w-6xl overflow-hidden rounded-2xl border border-white/10 bg-surface-card/88 shadow-2xl shadow-black/25 backdrop-blur xl:min-h-[min(760px,calc(100vh-48px))] xl:grid-cols-[1.05fr_0.95fr]">
-        <AnimateIn className="relative hidden min-h-full overflow-hidden border-r border-white/10 bg-surface-raised/70 p-8 xl:block">
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-brand-400 via-info-400 to-transparent" />
+      <div className="relative z-10 grid w-full max-w-6xl overflow-hidden rounded-2xl border border-primary/15 bg-background/74 shadow-2xl shadow-black/40 backdrop-blur-xl lg:min-h-[min(760px,calc(100dvh-96px))] lg:grid-cols-[1.05fr_0.95fr]">
+        <AnimateIn className="relative hidden overflow-hidden border-r border-primary/10 bg-surface-container-low/72 p-10 lg:block">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary to-transparent opacity-80" />
 
           <div className="flex h-full flex-col justify-between">
             <div>
-              <div className="mb-10 flex items-center gap-3">
-                <div className="grid h-12 w-12 place-items-center rounded-xl border border-brand-400/30 bg-brand-500/15 text-sm font-bold text-brand-300">
+              <div className="mb-8 flex items-center gap-3">
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-primary/35 bg-primary-container/15 text-sm font-bold text-primary">
                   FC
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-text-primary">Financial Command</p>
-                  <p className="text-xs text-text-secondary">Personal CFO workspace</p>
+                  <p className="text-sm font-semibold text-on-surface">Financial Command</p>
+                  <p className="text-xs text-on-surface-variant">Espacio CFO personal</p>
                 </div>
               </div>
 
-              <Badge label="Create your workspace" tone="info" size="md" />
-              <h1 className="mt-5 max-w-xl text-4xl font-semibold leading-tight tracking-normal text-text-primary">
-                Build a private command center for your finances.
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary-container/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_14px_rgba(110,231,183,0.8)]" />
+                Beta privada
+              </div>
+              <h1 className="mt-5 max-w-xl text-4xl font-semibold leading-tight tracking-normal text-on-surface sm:text-5xl lg:text-6xl">
+                Tu centro de mando financiero privado.
               </h1>
-              <p className="mt-4 max-w-lg text-sm leading-6 text-text-secondary">
-                Import statements, review cash flow, monitor credit exposure and
-                plan goals from a focused workspace built for fast decisions.
+              <p className="mt-5 max-w-lg text-sm leading-6 text-on-surface-variant sm:text-base">
+                Importa estados de cuenta, revisa flujo de caja, monitorea credito
+                y convierte tus movimientos en decisiones claras.
               </p>
             </div>
 
-            <div className="grid gap-4">
-              <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+            <div className="mt-10 grid gap-4 lg:mt-0">
+              <div className="premium-glow-hover rounded-xl border border-primary/15 bg-surface-container/68 p-4 shadow-2xl shadow-black/20">
                 <div className="mb-4 flex items-center justify-between">
-                  <p className="text-xs uppercase tracking-[0.2em] text-text-muted">Product preview</p>
-                  <TrendingUp aria-hidden="true" className="h-4 w-4 text-positive-400" strokeWidth={1.8} />
+                  <p className="text-xs uppercase tracking-[0.2em] text-on-surface-variant">Vista previa</p>
+                  <TrendingUp aria-hidden="true" className="h-4 w-4 text-primary" strokeWidth={1.8} />
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <p className="text-2xl font-semibold tabular-nums text-text-primary">$186k</p>
-                    <p className="mt-1 text-xs text-text-secondary">Net worth</p>
+                    <p className="text-2xl font-semibold tabular-nums text-on-surface">$186k</p>
+                    <p className="mt-1 text-xs text-on-surface-variant">Patrimonio</p>
                   </div>
                   <div>
-                    <p className="text-2xl font-semibold tabular-nums text-positive-400">+12%</p>
-                    <p className="mt-1 text-xs text-text-secondary">Cash flow</p>
+                    <p className="text-2xl font-semibold tabular-nums text-primary">+12%</p>
+                    <p className="mt-1 text-xs text-on-surface-variant">Flujo</p>
                   </div>
                   <div>
                     <p className="text-2xl font-semibold tabular-nums text-warning-400">31%</p>
-                    <p className="mt-1 text-xs text-text-secondary">Credit use</p>
+                    <p className="mt-1 text-xs text-on-surface-variant">Uso de credito</p>
                   </div>
                 </div>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-                  <BarChart3 aria-hidden="true" className="h-5 w-5 text-info-400" strokeWidth={1.8} />
-                  <p className="mt-4 text-sm font-medium text-text-primary">Analytics-first</p>
-                  <p className="mt-1 text-xs leading-5 text-text-secondary">
-                    Designed around metrics, trends and drill-downs.
+                <div className="rounded-xl border border-primary/12 bg-surface-container/52 p-4">
+                  <BarChart3 aria-hidden="true" className="h-5 w-5 text-primary" strokeWidth={1.8} />
+                  <p className="mt-4 text-sm font-medium text-on-surface">Analitica primero</p>
+                  <p className="mt-1 text-xs leading-5 text-on-surface-variant">
+                    Disenado para revisar metricas, tendencias y detalle.
                   </p>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-                  <ShieldCheck aria-hidden="true" className="h-5 w-5 text-brand-300" strokeWidth={1.8} />
-                  <p className="mt-4 text-sm font-medium text-text-primary">Private by default</p>
-                  <p className="mt-1 text-xs leading-5 text-text-secondary">
-                    Your data is yours alone — isolated to your account.
+                <div className="rounded-xl border border-primary/12 bg-surface-container/52 p-4">
+                  <ShieldCheck aria-hidden="true" className="h-5 w-5 text-primary" strokeWidth={1.8} />
+                  <p className="mt-4 text-sm font-medium text-on-surface">Privado por defecto</p>
+                  <p className="mt-1 text-xs leading-5 text-on-surface-variant">
+                    Tus datos son tuyos y quedan aislados en tu cuenta.
                   </p>
                 </div>
               </div>
@@ -90,30 +125,42 @@ export default async function SignInPage({
           </div>
         </AnimateIn>
 
-        <AnimateIn className="flex items-center justify-center px-5 py-10 sm:px-8 lg:px-12" delay={0.06}>
+        <AnimateIn className="flex items-center justify-center bg-background/54 px-5 py-10 sm:px-8 lg:px-12" delay={0.06}>
           <div className="w-full max-w-md">
-            <div className="mb-8 xl:hidden">
-              <div className="mb-5 flex items-center gap-3">
-                <div className="grid h-12 w-12 place-items-center rounded-xl border border-brand-400/30 bg-brand-500/15 text-sm font-bold text-brand-300">
+            <div className="mb-6 lg:hidden">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-primary/35 bg-primary-container/15 text-sm font-bold text-primary">
                   FC
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-text-primary">Financial Command</p>
-                  <p className="text-xs text-text-secondary">Personal CFO workspace</p>
+                  <p className="text-sm font-semibold text-on-surface">Financial Command</p>
+                  <p className="text-xs text-on-surface-variant">Espacio CFO personal</p>
                 </div>
               </div>
-              <Badge label="Create your workspace" tone="info" />
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary-container/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_14px_rgba(110,231,183,0.8)]" />
+                Beta privada
+              </div>
+              <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-normal text-on-surface">
+                Tu centro financiero privado.
+              </h1>
+              <p className="mt-3 text-sm leading-6 text-on-surface-variant">
+                Importa, revisa y decide con claridad desde un espacio seguro.
+              </p>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-surface-card p-5 shadow-2xl shadow-black/20 sm:p-7">
-              <p className="text-xs uppercase tracking-[0.22em] text-brand-300">
-                Sign in or sign up
+            <div className="rounded-2xl border border-primary/15 bg-surface-container-low/86 p-5 shadow-2xl shadow-black/30 backdrop-blur sm:p-7">
+              <div className="mb-7 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-primary/25 bg-primary-container/10 text-primary">
+                <LockKeyhole aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />
+              </div>
+              <p className="text-xs uppercase tracking-[0.22em] text-primary">
+                Inicia sesion o registrate
               </p>
-              <h2 className="mt-3 text-2xl font-semibold tracking-normal text-text-primary">
-                Create your workspace
+              <h2 className="mt-3 text-2xl font-semibold tracking-normal text-on-surface">
+                Crea tu espacio
               </h2>
-              <p className="mt-2 text-sm leading-6 text-text-secondary">
-                Continue with Google to set up your personal Financial Command Center. New here? Your account is created automatically.
+              <p className="mt-2 text-sm leading-6 text-on-surface-variant">
+                Continua con Google para crear tu Financial Command Center personal. Si es tu primera vez, tu cuenta se crea automaticamente.
               </p>
 
               <form
@@ -124,7 +171,7 @@ export default async function SignInPage({
                 className="mt-7"
               >
                 <button
-                  className="group flex w-full items-center justify-center gap-3 rounded-xl border border-white/15 bg-white/[0.06] px-4 py-3 text-sm font-medium text-text-primary transition hover:border-brand-400/30 hover:bg-brand-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
+                  className="group flex w-full items-center justify-center gap-3 rounded-xl border border-primary/35 bg-primary-container px-4 py-3 text-sm font-semibold text-on-primary-container shadow-[0_0_34px_rgba(16,185,129,0.18)] transition hover:bg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/55"
                   type="submit"
                 >
                   <svg aria-hidden="true" height="18" viewBox="0 0 24 24" width="18">
@@ -145,18 +192,18 @@ export default async function SignInPage({
                       fill="#EA4335"
                     />
                   </svg>
-                  Continue with Google
+                  Continuar con Google
                   <ArrowRight
                     aria-hidden="true"
-                    className="h-4 w-4 text-text-muted transition group-hover:translate-x-0.5 group-hover:text-brand-300"
+                    className="h-4 w-4 text-on-primary-container/70 transition group-hover:translate-x-0.5 group-hover:text-on-primary-container"
                     strokeWidth={1.8}
                   />
                 </button>
               </form>
 
-              <div className="mt-6 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
-                <p className="text-xs leading-5 text-text-muted">
-                  Authentication is handled securely through Google OAuth. We only use it to identify your workspace — we never see your password.
+              <div className="mt-6 rounded-xl border border-primary/12 bg-surface-container/60 px-4 py-3">
+                <p className="text-xs leading-5 text-on-surface-variant">
+                  La autenticacion se maneja de forma segura con Google OAuth. Solo la usamos para identificar tu espacio; nunca vemos tu contrasena.
                 </p>
               </div>
             </div>

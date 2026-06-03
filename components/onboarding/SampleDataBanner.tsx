@@ -9,8 +9,18 @@ export default function SampleDataBanner() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const helperText = error
+    ?? (confirming
+      ? "Esto borrara datos de ejemplo y cualquier dato cargado en este espacio."
+      : "Borra el set demo cuando quieras empezar con tu propia informacion.");
 
   function handleClear() {
+    if (!confirming) {
+      setConfirming(true);
+      return;
+    }
+
     setError(null);
     startTransition(async () => {
       const res = await clearAllData();
@@ -18,6 +28,7 @@ export default function SampleDataBanner() {
         setError(res.error);
         return;
       }
+      setConfirming(false);
       router.refresh();
     });
   }
@@ -35,25 +46,40 @@ export default function SampleDataBanner() {
           <p className="text-sm font-semibold text-text-primary">
             Estas explorando con datos de ejemplo
           </p>
-          <p className={`text-xs leading-5 ${error ? "text-negative-400" : "text-text-secondary"}`}>
-            {error ?? "Borra el set demo cuando quieras empezar con tu propia informacion."}
+          <p
+            aria-live="polite"
+            className={`text-xs leading-5 ${error || confirming ? "text-warning-400" : "text-text-secondary"}`}
+          >
+            {helperText}
           </p>
         </div>
       </div>
 
-      <button
-        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-3 py-2 text-sm font-medium text-text-primary transition hover:border-negative-400/40 hover:bg-negative-900 hover:text-negative-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-negative-400/50 disabled:cursor-wait disabled:opacity-70"
-        disabled={isPending}
-        onClick={handleClear}
-        type="button"
-      >
-        {isPending ? (
-          <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" strokeWidth={1.8} />
-        ) : (
-          <Trash2 aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
+      <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+        {confirming && (
+          <button
+            className="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm font-medium text-text-secondary transition hover:bg-white/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
+            disabled={isPending}
+            onClick={() => setConfirming(false)}
+            type="button"
+          >
+            Cancelar
+          </button>
         )}
-        Borrar ejemplo
-      </button>
+        <button
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-3 py-2 text-sm font-medium text-text-primary transition hover:border-negative-400/40 hover:bg-negative-900 hover:text-negative-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-negative-400/50 disabled:cursor-wait disabled:opacity-70"
+          disabled={isPending}
+          onClick={handleClear}
+          type="button"
+        >
+          {isPending ? (
+            <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" strokeWidth={1.8} />
+          ) : (
+            <Trash2 aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
+          )}
+          {confirming ? "Si, borrar todo" : "Borrar ejemplo"}
+        </button>
+      </div>
     </div>
   );
 }

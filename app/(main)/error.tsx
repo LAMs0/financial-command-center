@@ -32,24 +32,24 @@ export default function Error({ error, reset }: ErrorProps) {
       </div>
 
       <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
-        Runtime Error
+        Error de la app
       </p>
       <h2 className="mt-3 text-xl font-semibold text-text-primary">
-        Something went wrong
+        Algo salio mal
       </h2>
       <p className="mt-2 max-w-sm text-sm text-text-secondary">
-        {error.message || "An unexpected error occurred loading this section."}
+        {error.message || "No pudimos cargar esta seccion. Puedes reintentar o volver al dashboard."}
       </p>
 
       <div className="mt-8 flex gap-3">
         <Button onClick={reset}>
-          Try again
+          Reintentar
         </Button>
         <Link
           href="/dashboard"
           className="rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-text-secondary transition hover:bg-white/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
         >
-          Go to Dashboard
+          Volver al dashboard
         </Link>
       </div>
 

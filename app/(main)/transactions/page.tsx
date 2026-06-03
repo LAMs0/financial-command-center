@@ -19,7 +19,7 @@ import { formatCurrency } from "@/lib/formatters";
 import { Badge, ExportMenu, SectionHeader, StatCard } from "@/components/ui";
 import TransactionsList from "@/components/dashboard/TransactionsList";
 
-export const metadata = { title: "Transactions" };
+export const metadata = { title: "Transacciones" };
 
 // ── Página (Server Component async) ──────────────────────────────────
 export default async function TransactionsPage() {
@@ -54,12 +54,12 @@ export default async function TransactionsPage() {
   return (
     <section className="flex flex-1 flex-col">
       <SectionHeader
-        eyebrow="Activity"
+        eyebrow="Actividad"
         eyebrowClassName="bg-gradient-to-r from-info-400 to-warning-400 bg-clip-text text-transparent"
-        title="Transactions"
+        title="Transacciones"
         actions={
           <div className="flex items-center gap-3">
-            <Badge label={`${transactions.length} records`} tone="info" size="md" />
+            <Badge label={`${transactions.length} registros`} tone="info" size="md" />
             <ExportMenu datasets={["transactions"]} showReport={false} />
           </div>
         }
@@ -69,21 +69,21 @@ export default async function TransactionsPage() {
         {/* Resumen calculado en servidor */}
         <section className="grid gap-4 md:grid-cols-3">
           <StatCard
-            label="Income"
+            label="Ingresos"
             value={formatCurrency(income)}
-            detail="This mock period"
+            detail="Periodo actual"
             tone="positive"
           />
           <StatCard
-            label="Expenses"
+            label="Gastos"
             value={formatCurrency(expenses)}
-            detail="Excluding transfers"
+            detail="Sin transferencias"
             tone="negative"
           />
           <StatCard
-            label="Transfers"
+            label="Transferencias"
             value={String(transferCount)}
-            detail="Internal account movement"
+            detail="Movimientos internos"
             tone="info"
           />
         </section>

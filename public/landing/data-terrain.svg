@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 1200" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="centerFade" cx="50%" cy="42%" r="62%">
+      <stop offset="0%" stop-color="#111111"/>
+      <stop offset="48%" stop-color="#090909"/>
+      <stop offset="100%" stop-color="#020202"/>
+    </radialGradient>
+    <linearGradient id="lineWhite" x1="0%" x2="100%" y1="0%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.12"/>
+      <stop offset="38%" stop-color="#ffffff" stop-opacity="0.42"/>
+      <stop offset="62%" stop-color="#ffffff" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.1"/>
+    </linearGradient>
+    <linearGradient id="lineRed" x1="0%" x2="100%" y1="0%" y2="0%">
+      <stop offset="0%" stop-color="#064e3b" stop-opacity="0"/>
+      <stop offset="48%" stop-color="#10b981" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#064e3b" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="softGlow" x="-20%" y="-30%" width="140%" height="170%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="fineGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <pattern id="microDots" width="42" height="42" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#ffffff" opacity="0.11"/>
+    </pattern>
+  </defs>
+
+  <rect width="2400" height="1200" fill="url(#centerFade)"/>
+  <rect width="2400" height="1200" fill="url(#microDots)" opacity="0.35"/>
+
+  <g opacity="0.5">
+    <path d="M0 790 C220 710 310 830 505 740 C665 667 835 742 1000 665 C1185 578 1340 650 1515 578 C1745 482 1880 600 2070 520 C2220 456 2310 505 2400 470" fill="none" stroke="#ffffff" stroke-opacity="0.14" stroke-width="1"/>
+    <path d="M0 850 C250 740 405 900 612 760 C790 640 930 735 1110 625 C1260 532 1450 620 1604 510 C1815 360 1945 560 2110 426 C2255 310 2350 375 2400 340" fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="1"/>
+    <path d="M0 930 C200 785 375 1010 590 830 C780 670 930 800 1115 680 C1300 560 1470 705 1655 565 C1830 435 1995 610 2145 480 C2282 360 2365 405 2400 390" fill="none" stroke="#ffffff" stroke-opacity="0.16" stroke-width="1"/>
+  </g>
+
+  <g filter="url(#softGlow)">
+    <animateTransform attributeName="transform" dur="18s" repeatCount="indefinite" type="translate" values="-22 10; 18 -12; -22 10" calcMode="spline" keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"/>
+
+    <g fill="none" stroke="url(#lineWhite)" stroke-linecap="round">
+      <path d="M-40 890 C95 790 206 810 350 720 C510 620 690 700 825 555 C930 442 1035 555 1125 390 C1195 260 1265 422 1345 270 C1432 104 1535 336 1630 230 C1760 86 1865 315 1990 250 C2180 150 2280 300 2440 235" stroke-width="3.5" opacity="0.55"/>
+      <path d="M-40 930 C170 805 280 890 455 760 C640 625 810 760 980 610 C1125 482 1230 610 1360 442 C1478 288 1605 468 1740 344 C1890 210 2050 416 2210 310 C2315 240 2375 260 2440 220" stroke-width="2.4" opacity="0.44"/>
+      <path d="M-40 980 C150 880 300 955 472 835 C665 700 805 850 1005 710 C1190 580 1280 720 1460 560 C1615 424 1740 610 1905 454 C2095 276 2250 450 2440 348" stroke-width="2.1" opacity="0.4"/>
+      <path d="M-40 1040 C185 900 375 1030 585 880 C760 755 940 910 1110 774 C1300 622 1455 800 1630 650 C1820 486 2025 720 2180 560 C2290 448 2370 500 2440 472" stroke-width="1.8" opacity="0.36"/>
+    </g>
+
+    <g fill="none" stroke="#ffffff" stroke-opacity="0.16" stroke-width="1">
+      <path d="M20 1030 C210 920 355 995 520 850 C695 698 870 780 1010 612 C1125 475 1220 560 1305 390 C1388 224 1512 430 1608 292 C1740 104 1898 390 2050 258 C2210 118 2320 260 2380 220"/>
+      <path d="M100 1085 C320 940 500 1020 680 860 C835 722 965 846 1138 695 C1328 530 1460 690 1638 540 C1810 396 1944 568 2116 430 C2255 318 2345 360 2410 332"/>
+      <path d="M-20 810 C160 690 332 798 514 672 C662 570 814 632 954 500 C1088 374 1164 458 1270 320 C1398 152 1518 346 1648 232 C1796 102 1904 276 2070 210 C2224 148 2334 200 2420 166"/>
+    </g>
+  </g>
+
+  <g opacity="0.35" filter="url(#fineGlow)">
+    <animateTransform attributeName="transform" dur="22s" repeatCount="indefinite" type="translate" values="16 -6; -20 14; 16 -6" calcMode="spline" keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"/>
+    <g fill="none" stroke="#ffffff" stroke-opacity="0.18" stroke-width="0.8">
+      <path d="M0 965 L280 795 L560 905 L840 702 L1120 812 L1400 600 L1680 748 L1960 520 L2240 650 L2400 560"/>
+      <path d="M0 900 L280 835 L560 752 L840 790 L1120 585 L1400 700 L1680 468 L1960 610 L2240 386 L2400 430"/>
+      <path d="M80 720 L330 890 L620 650 L900 790 L1180 450 L1450 630 L1720 330 L2010 560 L2280 282"/>
+      <path d="M190 1045 L420 760 L720 1000 L1000 660 L1280 900 L1540 540 L1835 810 L2140 470 L2400 710"/>
+    </g>
+  </g>
+
+  <g opacity="0.75">
+    <animateTransform attributeName="transform" dur="12s" repeatCount="indefinite" type="translate" values="0 16; 0 -10; 0 16" calcMode="spline" keySplines="0.45 0 0.55 1; 0.45 0 0.55 1"/>
+    <path d="M360 768 V580 M520 728 V500 M760 690 V455 M1110 602 V345 M1365 560 V300 M1660 502 V360 M1860 590 V420 M2140 450 V270" stroke="url(#lineRed)" stroke-width="2"/>
+    <path d="M430 802 V650 M1010 642 V480 M1230 708 V530 M1510 614 V410 M2025 540 V350 M2280 390 V230" stroke="#10b981" stroke-opacity="0.22" stroke-width="1"/>
+  </g>
+
+  <g fill="#ffffff" opacity="0.9" filter="url(#fineGlow)">
+    <animate attributeName="opacity" dur="7s" repeatCount="indefinite" values="0.45;0.95;0.5;0.75;0.45"/>
+    <circle cx="115" cy="910" r="2"/>
+    <circle cx="220" cy="840" r="2.3"/>
+    <circle cx="360" cy="730" r="2"/>
+    <circle cx="540" cy="780" r="2.2"/>
+    <circle cx="730" cy="620" r="2"/>
+    <circle cx="900" cy="690" r="2.3"/>
+    <circle cx="1085" cy="492" r="2.4"/>
+    <circle cx="1260" cy="388" r="2.2"/>
+    <circle cx="1430" cy="532" r="2"/>
+    <circle cx="1610" cy="360" r="2.3"/>
+    <circle cx="1790" cy="468" r="2"/>
+    <circle cx="1980" cy="350" r="2.4"/>
+    <circle cx="2190" cy="420" r="2.1"/>
+    <circle cx="2330" cy="315" r="2.3"/>
+  </g>
+
+  <g fill="#10b981" opacity="0.7">
+    <animate attributeName="opacity" dur="5.5s" repeatCount="indefinite" values="0.25;0.75;0.35;0.7;0.25"/>
+    <circle cx="430" cy="832" r="2.3"/>
+    <circle cx="660" cy="710" r="2"/>
+    <circle cx="1010" cy="655" r="2.5"/>
+    <circle cx="1345" cy="586" r="2.4"/>
+    <circle cx="1580" cy="620" r="2.1"/>
+    <circle cx="1880" cy="570" r="2"/>
+    <circle cx="2160" cy="510" r="2.6"/>
+  </g>
+
+  <rect width="2400" height="1200" fill="url(#lineRed)" opacity="0.08"/>
+  <rect width="2400" height="1200" fill="url(#centerFade)" opacity="0.22"/>
+</svg>
