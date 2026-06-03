@@ -61,7 +61,7 @@ export default function Sidebar({ history, user, signOutAction, notifications }:
             FC
           </div>
           <div className="min-w-0">
-            <p className="font-display text-sm font-bold uppercase tracking-wide">Financial Command</p>
+            <p className="truncate font-display text-sm font-bold tracking-tight">Financial Command</p>
             <p className="text-xs text-text-secondary">Espacio CFO personal</p>
           </div>
         </div>
@@ -184,7 +184,7 @@ export function MobileNav({ user, signOutAction, notifications }: MobileNavProps
             FC
           </div>
           <div className="min-w-0">
-            <p className="truncate font-display text-sm font-bold uppercase tracking-wide text-text-primary">Financial Command</p>
+            <p className="truncate font-display text-sm font-bold tracking-tight text-text-primary">Financial Command</p>
             <p className="truncate text-xs text-text-secondary">Espacio CFO personal</p>
           </div>
         </div>

@@ -237,7 +237,7 @@ body {
   height: 60vh;
   object-fit: cover;
   object-position: center bottom;
-  opacity: 0.16;
+  opacity: 0.22;
   filter: grayscale(1);
   transform-origin: center bottom;
   animation: data-mountain-drift 38s ease-in-out infinite alternate;

@@ -2,12 +2,26 @@ import { getAccounts } from "@/lib/data";
 import { formatAccountType, formatCurrency, formatDate } from "@/lib/formatters";
 import { AnimateIn, Badge, Card, CardHeader, EmptyState, SectionHeader, StatCard } from "@/components/ui";
 import EmptyStateActions from "@/components/onboarding/EmptyStateActions";
+import ConnectBank from "@/components/banking/ConnectBank";
+import { getBankProvider } from "@/lib/banking";
 import { Landmark } from "lucide-react";
 
 export const metadata = { title: "Cuentas" };
 
 export default async function AccountsPage() {
   const accounts = await getAccounts();
+
+  // Conectividad bancaria: instituciones disponibles (del proveedor activo) y
+  // las ya conectadas, derivadas agrupando las cuentas por institución.
+  const provider = getBankProvider();
+  const institutions = await provider.listInstitutions().catch(() => []);
+  const connectedMap = new Map<string, { name: string; color: string; accountCount: number }>();
+  for (const acc of accounts) {
+    const entry = connectedMap.get(acc.institution);
+    if (entry) entry.accountCount += 1;
+    else connectedMap.set(acc.institution, { name: acc.institution, color: acc.color, accountCount: 1 });
+  }
+  const connected = [...connectedMap.values()];
   const total = accounts.reduce((sum, account) => sum + account.balance, 0);
   const liquid = accounts
     .filter((account) => account.type !== "investment")
@@ -35,7 +49,15 @@ export default async function AccountsPage() {
           />
         </AnimateIn>
 
-        <AnimateIn delay={0.05}>
+        <AnimateIn delay={0.04}>
+          <ConnectBank
+            institutions={institutions}
+            connected={connected}
+            providerId={provider.id}
+          />
+        </AnimateIn>
+
+        <AnimateIn delay={0.08}>
         <Card padded={false}>
           <CardHeader
             title="Registro de cuentas"
