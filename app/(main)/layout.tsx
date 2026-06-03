@@ -52,7 +52,18 @@ export default async function MainLayout({
 
   return (
     <MonthProvider history={monthlyHistory} defaultMonth={defaultMonth}>
-      <div className="flex min-h-dvh overflow-x-hidden bg-[image:var(--app-shell-bg)] text-text-primary">
+      <div className="relative flex min-h-dvh overflow-x-hidden bg-[image:var(--app-shell-bg)] text-text-primary">
+        {/* Texturas ambiente — misma temática del landing (command center):
+            terreno de datos animado + cuadrícula de puntos + grano sutil. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          aria-hidden="true"
+          alt=""
+          src="/landing/data-terrain.svg"
+          className="shell-terrain pointer-events-none -z-10"
+        />
+        <div aria-hidden="true" className="grid-background pointer-events-none fixed inset-0 -z-10 opacity-60" />
+        <div aria-hidden="true" className="noise-overlay" />
         <Sidebar history={monthlyHistory} user={user} signOutAction={handleSignOut} notifications={notifications} />
         {/* flex-1 hace que el contenido ocupe todo el ancho restante */}
         <div className="flex min-w-0 flex-1 flex-col xl:max-w-[calc(100vw-18rem)]">

@@ -17,13 +17,22 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rate-limit";
+import { sanitizeImportPayload } from "@/lib/import/validate";
 import type { ImportPayload } from "@/lib/import/types";
 
-export async function saveImportedStatement(payload: ImportPayload): Promise<{ error?: string }> {
+export async function saveImportedStatement(rawPayload: ImportPayload): Promise<{ error?: string }> {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not authenticated" };
 
   const userId = session.user.id;
+
+  // Rate limit: la escritura del extracto hace varias inserciones en la DB.
+  const { ok } = rateLimit(`import-save:${userId}`, 20, 60_000);
+  if (!ok) return { error: "Demasiadas solicitudes. Espera un momento e intenta de nuevo." };
+
+  // NUNCA confiar en el payload del cliente: sanear y acotar antes de escribir.
+  const payload = sanitizeImportPayload(rawPayload);
 
   try {
     await prisma.$transaction(async (tx) => {

@@ -17,6 +17,7 @@
 
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { rateLimit } from "@/lib/rate-limit";
 import {
   getAccounts,
   getBudgets,
@@ -30,8 +31,17 @@ import { FinancialReport } from "@/lib/export/report";
 export async function GET() {
   // Verificar sesión
   const session = await auth();
-  if (!session?.user) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Rate limit: renderizar el PDF (renderToBuffer) es costoso en CPU.
+  const { ok, retryAfterMs } = rateLimit(`export-pdf:${session.user.id}`, 10, 60_000);
+  if (!ok) {
+    return NextResponse.json(
+      { error: "Demasiadas exportaciones. Intenta de nuevo en un momento." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(retryAfterMs / 1000)) } }
+    );
   }
 
   // Cargar todos los datos en paralelo

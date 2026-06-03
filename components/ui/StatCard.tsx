@@ -74,8 +74,8 @@ export default function StatCard({
           className={`mb-5 h-1 rounded-full bg-gradient-to-r ${toneBarClass[tone]}`}
         />
       )}
-      <p className="text-sm text-text-secondary">{label}</p>
-      <p className="mt-3 text-2xl font-semibold tracking-normal text-text-primary tabular-nums">
+      <p className="font-mono text-xs uppercase tracking-[0.16em] text-text-muted">{label}</p>
+      <p className="mt-3 font-display text-2xl font-bold tracking-tight text-text-primary tabular-nums">
         {value}
       </p>
       {detail && (

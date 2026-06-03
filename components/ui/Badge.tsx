@@ -39,7 +39,7 @@ export default function Badge({
     <span
       aria-label={ariaLabel}
       className={[
-        "inline-flex items-center rounded-md font-medium",
+        "inline-flex items-center rounded-md font-mono font-semibold uppercase tracking-wide",
         toneClasses[tone],
         sizeClasses[size],
       ].join(" ")}

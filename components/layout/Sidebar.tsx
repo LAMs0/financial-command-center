@@ -57,11 +57,11 @@ export default function Sidebar({ history, user, signOutAction, notifications }:
     <aside className="hidden w-72 shrink-0 border-r border-white/10 bg-surface-base/80 px-5 py-6 backdrop-blur xl:block">
       <div className="mb-9 flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-lg border border-brand-400/30 bg-brand-500/15 text-sm font-bold text-brand-300">
+          <div className="grid h-11 w-11 place-items-center rounded-lg border border-brand-400/30 bg-brand-500/15 font-display text-sm font-bold text-brand-300">
             FC
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold tracking-wide">Financial Command</p>
+            <p className="font-display text-sm font-bold uppercase tracking-wide">Financial Command</p>
             <p className="text-xs text-text-secondary">Espacio CFO personal</p>
           </div>
         </div>
@@ -108,10 +108,10 @@ export default function Sidebar({ history, user, signOutAction, notifications }:
       </nav>
 
       <Card className="mt-10" padded>
-        <p className="text-xs uppercase tracking-[0.22em] text-text-muted">
+        <p className="font-mono text-xs uppercase tracking-[0.22em] text-text-muted">
           Pulso mensual
         </p>
-        <p className="mt-3 text-2xl font-semibold tabular-nums">
+        <p className="mt-3 font-display text-2xl font-bold tabular-nums">
           {formatCompact(netCashFlow)}
         </p>
         <p className="mt-1 text-sm text-text-secondary">
@@ -180,11 +180,11 @@ export function MobileNav({ user, signOutAction, notifications }: MobileNavProps
     <div className="border-b border-white/10 bg-surface-base/90 px-4 py-3 backdrop-blur xl:hidden">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="grid h-9 w-9 place-items-center rounded-lg border border-brand-400/30 bg-brand-500/15 text-xs font-bold text-brand-300">
+          <div className="grid h-9 w-9 place-items-center rounded-lg border border-brand-400/30 bg-brand-500/15 font-display text-xs font-bold text-brand-300">
             FC
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-text-primary">Financial Command</p>
+            <p className="truncate font-display text-sm font-bold uppercase tracking-wide text-text-primary">Financial Command</p>
             <p className="truncate text-xs text-text-secondary">Espacio CFO personal</p>
           </div>
         </div>

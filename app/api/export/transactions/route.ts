@@ -15,6 +15,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { rateLimit } from "@/lib/rate-limit";
 import { getAccounts, getBudgets, getCards, getGoals, getTransactions } from "@/lib/data";
 import {
   accountsToCSV,
@@ -29,8 +30,16 @@ type Dataset = "transactions" | "accounts" | "cards" | "goals" | "budgets";
 export async function GET(req: NextRequest) {
   // Verificar sesión
   const session = await auth();
-  if (!session?.user) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { ok, retryAfterMs } = rateLimit(`export-csv:${session.user.id}`, 30, 60_000);
+  if (!ok) {
+    return NextResponse.json(
+      { error: "Demasiadas exportaciones. Intenta de nuevo en un momento." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(retryAfterMs / 1000)) } }
+    );
   }
 
   const dataset = (req.nextUrl.searchParams.get("dataset") ?? "transactions") as Dataset;

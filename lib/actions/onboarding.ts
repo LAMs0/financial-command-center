@@ -17,6 +17,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rate-limit";
 import { seedUserData, clearUserData } from "@/lib/sample-data";
 
 // Rutas con datos derivados que deben refrescarse tras mutar la DB.
@@ -30,6 +31,9 @@ export async function loadSampleData(): Promise<{ error?: string }> {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not authenticated" };
   const userId = session.user.id;
+
+  const { ok } = rateLimit(`onboarding:${userId}`, 10, 60_000);
+  if (!ok) return { error: "Demasiadas solicitudes. Espera un momento." };
 
   try {
     await seedUserData(prisma, userId);
@@ -47,6 +51,9 @@ export async function clearAllData(): Promise<{ error?: string }> {
   const session = await auth();
   if (!session?.user?.id) return { error: "Not authenticated" };
   const userId = session.user.id;
+
+  const { ok } = rateLimit(`onboarding:${userId}`, 10, 60_000);
+  if (!ok) return { error: "Demasiadas solicitudes. Espera un momento." };
 
   try {
     await clearUserData(prisma, userId);

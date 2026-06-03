@@ -19,16 +19,22 @@
   /* ── Tipografía ─────────────────────────────────────────── */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: var(--font-roboto-mono), "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  /* Fuente "display" de la temática Stitch (landing). Se carga vía el @import
+     de Google Fonts arriba, así que está disponible en toda la app.
+     Genera la utilidad `font-display` para headings con carácter de command center. */
+  --font-display: "Space Grotesk", var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
   /* ── Paleta de superficies (backgrounds y cards) ────────── */
-  /* El fondo más oscuro de la app — casi negro con tinte azul */
-  --color-surface-base:   #090b11;
-  /* Fondo de cards principales */
-  --color-surface-card:   #111318;
-  /* Fondo de cards elevadas / hover states */
-  --color-surface-raised: #181c24;
+  /* Alineada con la temática "Stitch" del landing: near-black neutral
+     (sin tinte azul) con calidez sutil, igual que la landing/sign-in. */
+  /* El fondo más oscuro de la app — casi negro */
+  --color-surface-base:   #0a0a0b;
+  /* Fondo de cards principales (= --color-background del landing) */
+  --color-surface-card:   #141313;
+  /* Fondo de cards elevadas / hover states (= surface-container-low) */
+  --color-surface-raised: #1c1b1b;
   /* Bordes sutiles entre elementos */
-  --color-surface-border: #1f2433;
+  --color-surface-border: #2a2a2a;
 
   /* ── Brand / Accent: Emerald financiero ─────────────────── */
   --color-brand-300: #6ee7b7;
@@ -38,9 +44,10 @@
   --color-brand-900: #064e3b;
 
   /* ── Texto ──────────────────────────────────────────────── */
-  --color-text-primary:   #f1f5f9;
-  --color-text-secondary: #94a3b8;
-  --color-text-muted:     #8491a6;
+  /* Grises cálidos para acompañar el near-black neutral del landing */
+  --color-text-primary:   #ece9e7;
+  --color-text-secondary: #a8a29e;
+  --color-text-muted:     #78716c;
 
   /* ── Semántica financiera ───────────────────────────────── */
   /* Verde: ingresos, ganancias, positivo */
@@ -65,8 +72,11 @@
 }
 
 :root {
-  --app-shell-bg: radial-gradient(circle at top left, rgba(16, 185, 129, 0.14), transparent 34%),
-    linear-gradient(135deg, #090b11 0%, #0c111b 48%, #111018 100%);
+  /* Shell de la app con la atmósfera del landing: radiales emerald sobre
+     near-black neutral (sin el degradado azul anterior). */
+  --app-shell-bg: radial-gradient(circle at top left, rgba(16, 185, 129, 0.12), transparent 38%),
+    radial-gradient(circle at 82% -10%, rgba(16, 185, 129, 0.07), transparent 42%),
+    linear-gradient(160deg, #0a0a0b 0%, #0e0e0e 55%, #121111 100%);
 }
 
 html:not(.dark) {
@@ -217,6 +227,27 @@ body {
   text-shadow: 0 0 12px rgba(16,185,129,0.58);
 }
 
+/* Fondo animado del shell de la app — versión sutil del "data mountain" del
+   landing: el terreno de datos deriva lentamente anclado al borde inferior,
+   con máscara hacia arriba para fundirse con el near-black sin estorbar. */
+.shell-terrain {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  height: 60vh;
+  object-fit: cover;
+  object-position: center bottom;
+  opacity: 0.16;
+  filter: grayscale(1);
+  transform-origin: center bottom;
+  animation: data-mountain-drift 38s ease-in-out infinite alternate;
+  mask-image: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 45%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 45%, transparent 100%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .shell-terrain { animation: none; }
+}
+
 /* Stitch font families */
 .font-display-lg,
 .font-headline-lg,
@@ -254,212 +285,6 @@ body {
   font-feature-settings: 'liga';
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
-}
-
-/* ═══════════════════════════════════════════════════════════
-   OBSIDIAN COMMAND — Landing Page Design System
-   ═══════════════════════════════════════════════════════════ */
-
-.obsidian-root {
-  --oc-base:           #050509;
-  --oc-primary:        #8B5CF6;
-  --oc-primary-glow:   rgba(139, 92, 246, 0.35);
-  --oc-secondary:      #38BDF8;
-  --oc-secondary-glow: rgba(56, 189, 248, 0.28);
-  --oc-tertiary:       #22C55E;
-  --oc-glass:          rgba(14, 17, 26, 0.80);
-  --oc-border:         rgba(255, 255, 255, 0.08);
-  --oc-border-hover:   rgba(255, 255, 255, 0.20);
-  --oc-text:           #E4E1E9;
-  --oc-text-dim:       #9B93A8;
-  --oc-text-muted:     #635B70;
-  background-color: var(--oc-base);
-  color: var(--oc-text);
-  overflow-x: hidden;
-  font-feature-settings: normal;
-  font-variant-numeric: normal;
-}
-
-/* Command Grid background */
-.oc-grid-bg::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-  background-size: 40px 40px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Glass card */
-.oc-glass {
-  background: var(--oc-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--oc-border);
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
-}
-.oc-glass:hover {
-  border-color: var(--oc-border-hover);
-}
-
-/* Ambient orbs */
-.oc-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
-}
-.oc-orb-violet { background: radial-gradient(circle, rgba(139,92,246,0.22) 0%, transparent 70%); }
-.oc-orb-blue   { background: radial-gradient(circle, rgba(56,189,248,0.18) 0%, transparent 70%); }
-.oc-orb-green  { background: radial-gradient(circle, rgba(34,197,94,0.14) 0%, transparent 70%); }
-
-/* Typography */
-.oc-display {
-  font-family: 'Space Grotesk', var(--font-sans), sans-serif;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1.05;
-}
-.oc-headline {
-  font-family: 'Space Grotesk', var(--font-sans), sans-serif;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-.oc-label {
-  font-family: 'Roboto Mono', var(--font-mono), monospace;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--oc-secondary);
-}
-
-/* Navigation links */
-.oc-nav-link {
-  font-size: 13px;
-  font-weight: 500;
-  color: rgba(228,225,233,0.55);
-  text-decoration: none;
-  letter-spacing: 0.02em;
-  transition: color 0.2s;
-}
-.oc-nav-link:hover { color: #E4E1E9; }
-
-/* Buttons */
-.oc-btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--oc-primary);
-  color: #fff;
-  font-weight: 600;
-  font-size: 14px;
-  padding: 12px 28px;
-  border-radius: 6px;
-  border: 1px solid rgba(139,92,246,0.5);
-  box-shadow: 0 0 20px var(--oc-primary-glow), 0 0 60px rgba(139,92,246,0.1);
-  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
-  text-decoration: none;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.oc-btn-primary:hover {
-  background: #7C3AED;
-  box-shadow: 0 0 32px rgba(139,92,246,0.55), 0 0 80px rgba(139,92,246,0.18);
-  transform: translateY(-1px);
-}
-
-.oc-btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: transparent;
-  color: rgba(228,225,233,0.65);
-  font-weight: 500;
-  font-size: 14px;
-  padding: 12px 28px;
-  border-radius: 6px;
-  border: 1px solid var(--oc-border);
-  transition: border-color 0.2s, color 0.2s, box-shadow 0.2s;
-  text-decoration: none;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.oc-btn-ghost:hover {
-  border-color: var(--oc-secondary);
-  color: var(--oc-secondary);
-  box-shadow: 0 0 16px rgba(56,189,248,0.12);
-}
-
-/* Status LEDs */
-@keyframes oc-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.35; }
-}
-.oc-led {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  animation: oc-pulse 2.2s ease-in-out infinite;
-}
-.oc-led-green  { background: #22C55E; box-shadow: 0 0 8px rgba(34,197,94,0.8); }
-.oc-led-blue   { background: #38BDF8; box-shadow: 0 0 8px rgba(56,189,248,0.8); }
-.oc-led-violet { background: #8B5CF6; box-shadow: 0 0 8px rgba(139,92,246,0.8); }
-
-/* Section module divider */
-.oc-divider {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  font-family: 'Roboto Mono', var(--font-mono), monospace;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(56,189,248,0.45);
-}
-.oc-divider::before,
-.oc-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: rgba(255,255,255,0.05);
-}
-
-/* Ticker marquee */
-@keyframes oc-ticker {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-.oc-ticker-track {
-  display: flex;
-  animation: oc-ticker 45s linear infinite;
-  width: max-content;
-}
-
-/* Tool card hover */
-.oc-tool-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  border-radius: 12px;
-  padding: 20px 24px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-.oc-tool-card:hover { transform: translateY(-2px); }
-
-/* Solution accent bar */
-.oc-solution-bar {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
 }
 
 /* Scrollbar premium — delgada y acorde al tema oscuro */
