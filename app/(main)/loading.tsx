@@ -1,4 +1,6 @@
 import { Skeleton, SkeletonCard, SkeletonListRow } from "@/components/ui";
+import { tx } from "@/lib/i18n/config";
+import { getLocale } from "@/lib/i18n/server";
 
 /*
   loading.tsx — Skeleton de carga compartido para todo el route group (main).
@@ -16,9 +18,10 @@ import { Skeleton, SkeletonCard, SkeletonListRow } from "@/components/ui";
   (skeleton screens), lo que se siente más rápido que un spinner.
 */
 
-export default function Loading() {
+export default async function Loading() {
+  const locale = await getLocale();
   return (
-    <section aria-busy="true" aria-label="Loading page" className="flex flex-1 flex-col">
+    <section aria-busy="true" aria-label={tx(locale, "Cargando pagina")} className="flex flex-1 flex-col">
       {/* Skeleton del header sticky */}
       <div className="sticky top-0 z-20 border-b border-white/10 bg-surface-base/80 px-8 py-4 backdrop-blur">
         <Skeleton className="h-3 w-24 rounded-full" />

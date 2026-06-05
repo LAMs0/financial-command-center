@@ -57,7 +57,17 @@ function intDay(v: unknown, fallback: number): number {
 
 function isISODate(v: unknown): v is string {
   if (typeof v !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
-  return !Number.isNaN(Date.parse(v));
+  // Date.parse acepta fechas imposibles "rodándolas" (ej: "2026-02-30" → 2 mar).
+  // Verificamos round-trip: los componentes UTC parseados deben coincidir con
+  // los del string para rechazar 30-feb, 31-abr, etc.
+  const [y, m, d] = v.split("-").map(Number);
+  const parsed = new Date(v);
+  if (Number.isNaN(parsed.getTime())) return false;
+  return (
+    parsed.getUTCFullYear() === y &&
+    parsed.getUTCMonth() + 1 === m &&
+    parsed.getUTCDate() === d
+  );
 }
 
 function lastFour(v: unknown): string {

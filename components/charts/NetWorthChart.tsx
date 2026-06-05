@@ -46,8 +46,8 @@ function CustomTooltip({ active, payload, label }: ChartTooltipProps) {
       <p className="mb-2 text-xs uppercase tracking-[0.18em] text-text-secondary">{label}</p>
       <p className="text-lg font-semibold tabular-nums text-text-primary">{formatCurrency(Number(netWorth))}</p>
       <div className="mt-2 space-y-1 text-xs tabular-nums text-text-secondary">
-        <p>Assets: <span className="text-positive-400">{formatCurrency(Number(assets))}</span></p>
-        <p>Liabilities: <span className="text-negative-400">{formatCurrency(Number(liabilities))}</span></p>
+        <p>Activos: <span className="text-positive-400">{formatCurrency(Number(assets))}</span></p>
+        <p>Pasivos: <span className="text-negative-400">{formatCurrency(Number(liabilities))}</span></p>
       </div>
     </div>
   );
@@ -78,7 +78,7 @@ export default function NetWorthChart({ data }: NetWorthChartProps) {
   }
 
   return (
-    <div aria-label="Net worth chart showing monthly net worth trend" role="img">
+    <div aria-label="Grafica de patrimonio mensual" role="img">
     <ResponsiveContainer height={256} width="100%">
       <AreaChart data={data} margin={{ top: 8, right: 4, bottom: 0, left: 0 }}>
         <defs>

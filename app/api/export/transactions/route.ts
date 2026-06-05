@@ -31,10 +31,10 @@ export async function GET(req: NextRequest) {
   // Verificar sesión
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const { ok, retryAfterMs } = rateLimit(`export-csv:${session.user.id}`, 30, 60_000);
+  const { ok, retryAfterMs } = await rateLimit(`export-csv:${session.user.id}`, 30, 60_000);
   if (!ok) {
     return NextResponse.json(
       { error: "Demasiadas exportaciones. Intenta de nuevo en un momento." },

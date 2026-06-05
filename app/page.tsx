@@ -1,8 +1,11 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { auth } from "@/auth";
+import { LanguageToggle } from "@/components/ui";
 import { LandingEffects } from "@/components/landing/LandingEffects";
 import { MockupCard } from "@/components/landing/MockupCard";
+import { tx } from "@/lib/i18n/config";
+import { getLocale } from "@/lib/i18n/server";
 import {
   ArrowRight,
   Banknote,
@@ -81,10 +84,11 @@ const toolItems = [
 ];
 
 export default async function LandingPage() {
-  const session = await auth();
+  const [session, locale] = await Promise.all([auth(), getLocale()]);
+  const t = (text: string) => tx(locale, text);
   const signedIn = Boolean(session?.user);
   const ctaHref = signedIn ? "/dashboard" : "/sign-in";
-  const ctaLabel = signedIn ? "Ir al dashboard" : "Probar beta";
+  const ctaLabel = signedIn ? t("Ir al dashboard") : t("Probar beta");
 
   return (
     <main
@@ -103,24 +107,25 @@ export default async function LandingPage() {
               Financial Command
             </span>
             <span className="hidden truncate text-xs text-on-surface-variant/70 sm:block">
-              Centro financiero personal
+              {t("Centro financiero personal")}
             </span>
           </span>
         </Link>
 
-        <nav aria-label="Navegacion principal" className="hidden items-center gap-7 lg:flex">
+        <nav aria-label={t("Navegacion principal")} className="hidden items-center gap-7 lg:flex">
           {navItems.map((item) => (
             <a
               className="font-label-md text-label-md text-on-surface-variant transition-colors hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
               href={item.href}
               key={item.href}
             >
-              {item.label}
+              {t(item.label)}
             </a>
           ))}
         </nav>
 
         <div className="flex shrink-0 items-center gap-2">
+          <LanguageToggle locale={locale} />
           <WalletCards
             aria-hidden="true"
             className="hidden h-5 w-5 text-on-surface-variant sm:block"
@@ -149,11 +154,10 @@ export default async function LandingPage() {
         </div>
         <div className="container z-10 mx-auto">
           <h1 className="mx-auto mb-5 max-w-4xl font-display-lg text-4xl font-bold uppercase leading-tight tracking-normal text-on-surface sm:text-5xl lg:text-display-lg">
-            Tu dinero, bajo <span className="premium-accent">control total</span>.
+            {t("Tu dinero, bajo")} <span className="premium-accent">{t("control total")}</span>.
           </h1>
           <p className="mx-auto mb-10 max-w-2xl font-body-lg text-body-lg text-on-surface-variant/75">
-            Importa estados de cuenta, revisa flujo de caja, monitorea tarjetas
-            y convierte tus movimientos en decisiones claras.
+            {t("Importa estados de cuenta, revisa flujo de caja, monitorea tarjetas y convierte tus movimientos en decisiones claras.")}
           </p>
 
           <div className="relative mx-auto mt-8 w-full max-w-5xl" style={{ perspective: "1000px" }}>
@@ -165,7 +169,7 @@ export default async function LandingPage() {
                     key={metric.label}
                   >
                     <div className="mb-2 text-label-sm uppercase text-on-surface-variant/50">
-                      {metric.label}
+                      {t(metric.label)}
                     </div>
                     <div className={`font-headline-md text-lg sm:text-headline-md ${metric.tone}`}>
                       {metric.value}
@@ -193,7 +197,7 @@ export default async function LandingPage() {
       <section id="producto" className="bg-background px-4 py-20 sm:px-6 lg:px-8">
         <div className="container mx-auto">
           <h2 className="mb-12 text-center font-headline-lg text-3xl font-semibold uppercase tracking-normal sm:text-headline-lg">
-            Un centro de mando para tus finanzas personales
+            {t("Un centro de mando para tus finanzas personales")}
           </h2>
           <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
             {productCards.map((card) => {
@@ -204,8 +208,8 @@ export default async function LandingPage() {
                   key={card.title}
                 >
                   <Icon aria-hidden="true" className="h-8 w-8 text-primary" strokeWidth={1.8} />
-                  <h3 className="font-headline-md text-headline-md uppercase">{card.title}</h3>
-                  <p className="font-body-md text-on-surface-variant/70">{card.body}</p>
+                  <h3 className="font-headline-md text-headline-md uppercase">{t(card.title)}</h3>
+                  <p className="font-body-md text-on-surface-variant/70">{t(card.body)}</p>
                 </article>
               );
             })}
@@ -221,28 +225,26 @@ export default async function LandingPage() {
           <div>
             <div className="mb-4 flex items-center gap-2 text-label-sm text-primary">
               <span className="h-2 w-2 rounded-full bg-primary shadow-[0_0_10px_rgba(16,185,129,0.85)]" />
-              IMPORT / REVIEW / DECIDE
+              {t("IMPORT / REVIEW / DECIDE")}
             </div>
             <h2 className="mb-6 font-headline-lg text-3xl font-semibold uppercase leading-tight sm:text-headline-lg">
-              Convierte tus estados de cuenta en{" "}
-              <span className="premium-accent">inteligencia financiera</span>
+              {t("Convierte tus estados de cuenta en")}{" "}
+              <span className="premium-accent">{t("inteligencia financiera")}</span>
             </h2>
             <p className="mb-8 font-body-lg text-on-surface-variant">
-              La beta lee CSV, Excel, OFX, PDF e imagenes con OCR. Antes de
-              guardar, muestra confianza, advertencias y vista previa para que el
-              usuario confirme lo importante.
+              {t("La beta lee CSV, Excel, OFX, PDF e imagenes con OCR. Antes de guardar, muestra confianza, advertencias y vista previa para que el usuario confirme lo importante.")}
             </p>
             <div className="grid grid-cols-2 gap-4">
               <div className="border-l border-primary/30 py-2 pl-4">
-                <div className="font-headline-md text-headline-md">5 formatos</div>
+                <div className="font-headline-md text-headline-md">{t("5 formatos")}</div>
                 <div className="text-label-sm uppercase text-on-surface-variant/50">
-                  Importacion
+                  {t("Importacion")}
                 </div>
               </div>
               <div className="border-l border-primary/30 py-2 pl-4">
                 <div className="font-headline-md text-headline-md">OCR</div>
                 <div className="text-label-sm uppercase text-on-surface-variant/50">
-                  Revision visual
+                  {t("Revision visual")}
                 </div>
               </div>
             </div>
@@ -252,7 +254,7 @@ export default async function LandingPage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               className="h-full w-full object-cover opacity-40 mix-blend-screen grayscale"
-              alt="Pantalla tecnica con graficas financieras y lecturas de datos."
+              alt={t("Pantalla tecnica con graficas financieras y lecturas de datos.")}
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_MeL9pFKlT3Y1T8eN101szsoCHtFi9VlVOgGEyA8RR-8YQUfBopExtWkHO-PcmJUcQOs4jm8HQ8SC5YrZ6IEEL7GLWEoARh1L4HHtq6yl1X18kXak2veKc3HwecDcRclUtXP3hBb6c5JOQcUFbTfv0be8xiThWXVnaFlQVPDrgQDpsk8gKo4tm292P5SF4I0iSsEZjjOs0aImZwbSu_LNQ53a-0Ky0L-_gwxEhy-hc4re4uFEkI7C-679FtpCc1q1vV0ElMhf95Y5"
             />
             <div className="pointer-events-none absolute inset-4 flex flex-col justify-between border border-primary/20 p-2">
@@ -273,7 +275,7 @@ export default async function LandingPage() {
         <div className="container mx-auto">
           <div className="mb-14 text-center">
             <h2 className="mb-4 font-headline-lg text-3xl font-semibold uppercase sm:text-headline-lg">
-              Herramientas que ya existen en la app
+              {t("Herramientas que ya existen en la app")}
             </h2>
             <div className="mx-auto h-1 w-24 bg-primary-container" />
           </div>
@@ -290,7 +292,7 @@ export default async function LandingPage() {
                     className="h-7 w-7 transition-colors group-hover:text-primary"
                     strokeWidth={1.8}
                   />
-                  <div className="font-label-md text-label-md uppercase">{item.label}</div>
+                  <div className="font-label-md text-label-md uppercase">{t(item.label)}</div>
                 </div>
               );
             })}
@@ -301,7 +303,7 @@ export default async function LandingPage() {
       <section className="bg-surface-container-lowest px-4 py-20 sm:px-6 lg:px-8">
         <div className="container mx-auto">
           <h2 className="mb-12 text-center font-headline-lg text-3xl font-semibold uppercase sm:text-headline-lg">
-            Para momentos financieros reales
+            {t("Para momentos financieros reales")}
           </h2>
           <div className="space-y-4">
             {[
@@ -328,8 +330,8 @@ export default async function LandingPage() {
                   key={item.title}
                 >
                   <div className="z-10">
-                    <h3 className="mb-2 font-headline-md text-headline-md uppercase">{item.title}</h3>
-                    <p className="max-w-xl text-on-surface-variant/70">{item.body}</p>
+                    <h3 className="mb-2 font-headline-md text-headline-md uppercase">{t(item.title)}</h3>
+                    <p className="max-w-xl text-on-surface-variant/70">{t(item.body)}</p>
                   </div>
                   <Icon
                     aria-hidden="true"
@@ -349,7 +351,7 @@ export default async function LandingPage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               className="aspect-square w-full object-cover opacity-20 grayscale"
-              alt="Arquitectura abstracta de seguridad y privacidad."
+              alt={t("Arquitectura abstracta de seguridad y privacidad.")}
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTNGcPz1I9o32lBVqN1SNTuhAOxT8PrEcbTXlVBcLpouwOYsEP9xrU8kn9hIpvlbjmJVQPxRdu1sQpz3LWfN_a_1MDzHAl3OrxTiogviGgOTgqtHQnljynKJqAiyvCYAo4EgQuE85t2f-2hJtySOd3fVxfsBCfYAf3te_QleicvijlvA8ARiBcfkKx_RRRrSHmEbTOCdT8RMmA4GV5BW4npDhAyR9FF8pvjUuAAKQHACJnWlw64Ix8lGslHb2NFWdOgYHW289qaorM"
             />
           </div>
@@ -358,9 +360,7 @@ export default async function LandingPage() {
               Privacidad, claridad y control por diseño
             </h2>
             <p className="mb-8 font-body-lg text-on-surface-variant">
-              El producto esta construido para beta multiusuario: cada usuario
-              trabaja en su espacio, los datos de ejemplo se pueden borrar con
-              confirmacion y los errores tienen salida clara.
+              {t("El producto esta construido para beta multiusuario: cada usuario trabaja en su espacio, los datos de ejemplo se pueden borrar con confirmacion y los errores tienen salida clara.")}
             </p>
             <ul className="space-y-4">
               {[
@@ -372,7 +372,7 @@ export default async function LandingPage() {
                 return (
                   <li className="flex items-center gap-4 text-label-md" key={item.label}>
                     <Icon aria-hidden="true" className="h-5 w-5 text-primary" strokeWidth={1.8} />
-                    {item.label}
+                    {t(item.label)}
                   </li>
                 );
               })}
@@ -388,7 +388,7 @@ export default async function LandingPage() {
         />
         <div className="container z-10 mx-auto">
           <h2 className="mb-8 font-display-lg text-4xl font-bold uppercase tracking-normal sm:text-display-lg">
-            Deja de adivinar.<br />Empieza a dirigir tu dinero.
+            {t("Deja de adivinar.")}<br />{t("Empieza a dirigir tu dinero.")}
           </h2>
           <Link
             href={ctaHref}
@@ -398,9 +398,9 @@ export default async function LandingPage() {
             <ArrowRight aria-hidden="true" className="h-5 w-5" strokeWidth={2} />
           </Link>
           <div className="mt-10 flex flex-wrap justify-center gap-4 font-label-sm text-label-sm uppercase tracking-widest text-on-surface-variant/50 sm:gap-8">
-            <span>Claridad</span>
+            <span>{t("Claridad")}</span>
             <span>Control</span>
-            <span>Privacidad</span>
+            <span>{t("Privacidad")}</span>
           </div>
         </div>
       </section>
@@ -418,7 +418,7 @@ export default async function LandingPage() {
                 FINANCIAL COMMAND CENTER
               </div>
               <p className="mt-1 font-label-sm text-label-sm text-primary/65">
-                Beta privada para decisiones financieras personales.
+                {t("Beta privada para decisiones financieras personales.")}
               </p>
             </div>
           </div>
@@ -431,12 +431,24 @@ export default async function LandingPage() {
                   href={item.href}
                   key={item.href}
                 >
-                  {item.label}
+                  {t(item.label)}
                 </a>
               ))}
+              <Link
+                className="font-label-sm text-label-sm text-on-surface-variant/65 transition-colors hover:text-primary"
+                href="/privacy"
+              >
+                {t("Privacidad")}
+              </Link>
+              <Link
+                className="font-label-sm text-label-sm text-on-surface-variant/65 transition-colors hover:text-primary"
+                href="/terms"
+              >
+                {t("Terminos")}
+              </Link>
             </div>
             <p className="text-center font-label-sm text-label-sm text-on-surface-variant/45 md:text-right">
-              Privacidad, claridad y control en un solo workspace.
+              {t("Privacidad, claridad y control en un solo espacio.")}
             </p>
           </div>
         </div>

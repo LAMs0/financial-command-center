@@ -4,12 +4,15 @@ import { AnimateIn, Badge, Card, CardHeader, EmptyState, SectionHeader, StatCard
 import EmptyStateActions from "@/components/onboarding/EmptyStateActions";
 import ConnectBank from "@/components/banking/ConnectBank";
 import { getBankProvider } from "@/lib/banking";
+import { tx } from "@/lib/i18n/config";
+import { getLocale } from "@/lib/i18n/server";
 import { Landmark } from "lucide-react";
 
 export const metadata = { title: "Cuentas" };
 
 export default async function AccountsPage() {
-  const accounts = await getAccounts();
+  const [accounts, locale] = await Promise.all([getAccounts(), getLocale()]);
+  const t = (text: string) => tx(locale, text);
 
   // Conectividad bancaria: instituciones disponibles (del proveedor activo) y
   // las ya conectadas, derivadas agrupando las cuentas por institución.
@@ -31,19 +34,19 @@ export default async function AccountsPage() {
   return (
     <section className="flex flex-1 flex-col">
       <SectionHeader
-        eyebrow="Finances"
+        eyebrow={t("Finances")}
         eyebrowClassName="bg-gradient-to-r from-info-400 to-brand-300 bg-clip-text text-transparent"
-        title="Cuentas"
-        actions={<Badge label={`${accounts.length} conectadas`} tone="info" size="md" />}
+        title={t("Cuentas")}
+        actions={<Badge label={`${accounts.length} ${t("conectadas")}`} tone="info" size="md" />}
       />
 
       <div className="space-y-6 px-4 py-6 md:px-8">
         <AnimateIn className="grid gap-4 md:grid-cols-3">
-          <StatCard label="Balance total" value={formatCurrency(total)} detail="En todas las cuentas" tone="positive" />
-          <StatCard label="Liquidez" value={formatCurrency(liquid)} detail="Cheques, ahorro y efectivo" tone="brand" />
+          <StatCard label={t("Balance total")} value={formatCurrency(total)} detail={t("En todas las cuentas")} tone="positive" />
+          <StatCard label={t("Liquidez")} value={formatCurrency(liquid)} detail={t("Cheques, ahorro y efectivo")} tone="brand" />
           <StatCard
-            label="Cuenta principal"
-            value={largestAccount?.name ?? "Sin cuentas"}
+            label={t("Cuenta principal")}
+            value={largestAccount?.name ?? t("Sin cuentas")}
             detail={largestAccount ? formatCurrency(largestAccount.balance, largestAccount.currency) : undefined}
             tone="info"
           />
@@ -60,15 +63,15 @@ export default async function AccountsPage() {
         <AnimateIn delay={0.08}>
         <Card padded={false}>
           <CardHeader
-            title="Registro de cuentas"
-            subtitle="Balances, instituciones y ultima actualizacion"
+            title={t("Registro de cuentas")}
+            subtitle={t("Balances, instituciones y ultima actualizacion")}
           />
           <div className="divide-y divide-white/10">
             {accounts.length === 0 ? (
               <EmptyState
                 icon={<Landmark aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-                title="No hay cuentas conectadas"
-                description="Las cuentas bancarias, efectivo e inversiones apareceran aqui cuando conectes una fuente de datos."
+                title={t("No hay cuentas conectadas")}
+                description={t("Las cuentas bancarias, efectivo e inversiones apareceran aqui cuando conectes una fuente de datos.")}
                 action={<EmptyStateActions />}
               />
             ) : accounts.map((account, index) => (

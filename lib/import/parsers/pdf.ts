@@ -22,6 +22,7 @@ import { inferCategory, inferType } from "../categorize";
 import { parseLocaleDate, resolveLocale } from "../locale";
 import { parseWellsFargo, parseWellsFargoCreditCard, isWellsFargoCreditCard } from "./wellsfargo";
 import { capParseText } from "../limits";
+import { logger } from "@/lib/logger";
 
 // ── Tipos internos ─────────────────────────────────────────────────────────
 
@@ -254,7 +255,9 @@ export async function parsePDF(buffer: Buffer): Promise<PDFParseResult> {
   } catch (err) {
     // No abortamos: puede ser un PDF escaneado. Caemos al OCR abajo.
     textLayerFailed = true;
-    console.warn("[parsePDF] getText falló, intentando OCR:", (err as Error)?.message);
+    logger.warn("import.pdf_text_failed", {
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 
   // ── Paso 2: fallback OCR para PDFs escaneados (imagen sin texto) ─────────
@@ -269,7 +272,9 @@ export async function parsePDF(buffer: Buffer): Promise<PDFParseResult> {
         warnings.push("PDF escaneado: el texto se reconstruyó con OCR. Revisa los montos y fechas con cuidado.");
       }
     } catch (err) {
-      console.warn("[parsePDF] OCR falló:", (err as Error)?.message);
+      logger.warn("import.pdf_ocr_failed", {
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
   }
 

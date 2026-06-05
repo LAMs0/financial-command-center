@@ -19,8 +19,12 @@ import {
 import type { DetectedAccount, ParsedStatement, ParsedTransaction } from "@/lib/import/types";
 import { saveImportedStatement } from "@/app/(main)/import/actions";
 import { formatCurrency } from "@/lib/formatters";
+import { tx, type Locale } from "@/lib/i18n/config";
 
 const FOCUS_RING = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50";
+
+/** Función traductora que se threadea a los sub-componentes. */
+type T = (text: string) => string;
 
 // ── Tipos de paso del wizard ───────────────────────────────────────────────
 
@@ -28,7 +32,8 @@ type Step = "upload" | "review" | "success";
 
 // ── Componente principal ───────────────────────────────────────────────────
 
-export default function StatementImporter() {
+export default function StatementImporter({ locale }: { locale: Locale }) {
+  const t: T = (text) => tx(locale, text);
   const [step, setStep] = useState<Step>("upload");
   const [parsed, setParsed] = useState<ParsedStatement | null>(null);
   const [account, setAccount] = useState<DetectedAccount | null>(null);
@@ -63,7 +68,7 @@ export default function StatementImporter() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      {step === "upload" && <UploadStep onParsed={handleParsed} />}
+      {step === "upload" && <UploadStep onParsed={handleParsed} t={t} />}
       {step === "review" && parsed && account && (
         <ReviewStep
           parsed={parsed}
@@ -75,16 +80,17 @@ export default function StatementImporter() {
           onSave={handleSave}
           isSaving={isPending}
           saveError={saveError}
+          t={t}
         />
       )}
-      {step === "success" && parsed && <SuccessStep parsed={parsed} />}
+      {step === "success" && parsed && <SuccessStep parsed={parsed} t={t} />}
     </div>
   );
 }
 
 // ── Paso 1: Upload ─────────────────────────────────────────────────────────
 
-function UploadStep({ onParsed }: { onParsed: (r: ParsedStatement) => void }) {
+function UploadStep({ onParsed, t }: { onParsed: (r: ParsedStatement) => void; t: T }) {
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -103,10 +109,10 @@ function UploadStep({ onParsed }: { onParsed: (r: ParsedStatement) => void }) {
         body: formData,
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "No pudimos leer el archivo.");
+      if (!res.ok) throw new Error(data.error ?? t("No pudimos leer el archivo."));
       onParsed(data as ParsedStatement);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al procesar el archivo.");
+      setError(err instanceof Error ? err.message : t("Error al procesar el archivo."));
     } finally {
       setIsLoading(false);
     }
@@ -135,16 +141,16 @@ function UploadStep({ onParsed }: { onParsed: (r: ParsedStatement) => void }) {
         {isLoading ? (
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-10 w-10 animate-spin text-brand-400" />
-            <p className="text-sm text-text-secondary">Analizando tu estado de cuenta...</p>
+            <p className="text-sm text-text-secondary">{t("Analizando tu estado de cuenta...")}</p>
           </div>
         ) : (
           <>
             <div className="mb-5 grid h-16 w-16 place-items-center rounded-2xl border border-brand-400/30 bg-brand-500/10">
               <Upload aria-hidden="true" className="h-7 w-7 text-brand-400" strokeWidth={1.5} />
             </div>
-            <p className="text-lg font-semibold text-text-primary">Arrastra tu estado de cuenta aqui</p>
+            <p className="text-lg font-semibold text-text-primary">{t("Arrastra tu estado de cuenta aqui")}</p>
             <p className="mt-1 text-sm text-text-secondary">
-              CSV, Excel, OFX, PDF o foto/imagen. Chase, Bank of America, Wells Fargo, Amex, BBVA, Santander y mas.
+              {t("CSV, Excel, OFX, PDF o foto/imagen. Chase, Bank of America, Wells Fargo, Amex, BBVA, Santander y mas.")}
             </p>
             <button
               className={`mt-5 inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-4 py-2 text-sm font-medium text-text-primary transition hover:bg-white/[0.1] ${FOCUS_RING}`}
@@ -152,7 +158,7 @@ function UploadStep({ onParsed }: { onParsed: (r: ParsedStatement) => void }) {
               type="button"
             >
               <FileText aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
-              Buscar archivo
+              {t("Buscar archivo")}
             </button>
             <input
               accept=".csv,.ofx,.qfx,.txt,.pdf,.xlsx,.xls,.png,.jpg,.jpeg,.webp,.gif,.bmp,.tif,.tiff,.heic,.heif,image/*"
@@ -185,7 +191,7 @@ function UploadStep({ onParsed }: { onParsed: (r: ParsedStatement) => void }) {
             className="h-full rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3"
           >
             <p className="text-sm font-semibold text-text-primary">{f.title}</p>
-            <p className="mt-1 text-xs text-text-muted">{f.desc}</p>
+            <p className="mt-1 text-xs text-text-muted">{t(f.desc)}</p>
           </div>
         ))}
       </div>
@@ -205,6 +211,7 @@ interface ReviewStepProps {
   onSave: () => void;
   isSaving: boolean;
   saveError: string | null;
+  t: T;
 }
 
 function ReviewStep({
@@ -217,6 +224,7 @@ function ReviewStep({
   onSave,
   isSaving,
   saveError,
+  t,
 }: ReviewStepProps) {
   const income = parsed.transactions
     .filter((t) => t.type === "income")
@@ -226,9 +234,9 @@ function ReviewStep({
     .reduce((s, t) => s + t.amount, 0);
 
   const confidenceLabel =
-    parsed.confidence >= 0.85 ? "Confianza alta" :
-    parsed.confidence >= 0.6  ? "Confianza media" :
-    "Confianza baja - revisa antes de importar";
+    parsed.confidence >= 0.85 ? t("Confianza alta") :
+    parsed.confidence >= 0.6  ? t("Confianza media") :
+    t("Confianza baja - revisa antes de importar");
 
   const confidence = getConfidencePresentation(parsed.confidence);
   const ConfidenceIcon = confidence.icon;
@@ -261,7 +269,7 @@ function ReviewStep({
               {parsed.dateRange.from} / {parsed.dateRange.to}
             </p>
             <p className="mt-1 text-sm text-text-secondary">
-              {parsed.transactions.length} transacciones
+              {parsed.transactions.length} {t("transacciones")}
             </p>
           </div>
         </div>
@@ -269,7 +277,7 @@ function ReviewStep({
         {parsed.warnings.length > 0 && (
           <div className="mt-4 rounded-lg border border-warning-400/20 bg-warning-900 px-3 py-2.5" role="status">
             <p className="mb-2 text-xs font-semibold text-warning-400">
-              Revisa estas advertencias antes de importar
+              {t("Revisa estas advertencias antes de importar")}
             </p>
             {parsed.warnings.map((w, i) => (
               <div key={i} className="flex items-start gap-2 text-xs leading-5 text-warning-400">
@@ -284,9 +292,9 @@ function ReviewStep({
       {/* Resumen financiero */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Balance", value: formatCurrency(account.balance, account.currency), color: "text-text-primary" },
-          { label: "Ingresos", value: formatCurrency(income, account.currency), color: "text-positive-400" },
-          { label: "Gastos", value: formatCurrency(expenses, account.currency), color: "text-negative-400" },
+          { label: t("Balance"), value: formatCurrency(account.balance, account.currency), color: "text-text-primary" },
+          { label: t("Ingresos"), value: formatCurrency(income, account.currency), color: "text-positive-400" },
+          { label: t("Gastos"), value: formatCurrency(expenses, account.currency), color: "text-negative-400" },
         ].map((s) => (
           <div key={s.label} className="rounded-xl border border-white/10 bg-surface-card p-4 text-center">
             <p className="text-xs text-text-muted">{s.label}</p>
@@ -296,7 +304,7 @@ function ReviewStep({
       </div>
 
       {/* Configuración de la cuenta — editable */}
-      <AccountConfig account={account} onChange={onAccountChange} />
+      <AccountConfig account={account} onChange={onAccountChange} t={t} />
 
       {/* Metas detectadas */}
       {parsed.goals.length > 0 && (
@@ -304,10 +312,10 @@ function ReviewStep({
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Flag aria-hidden="true" className="h-4 w-4 text-brand-400" strokeWidth={1.8} />
-              <p className="font-medium text-text-primary">Meta detectada</p>
+              <p className="font-medium text-text-primary">{t("Meta detectada")}</p>
             </div>
             <label className="flex cursor-pointer items-center gap-2">
-              <span className="text-xs text-text-muted">Importar como meta</span>
+              <span className="text-xs text-text-muted">{t("Importar como meta")}</span>
               <input
                 checked={importGoals}
                 className={`h-4 w-4 cursor-pointer accent-brand-500 ${FOCUS_RING}`}
@@ -321,7 +329,7 @@ function ReviewStep({
               <span className="text-xl">{g.icon}</span>
               <div>
                 <p className="text-sm font-medium text-text-primary">{g.name}</p>
-                <p className="text-xs text-text-muted capitalize">{g.category.replace("_", " ")} / {formatCurrency(g.currentAmount, g.currency)} ahorrado</p>
+                <p className="text-xs text-text-muted capitalize">{g.category.replace("_", " ")} / {formatCurrency(g.currentAmount, g.currency)} {t("ahorrado")}</p>
               </div>
             </div>
           ))}
@@ -329,13 +337,13 @@ function ReviewStep({
       )}
 
       {/* Preview de transacciones */}
-      <TransactionPreview transactions={parsed.transactions.slice(0, 6)} currency={account.currency} />
+      <TransactionPreview transactions={parsed.transactions.slice(0, 6)} currency={account.currency} t={t} />
 
       {saveError && (
         <div className="flex items-start gap-3 rounded-xl border border-negative-400/20 bg-negative-900 px-4 py-3" role="alert">
           <AlertCircle aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-negative-400" strokeWidth={1.8} />
           <div>
-            <p className="text-sm font-semibold text-negative-400">No se pudo guardar la importacion</p>
+            <p className="text-sm font-semibold text-negative-400">{t("No se pudo guardar la importacion")}</p>
             <p className="mt-1 text-xs text-negative-400/90">{saveError}</p>
           </div>
         </div>
@@ -349,7 +357,7 @@ function ReviewStep({
           type="button"
         >
           <X aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
-          Cancelar
+          {t("Cancelar")}
         </button>
         <button
           className={`inline-flex items-center gap-2 rounded-lg border border-brand-400/30 bg-brand-500/15 px-5 py-2 text-sm font-semibold text-brand-300 transition hover:bg-brand-500/25 disabled:cursor-not-allowed disabled:opacity-60 ${FOCUS_RING}`}
@@ -367,7 +375,7 @@ function ReviewStep({
           ) : (
             <ArrowRight aria-hidden="true" className="h-4 w-4" strokeWidth={2} />
           )}
-          {isSaving ? "Importando..." : `Importar ${parsed.transactions.length} transacciones`}
+          {isSaving ? t("Importando...") : `${t("Importar")} ${parsed.transactions.length} ${t("transacciones")}`}
         </button>
       </div>
     </div>
@@ -379,30 +387,32 @@ function ReviewStep({
 function AccountConfig({
   account,
   onChange,
+  t,
 }: {
   account: DetectedAccount;
   onChange: (a: DetectedAccount) => void;
+  t: T;
 }) {
   const kindOptions: Array<{ value: DetectedAccount["kind"]; label: string; icon: React.ReactNode }> = [
-    { value: "financial_account", label: "Cuenta bancaria", icon: <Landmark className="h-4 w-4" strokeWidth={1.8} /> },
-    { value: "credit_card",       label: "Tarjeta de credito",  icon: <CreditCard className="h-4 w-4" strokeWidth={1.8} /> },
-    { value: "goal",              label: "Meta de ahorro", icon: <Flag className="h-4 w-4" strokeWidth={1.8} /> },
+    { value: "financial_account", label: t("Cuenta bancaria"), icon: <Landmark className="h-4 w-4" strokeWidth={1.8} /> },
+    { value: "credit_card",       label: t("Tarjeta de credito"),  icon: <CreditCard className="h-4 w-4" strokeWidth={1.8} /> },
+    { value: "goal",              label: t("Meta de ahorro"), icon: <Flag className="h-4 w-4" strokeWidth={1.8} /> },
   ];
 
   const accountTypeOptions = [
-    { value: "checking", label: "Cheques" },
-    { value: "savings",  label: "Ahorro" },
-    { value: "cash",     label: "Efectivo" },
+    { value: "checking", label: t("Cheques") },
+    { value: "savings",  label: t("Ahorro") },
+    { value: "cash",     label: t("Efectivo") },
   ];
 
   return (
     <div className="rounded-xl border border-white/10 bg-surface-card p-5">
-      <p className="mb-4 text-sm font-semibold text-text-primary">Detalles de la cuenta</p>
+      <p className="mb-4 text-sm font-semibold text-text-primary">{t("Detalles de la cuenta")}</p>
 
       <div className="space-y-4">
         {/* Nombre */}
         <div>
-          <label className="mb-1.5 block text-xs text-text-muted" htmlFor="acc-name">Nombre</label>
+          <label className="mb-1.5 block text-xs text-text-muted" htmlFor="acc-name">{t("Nombre")}</label>
           <input
             className={`w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-brand-400/50 focus:outline-none ${FOCUS_RING}`}
             id="acc-name"
@@ -414,7 +424,7 @@ function AccountConfig({
 
         {/* Institución */}
         <div>
-          <label className="mb-1.5 block text-xs text-text-muted" htmlFor="acc-inst">Institucion</label>
+          <label className="mb-1.5 block text-xs text-text-muted" htmlFor="acc-inst">{t("Institucion")}</label>
           <input
             className={`w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-brand-400/50 focus:outline-none ${FOCUS_RING}`}
             id="acc-inst"
@@ -427,7 +437,7 @@ function AccountConfig({
         <div className="grid grid-cols-2 gap-3">
           {/* Tipo de registro */}
           <div>
-            <label className="mb-1.5 block text-xs text-text-muted">Tipo</label>
+            <label className="mb-1.5 block text-xs text-text-muted">{t("Tipo")}</label>
             <div className="flex flex-col gap-1.5">
               {kindOptions.map((opt) => (
                 <button
@@ -450,7 +460,7 @@ function AccountConfig({
           {/* Account subtype (solo para financial_account) */}
           {account.kind === "financial_account" && (
             <div>
-              <label className="mb-1.5 block text-xs text-text-muted">Subtipo de cuenta</label>
+              <label className="mb-1.5 block text-xs text-text-muted">{t("Subtipo de cuenta")}</label>
               <div className="flex flex-col gap-1.5">
                 {accountTypeOptions.map((opt) => (
                   <button
@@ -473,7 +483,7 @@ function AccountConfig({
           {/* Últimos 4 dígitos (solo para tarjeta) */}
           {account.kind === "credit_card" && (
             <div>
-              <label className="mb-1.5 block text-xs text-text-muted" htmlFor="cc-last4">Ultimos 4 digitos</label>
+              <label className="mb-1.5 block text-xs text-text-muted" htmlFor="cc-last4">{t("Ultimos 4 digitos")}</label>
               <input
                 className={`w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-text-primary focus:border-brand-400/50 focus:outline-none ${FOCUS_RING}`}
                 id="cc-last4"
@@ -483,7 +493,7 @@ function AccountConfig({
                 type="text"
                 value={account.lastFourDigits ?? ""}
               />
-              <label className="mb-1.5 mt-3 block text-xs text-text-muted" htmlFor="cc-limit">Limite de credito</label>
+              <label className="mb-1.5 mt-3 block text-xs text-text-muted" htmlFor="cc-limit">{t("Limite de credito")}</label>
               <input
                 className={`w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-text-primary focus:border-brand-400/50 focus:outline-none ${FOCUS_RING}`}
                 id="cc-limit"
@@ -506,9 +516,11 @@ function AccountConfig({
 function TransactionPreview({
   transactions,
   currency,
+  t,
 }: {
   transactions: ParsedTransaction[];
   currency: string;
+  t: T;
 }) {
   const [showAll, setShowAll] = useState(false);
   const visible = showAll ? transactions : transactions.slice(0, 4);
@@ -516,8 +528,8 @@ function TransactionPreview({
   return (
     <div className="rounded-xl border border-white/10 bg-surface-card">
       <div className="border-b border-white/[0.06] px-5 py-3.5">
-        <p className="text-sm font-semibold text-text-primary">Vista previa de transacciones</p>
-        <p className="text-xs text-text-muted">Mostrando {visible.length} de {transactions.length}</p>
+        <p className="text-sm font-semibold text-text-primary">{t("Vista previa de transacciones")}</p>
+        <p className="text-xs text-text-muted">{t("Mostrando")} {visible.length} {t("de")} {transactions.length}</p>
       </div>
       <div className="divide-y divide-white/[0.06]">
         {visible.map((t, i) => (
@@ -543,7 +555,7 @@ function TransactionPreview({
           type="button"
         >
           <ChevronDown aria-hidden="true" className={`h-3.5 w-3.5 transition-transform ${showAll ? "rotate-180" : ""}`} strokeWidth={2} />
-          {showAll ? "Mostrar menos" : `Mostrar ${transactions.length - 4} mas`}
+          {showAll ? t("Mostrar menos") : `${t("Mostrar")} ${transactions.length - 4} ${t("mas")}`}
         </button>
       )}
     </div>
@@ -552,7 +564,7 @@ function TransactionPreview({
 
 // ── Paso 3: Éxito ──────────────────────────────────────────────────────────
 
-function SuccessStep({ parsed }: { parsed: ParsedStatement }) {
+function SuccessStep({ parsed, t }: { parsed: ParsedStatement; t: T }) {
   const shouldReduceMotion = useReducedMotion();
 
   return (
@@ -582,13 +594,13 @@ function SuccessStep({ parsed }: { parsed: ParsedStatement }) {
         <CheckCircle2 aria-hidden="true" className="h-8 w-8 text-positive-400" strokeWidth={1.5} />
       </motion.div>
       <div>
-        <p className="text-xl font-semibold text-text-primary">Importacion completada</p>
+        <p className="text-xl font-semibold text-text-primary">{t("Importacion completada")}</p>
         <p className="mt-2 text-sm text-text-secondary">
-          {parsed.transactions.length} transacciones importadas desde {parsed.bankLabel}.
+          {parsed.transactions.length} {t("transacciones importadas desde")} {parsed.bankLabel}.
         </p>
         {parsed.goals.length > 0 && (
           <p className="mt-1 text-sm text-text-secondary">
-            {parsed.goals.length} meta{parsed.goals.length !== 1 ? "s" : ""} creada{parsed.goals.length !== 1 ? "s" : ""}.
+            {parsed.goals.length} {parsed.goals.length !== 1 ? t("metas creadas") : t("meta creada")}.
           </p>
         )}
       </div>
@@ -597,13 +609,13 @@ function SuccessStep({ parsed }: { parsed: ParsedStatement }) {
           className={`inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-text-secondary transition hover:bg-white/[0.08] ${FOCUS_RING}`}
           href="/accounts"
         >
-          Ver cuentas
+          {t("Ver cuentas")}
         </a>
         <a
           className={`inline-flex items-center gap-2 rounded-lg border border-brand-400/30 bg-brand-500/15 px-4 py-2 text-sm font-semibold text-brand-300 transition hover:bg-brand-500/25 ${FOCUS_RING}`}
           href="/transactions"
         >
-          Ver transacciones
+          {t("Ver transacciones")}
           <ArrowRight aria-hidden="true" className="h-4 w-4" strokeWidth={2} />
         </a>
       </div>

@@ -1,18 +1,10 @@
-/*
-  lib/rate-limit.ts — Limitador de tasa en memoria (fixed window).
-  ──────────────────────────────────────────────────────────────────
-  Protege endpoints caros (p. ej. el OCR de /api/import, que puede tardar
-  hasta 120 s con archivos grandes) contra abuso por parte de un usuario
-  autenticado: muchas peticiones seguidas que agoten CPU/costo.
+import { logger } from "@/lib/logger";
 
-  Diseño:
-  - Ventana fija por clave (normalmente el userId): N peticiones por ventana.
-  - En MEMORIA del proceso. Suficiente para un contenedor único (Railway).
-    ⚠️ Si algún día se escala a múltiples instancias, esto NO se comparte
-    entre ellas — habría que mover el estado a Redis/Upstash.
-  - Se auto-limpia: cada cierto número de llamadas barre las entradas vencidas
-    para que el Map no crezca sin límite.
-*/
+export interface RateLimitResult {
+  ok: boolean;
+  retryAfterMs: number;
+  remaining: number;
+}
 
 type Bucket = { count: number; resetAt: number };
 
@@ -21,27 +13,12 @@ let callsSinceSweep = 0;
 const SWEEP_EVERY = 500;
 
 function sweep(now: number) {
-  for (const [key, b] of buckets) {
-    if (now >= b.resetAt) buckets.delete(key);
+  for (const [key, bucket] of buckets) {
+    if (now >= bucket.resetAt) buckets.delete(key);
   }
 }
 
-export interface RateLimitResult {
-  ok: boolean;
-  /** Milisegundos hasta que la ventana se reinicie (para el header Retry-After). */
-  retryAfterMs: number;
-  /** Peticiones restantes en la ventana actual. */
-  remaining: number;
-}
-
-/**
- * Consume una unidad de cuota para `key`. Devuelve si la petición se permite.
- *
- * @param key      Identificador de la cuota (p. ej. `import:<userId>`).
- * @param limit    Máximo de peticiones permitidas por ventana.
- * @param windowMs Duración de la ventana en milisegundos.
- */
-export function rateLimit(key: string, limit: number, windowMs: number): RateLimitResult {
+function memoryRateLimit(key: string, limit: number, windowMs: number): RateLimitResult {
   const now = Date.now();
 
   if (++callsSinceSweep >= SWEEP_EVERY) {
@@ -49,16 +26,76 @@ export function rateLimit(key: string, limit: number, windowMs: number): RateLim
     sweep(now);
   }
 
-  const b = buckets.get(key);
-  if (!b || now >= b.resetAt) {
+  const bucket = buckets.get(key);
+  if (!bucket || now >= bucket.resetAt) {
     buckets.set(key, { count: 1, resetAt: now + windowMs });
     return { ok: true, retryAfterMs: 0, remaining: limit - 1 };
   }
 
-  if (b.count >= limit) {
-    return { ok: false, retryAfterMs: b.resetAt - now, remaining: 0 };
+  if (bucket.count >= limit) {
+    return { ok: false, retryAfterMs: bucket.resetAt - now, remaining: 0 };
   }
 
-  b.count++;
-  return { ok: true, retryAfterMs: 0, remaining: limit - b.count };
+  bucket.count++;
+  return { ok: true, retryAfterMs: 0, remaining: limit - bucket.count };
+}
+
+function upstashConfig(): { url: string; token: string } | null {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  return url && token ? { url, token } : null;
+}
+
+async function upstashRateLimit(
+  cfg: { url: string; token: string },
+  key: string,
+  limit: number,
+  windowMs: number
+): Promise<RateLimitResult> {
+  const now = Date.now();
+  const windowIndex = Math.floor(now / windowMs);
+  const redisKey = `rl:${key}:${windowIndex}`;
+  const resetAt = (windowIndex + 1) * windowMs;
+
+  const response = await fetch(`${cfg.url}/pipeline`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${cfg.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify([
+      ["INCR", redisKey],
+      ["PEXPIRE", redisKey, windowMs],
+    ]),
+    cache: "no-store",
+  });
+
+  if (!response.ok) throw new Error(`Upstash HTTP ${response.status}`);
+  const data = (await response.json()) as Array<{ result: number }>;
+  const count = Number(data[0]?.result ?? 0);
+
+  if (count > limit) {
+    return { ok: false, retryAfterMs: Math.max(0, resetAt - now), remaining: 0 };
+  }
+
+  return { ok: true, retryAfterMs: 0, remaining: Math.max(0, limit - count) };
+}
+
+export async function rateLimit(
+  key: string,
+  limit: number,
+  windowMs: number
+): Promise<RateLimitResult> {
+  const cfg = upstashConfig();
+  if (!cfg) return memoryRateLimit(key, limit, windowMs);
+
+  try {
+    return await upstashRateLimit(cfg, key, limit, windowMs);
+  } catch (error) {
+    logger.warn("rate_limit.upstash_failed", {
+      error: error instanceof Error ? error.message : String(error),
+      key,
+    });
+    return { ok: true, retryAfterMs: 0, remaining: limit - 1 };
+  }
 }

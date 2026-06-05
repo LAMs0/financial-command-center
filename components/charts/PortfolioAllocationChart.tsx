@@ -71,7 +71,7 @@ export default function PortfolioAllocationChart({
       {/* Donut */}
       <div className="relative h-64 min-h-64">
         {isReady ? (
-          <div aria-label="Portfolio allocation donut chart" className="h-full" role="img">
+          <div aria-label="Grafica de asignacion del portafolio" className="h-full" role="img">
           <ResponsiveContainer height="100%" width="100%">
             <PieChart>
               <Pie

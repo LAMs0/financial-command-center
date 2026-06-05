@@ -38,10 +38,14 @@ import Link from "next/link";
 import { CreditCard, Flag, Landmark, ReceiptText } from "lucide-react";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import NetWorthChart from "@/components/charts/NetWorthChart";
+import { tx } from "@/lib/i18n/config";
+import { getLocale } from "@/lib/i18n/server";
 
 export const metadata = { title: "Dashboard" };
 
 export default async function DashboardPage() {
+  const locale = await getLocale();
+  const t = (text: string) => tx(locale, text);
   /*
     Server Component async: pedimos los datos a la capa de datos (lib/data).
     Promise.all corre todas las queries en paralelo en vez de en serie —
@@ -54,7 +58,7 @@ export default async function DashboardPage() {
   const onboarding = await getOnboardingState();
   if (!onboarding.hasData) {
     const session = await auth();
-    return <WelcomeOnboarding userName={session?.user?.name} />;
+    return <WelcomeOnboarding userName={session?.user?.name} locale={locale} />;
   }
 
   const [accounts, cards, goals, investments, transactions, monthlyHistory] =
@@ -93,13 +97,13 @@ export default async function DashboardPage() {
       <SectionHeader
         eyebrow="Command Center"
         eyebrowClassName="bg-gradient-to-r from-brand-300 to-info-400 bg-clip-text text-transparent"
-        title="Resumen financiero"
+        title={t("Resumen financiero")}
         actions={
           <Link
             className="rounded-lg border border-brand-400/40 bg-brand-500/15 px-4 py-2 text-sm font-medium text-brand-300 transition hover:bg-brand-500/25"
             href="/investments"
           >
-            Revisar portafolio
+            {t("Revisar portafolio")}
           </Link>
         }
       />
@@ -107,7 +111,7 @@ export default async function DashboardPage() {
       <div className="space-y-6 px-4 py-6 md:px-8">
         {onboarding.usingSampleData && (
           <AnimateIn>
-            <SampleDataBanner />
+            <SampleDataBanner locale={locale} />
           </AnimateIn>
         )}
         {/*
@@ -118,6 +122,7 @@ export default async function DashboardPage() {
         <AnimateIn>
           <DashboardStats
             history={monthlyHistory}
+            locale={locale}
             staticData={{
               totalCreditBalance,
               creditUtilization,
@@ -130,8 +135,8 @@ export default async function DashboardPage() {
         <AnimateIn delay={0.04}>
           <Card padded={false}>
             <CardHeader
-              title="Patrimonio neto"
-              subtitle="Selecciona un mes para resaltar"
+              title={t("Patrimonio neto")}
+              subtitle={t("Selecciona un mes para resaltar")}
               action={
                 <p className="text-sm font-medium tabular-nums text-positive-400">
                   {formatCurrency(netWorth.netWorth)}
@@ -147,16 +152,16 @@ export default async function DashboardPage() {
         <AnimateIn className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]" delay={0.06}>
           <Card padded={false}>
             <CardHeader
-              title="Cuentas"
-              subtitle="Balances liquidos por institucion"
-              action={<p className="text-sm text-text-secondary">{accounts.length} conectadas</p>}
+              title={t("Cuentas")}
+              subtitle={t("Balances liquidos por institucion")}
+              action={<p className="text-sm text-text-secondary">{accounts.length} {t("conectadas")}</p>}
             />
             <div className="divide-y divide-white/10">
               {topAccounts.length === 0 ? (
                 <EmptyState
                   icon={<Landmark aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-                  title="No hay cuentas conectadas"
-                  description="Las cuentas conectadas llenaran este registro de balances."
+                  title={t("No hay cuentas conectadas")}
+                  description={t("Las cuentas conectadas llenaran este registro de balances.")}
                   action={<EmptyStateActions />}
                 />
               ) : topAccounts.map((account) => (
@@ -186,16 +191,16 @@ export default async function DashboardPage() {
 
           <Card>
             <CardHeader
-              title="Lineas de credito"
-              subtitle="Utilizacion y fechas de pago"
+              title={t("Lineas de credito")}
+              subtitle={t("Utilizacion y fechas de pago")}
               action={<p className="text-sm font-medium tabular-nums text-warning-400">{formatPercent(creditUtilization)}</p>}
             />
             <div className="space-y-4">
               {cards.length === 0 ? (
                 <EmptyState
                   icon={<CreditCard aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-                  title="No hay lineas de credito"
-                  description="La utilizacion y fechas de pago apareceran aqui."
+                  title={t("No hay lineas de credito")}
+                  description={t("La utilizacion y fechas de pago apareceran aqui.")}
                   action={<EmptyStateActions />}
                 />
               ) : cards.map((card) => {
@@ -227,15 +232,15 @@ export default async function DashboardPage() {
         <AnimateIn className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]" delay={0.12}>
           <Card padded={false}>
             <CardHeader
-              title="Transacciones recientes"
-              subtitle="Actividad mas reciente entre cuentas"
+              title={t("Transacciones recientes")}
+              subtitle={t("Actividad mas reciente entre cuentas")}
             />
             <div className="divide-y divide-white/10">
               {recentTransactions.length === 0 ? (
                 <EmptyState
                   icon={<ReceiptText aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-                  title="No hay actividad reciente"
-                  description="Los ingresos, gastos y transferencias apareceran en este feed."
+                  title={t("No hay actividad reciente")}
+                  description={t("Los ingresos, gastos y transferencias apareceran en este feed.")}
                   action={<EmptyStateActions />}
                 />
               ) : recentTransactions.map((transaction) => (
@@ -261,17 +266,17 @@ export default async function DashboardPage() {
 
           <Card>
             <CardHeader
-              title="Metas financieras"
-              subtitle="Progreso hacia tus objetivos prioritarios"
-              action={<p className="text-sm text-text-secondary">{goals.length} metas</p>}
+              title={t("Metas financieras")}
+              subtitle={t("Progreso hacia tus objetivos prioritarios")}
+              action={<p className="text-sm text-text-secondary">{goals.length} {t("metas")}</p>}
             />
 
             <div className="grid gap-4 md:grid-cols-2">
               {goals.length === 0 ? (
                 <EmptyState
                   icon={<Flag aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-                  title="Aun no hay metas"
-                  description="Tus objetivos prioritarios de ahorro apareceran aqui cuando empieces a planear."
+                  title={t("Aun no hay metas")}
+                  description={t("Tus objetivos prioritarios de ahorro apareceran aqui cuando empieces a planear.")}
                   action={<EmptyStateActions />}
                 />
               ) : goals.map((goal) => {

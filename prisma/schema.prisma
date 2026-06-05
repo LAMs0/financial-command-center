@@ -71,6 +71,7 @@ model User {
   investments       Investment[]
   goals             Goal[]
   budgets           Budget[]
+  bankConnections   BankConnection[]
 
   // NextAuth — tokens de OAuth y sesiones
   // OJO: el adapter estándar de Auth.js espera un modelo llamado `Account`.
@@ -231,4 +232,32 @@ model Budget {
 
   // Un usuario no puede tener dos budgets del mismo mes+categoría
   @@unique([userId, month, category])
+}
+
+// ── Conectividad bancaria ────────────────────────────────────────────────────
+
+// BankConnection — vínculo del usuario con una institución vía un agregador
+// (Plaid, Belvo, etc.). Guarda el access_token CIFRADO (nunca en claro): se
+// cifra con AES-256-GCM en lib/crypto.ts antes de persistir.
+//
+// El proveedor "mock" NO usa esta tabla (crea FinancialAccount directamente);
+// existe para cuando se active un agregador real (ver lib/banking/plaid-provider.ts).
+model BankConnection {
+  id              String    @id @default(cuid())
+  provider        String    // "plaid" | "belvo" | ...
+  institutionId   String    // id de la institución en el proveedor
+  institutionName String
+  // access_token cifrado (iv:tag:ciphertext en base64). NUNCA en texto plano.
+  accessTokenCipher String  @db.Text
+  itemId          String?   // id del "item" en el proveedor (Plaid item_id)
+  status          String    @default("active") // active | error | disconnected
+  lastSyncedAt    DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Un usuario no conecta dos veces la misma institución con el mismo proveedor.
+  @@unique([userId, provider, institutionId])
 }

@@ -6,6 +6,7 @@ import { RotateCcw, Search, SearchX } from "lucide-react";
 import { Button, EmptyState, TransactionBadge } from "@/components/ui";
 import EmptyStateActions from "@/components/onboarding/EmptyStateActions";
 import { formatCurrency, formatDate } from "@/lib/formatters";
+import { tx, type Locale } from "@/lib/i18n/config";
 import type { Transaction, TransactionType } from "@/types/finance";
 
 type FilterType = TransactionType | "all";
@@ -20,6 +21,7 @@ const filterOptions: { value: FilterType; label: string }[] = [
 interface TransactionsListProps {
   transactions: Transaction[];
   accountNameById: Record<string, string>;
+  locale?: Locale;
 }
 
 function amountTone(type: TransactionType): string {
@@ -35,7 +37,9 @@ function amountPrefix(type: TransactionType): string {
 export default function TransactionsList({
   transactions,
   accountNameById,
+  locale = "es",
 }: TransactionsListProps) {
+  const t = (text: string) => tx(locale, text);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const shouldReduceMotion = useReducedMotion();
@@ -76,7 +80,7 @@ export default function TransactionsList({
               onClick={() => setActiveFilter(option.value)}
               type="button"
             >
-              {option.label}
+              {t(option.label)}
             </button>
           ))}
         </div>
@@ -88,10 +92,10 @@ export default function TransactionsList({
             strokeWidth={1.8}
           />
           <input
-            aria-label="Buscar transacciones"
+            aria-label={t("Buscar transacciones")}
             className="w-full rounded-lg border border-white/10 bg-white/[0.03] py-1.5 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-muted transition focus:border-brand-400/40 focus:bg-brand-500/[0.05] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
             onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Buscar transacciones..."
+            placeholder={t("Buscar transacciones...")}
             type="search"
             value={searchQuery}
           />
@@ -102,21 +106,21 @@ export default function TransactionsList({
         {transactions.length === 0 ? (
           <EmptyState
             icon={<SearchX aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-            title="Aun no hay transacciones"
-            description="Cuando conectes datos, los ingresos, gastos y transferencias apareceran aqui."
+            title={t("Aun no hay transacciones")}
+            description={t("Cuando conectes datos, los ingresos, gastos y transferencias apareceran aqui.")}
             action={<EmptyStateActions />}
           />
         ) : filtered.length === 0 ? (
           <EmptyState
             icon={<SearchX aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-            title="No hay transacciones con esos filtros"
-            description="Prueba una busqueda mas amplia o vuelve a todo el historial."
+            title={t("No hay transacciones con esos filtros")}
+            description={t("Prueba una busqueda mas amplia o vuelve a todo el historial.")}
             action={
               <Button
                 icon={<RotateCcw aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />}
                 onClick={resetFilters}
               >
-                Limpiar filtros
+                {t("Limpiar filtros")}
               </Button>
             }
           />
@@ -124,7 +128,7 @@ export default function TransactionsList({
           <>
             <div className="border-b border-white/10 px-5 py-3">
               <p className="text-xs text-text-muted">
-                {filtered.length} de {transactions.length} transacciones
+                {filtered.length} {t("de")} {transactions.length} {t("transacciones")}
               </p>
             </div>
 

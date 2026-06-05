@@ -3,6 +3,11 @@ import RouteTransition from "@/components/layout/RouteTransition";
 import { MonthProvider } from "@/contexts/MonthContext";
 import { getMonthlyHistory, getNotifications } from "@/lib/data";
 import { auth, signOut } from "@/auth";
+import { prisma } from "@/lib/prisma";
+import { notifyMonitoring } from "@/lib/logger";
+import { getLocale } from "@/lib/i18n/server";
+
+export const dynamic = "force-dynamic";
 
 /*
   Este layout envuelve TODAS las páginas del grupo (main):
@@ -30,16 +35,34 @@ export default async function MainLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [monthlyHistory, session, notifications] = await Promise.all([
+  const [monthlyHistory, session, notifications, locale] = await Promise.all([
     getMonthlyHistory(),
     auth(),
     getNotifications(),
+    getLocale(),
   ]);
   const defaultMonth = monthlyHistory[monthlyHistory.length - 1].month;
 
   async function handleSignOut() {
     "use server";
     await signOut({ redirectTo: "/sign-in" });
+  }
+
+  async function handleDeleteAccount() {
+    "use server";
+    const session = await auth();
+    const userId = session?.user?.id;
+
+    if (userId) {
+      try {
+        await prisma.user.delete({ where: { id: userId } });
+      } catch (error) {
+        await notifyMonitoring("account.delete_failed", error, { userId });
+        throw new Error("No se pudo eliminar la cuenta. Intentalo de nuevo.");
+      }
+    }
+
+    await signOut({ redirectTo: "/sign-in?accountDeleted=1" });
   }
 
   const user = session?.user
@@ -64,10 +87,23 @@ export default async function MainLayout({
         />
         <div aria-hidden="true" className="grid-background pointer-events-none fixed inset-0 -z-10 opacity-60" />
         <div aria-hidden="true" className="noise-overlay" />
-        <Sidebar history={monthlyHistory} user={user} signOutAction={handleSignOut} notifications={notifications} />
+        <Sidebar
+          deleteAccountAction={handleDeleteAccount}
+          history={monthlyHistory}
+          locale={locale}
+          notifications={notifications}
+          signOutAction={handleSignOut}
+          user={user}
+        />
         {/* flex-1 hace que el contenido ocupe todo el ancho restante */}
         <div className="flex min-w-0 flex-1 flex-col xl:max-w-[calc(100vw-18rem)]">
-          <MobileNav user={user} signOutAction={handleSignOut} notifications={notifications} />
+          <MobileNav
+            deleteAccountAction={handleDeleteAccount}
+            locale={locale}
+            notifications={notifications}
+            signOutAction={handleSignOut}
+            user={user}
+          />
           <RouteTransition>{children}</RouteTransition>
         </div>
       </div>

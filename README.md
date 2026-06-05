@@ -1,36 +1,129 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Financial Command Center
 
-## Getting Started
+Dashboard financiero personal para importar estados de cuenta, monitorear patrimonio, flujo de caja, tarjetas, inversiones, metas y presupuesto desde un espacio privado por usuario.
 
-First, run the development server:
+## Stack
+
+- Next.js 16 App Router + React 19 + TypeScript
+- Tailwind CSS v4 con tokens en `app/globals.css`
+- Auth.js v5 con Google OAuth y Prisma Adapter
+- Prisma + PostgreSQL
+- Recharts, Framer Motion y lucide-react
+
+## Setup Local
+
+1. Instala dependencias:
+
+```bash
+npm install
+```
+
+2. Crea `.env` con las variables necesarias:
+
+```bash
+DATABASE_URL="postgresql://..."
+DATA_SOURCE="database"
+AUTH_SECRET="..."
+AUTH_GOOGLE_ID="..."
+AUTH_GOOGLE_SECRET="..."
+
+# Opcional: Redis compartido para rate limit en produccion
+UPSTASH_REDIS_REST_URL=""
+UPSTASH_REDIS_REST_TOKEN=""
+
+# Opcional: webhook para errores estructurados
+ERROR_WEBHOOK_URL=""
+```
+
+3. Genera Prisma y aplica migraciones:
+
+```bash
+npm run db:generate
+npm run db:migrate
+```
+
+4. Levanta desarrollo:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+La app corre en [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev          # servidor local
+npm run build        # build de produccion
+npm run start        # servir build
+npm run start:prod   # prisma migrate deploy + next start
+npm run lint         # ESLint
+npm run db:generate  # prisma generate
+npm run db:migrate   # prisma migrate dev
+npm run db:seed      # datos demo
+npm run db:studio    # Prisma Studio
+npm audit            # auditoria de dependencias
+```
 
-## Learn More
+## Flujo De Producto
 
-To learn more about Next.js, take a look at the following resources:
+- `/` es la landing publica.
+- `/sign-in` crea o abre el espacio privado con Google OAuth.
+- `/dashboard` muestra onboarding si el usuario no tiene datos.
+- `/import` procesa CSV, OFX, Excel, PDF e imagenes del estado de cuenta.
+- Las rutas principales usan skeleton loading states reales mediante `PageLoading`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Datos Y Privacidad
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Cada usuario tiene datos aislados por `userId`. El schema usa `onDelete: Cascade`, por lo que borrar un `User` elimina:
 
-## Deploy on Vercel
+- cuentas OAuth (`Account`)
+- sesiones (`Session`)
+- cuentas financieras
+- tarjetas
+- transacciones
+- inversiones
+- metas
+- presupuestos
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+La UI incluye una accion de dos pasos para "Eliminar cuenta", pensada para el requerimiento GDPR de borrar datos del usuario.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Monitoreo Y Logging
+
+La app incluye logging estructurado en `lib/logger.ts`.
+
+- Los logs salen como JSON en stdout/stderr.
+- Errores de cliente se reportan a `POST /api/client-error`.
+- Si `ERROR_WEBHOOK_URL` existe, los errores tambien se envian a ese webhook.
+
+Esto permite operar localmente sin proveedor externo y conectar Sentry, Datadog, Axiom o un webhook propio despues sin rehacer los puntos de captura.
+
+## Seguridad Beta
+
+Checklist antes de invitar testers:
+
+- Deshabilitar o rotar el secreto viejo de Google OAuth en Google Cloud Console.
+- Confirmar que solo los redirect URIs correctos estan autorizados.
+- Correr `npm audit` y revisar vulnerabilidades.
+- Confirmar que `.env` no se commitea.
+- Usar `AUTH_SECRET` fuerte generado con `npx auth secret`.
+- Configurar `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN` en produccion para rate limit compartido.
+
+## Idioma
+
+La UI de beta apunta a espanol. Si agregas nuevas superficies visibles, evita mezclar labels en ingles como `Cash flow`, `Net worth` o `Import Statement`.
+
+## Deploy
+
+1. Configura variables de entorno en el host.
+2. Asegura que la DB tenga migraciones aplicadas:
+
+```bash
+npm run start:prod
+```
+
+3. En Google Cloud Console agrega el callback de produccion:
+
+```text
+https://tu-dominio.com/api/auth/callback/google
+```

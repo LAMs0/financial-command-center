@@ -1,8 +1,11 @@
 import { Skeleton, SkeletonCard, SkeletonListRow } from "@/components/ui";
+import { tx } from "@/lib/i18n/config";
+import { getLocale } from "@/lib/i18n/server";
 
-export default function DashboardLoading() {
+export default async function DashboardLoading() {
+  const locale = await getLocale();
   return (
-    <section aria-busy="true" aria-label="Loading dashboard" className="flex flex-1 flex-col">
+    <section aria-busy="true" aria-label={tx(locale, "Cargando resumen")} className="flex flex-1 flex-col">
       <div className="sticky top-0 z-20 border-b border-white/10 bg-surface-base/80 px-4 py-4 backdrop-blur md:px-8">
         <Skeleton className="h-3 w-32 rounded-full" />
         <Skeleton className="mt-3 h-8 w-64" />

@@ -17,10 +17,12 @@
 import { useMonth } from "@/contexts/MonthContext";
 import { CountUpValue, StatCard, MonthSelector } from "@/components/ui";
 import { formatCurrency, formatPercent, formatCompact } from "@/lib/formatters";
+import { tx, type Locale } from "@/lib/i18n/config";
 import type { MonthlySnapshot } from "@/types/finance";
 
 interface DashboardStatsProps {
   history: MonthlySnapshot[];
+  locale?: Locale;
   /** Valores estáticos (deuda, utilización) que no cambian por mes */
   staticData: {
     totalCreditBalance: number;
@@ -30,7 +32,8 @@ interface DashboardStatsProps {
   };
 }
 
-export default function DashboardStats({ history, staticData }: DashboardStatsProps) {
+export default function DashboardStats({ history, locale = "es", staticData }: DashboardStatsProps) {
+  const t = (text: string) => tx(locale, text);
   const { snapshot } = useMonth();
 
   // Si no hay snapshot del mes seleccionado, usamos el último disponible
@@ -61,35 +64,35 @@ export default function DashboardStats({ history, staticData }: DashboardStatsPr
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard
           className="xl:col-span-2"
-          label="Net worth"
+          label={t("Patrimonio")}
           value={<CountUpValue value={current.netWorth} format={formatCurrency} />}
-          detail={`${netWorthTrend >= 0 ? "+" : ""}${formatPercent(netWorthTrend)} vs prev month`}
+          detail={`${netWorthTrend >= 0 ? "+" : ""}${formatPercent(netWorthTrend)} ${t("vs mes anterior")}`}
           tone={netWorthTrend >= 0 ? "positive" : "negative"}
           sparkline={sparklineNetWorth}
         />
         <StatCard
-          label="Cash flow"
+          label={t("Flujo de caja")}
           value={<CountUpValue value={netCashFlow} format={formatCurrency} />}
-          detail={`${formatCompact(current.income)} in / ${formatCompact(current.expenses)} out — ${formatPercent(savingsRate, 0)} saved`}
+          detail={`${formatCompact(current.income)} ${t("ingresos")} / ${formatCompact(current.expenses)} ${t("gastos")} - ${formatPercent(savingsRate, 0)} ${t("ahorrado")}`}
           tone={netCashFlow >= 0 ? "positive" : "negative"}
           sparkline={sparklineCashFlow}
         />
         <StatCard
-          label="Debt"
+          label={t("Deuda")}
           value={<CountUpValue value={staticData.totalCreditBalance} format={formatCurrency} />}
-          detail={`${staticData.numCards} active credit lines`}
+          detail={`${staticData.numCards} ${t("lineas de credito activas")}`}
           tone="warning"
           sparkline={sparklineDebt}
         />
         <StatCard
-          label="Credit utilization"
+          label={t("Uso de credito")}
           value={
             <CountUpValue
               value={staticData.creditUtilization}
               format={(value) => formatPercent(value)}
             />
           }
-          detail={`${formatCompact(staticData.totalCreditLimit)} total limit`}
+          detail={`${formatCompact(staticData.totalCreditLimit)} ${t("limite total")}`}
           tone={staticData.creditUtilization > 0.3 ? "warning" : "positive"}
           sparkline={sparklineUtil}
         />

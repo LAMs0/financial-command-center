@@ -1,4 +1,6 @@
 import { Skeleton, SkeletonCard, SkeletonListRow } from "@/components/ui";
+import { tx } from "@/lib/i18n/config";
+import { getLocale } from "@/lib/i18n/server";
 
 type PageLoadingVariant = "list" | "cards" | "chart-list" | "analytics" | "import";
 
@@ -8,13 +10,14 @@ interface PageLoadingProps {
   variant?: PageLoadingVariant;
 }
 
-export default function PageLoading({
+export default async function PageLoading({
   ariaLabel,
   statCards = 3,
   variant = "list",
 }: PageLoadingProps) {
+  const locale = await getLocale();
   return (
-    <section aria-busy="true" aria-label={ariaLabel} className="flex flex-1 flex-col">
+    <section aria-busy="true" aria-label={tx(locale, ariaLabel)} className="flex flex-1 flex-col">
       <div className="sticky top-0 z-20 border-b border-white/10 bg-surface-base/80 px-4 py-4 backdrop-blur md:px-8">
         <Skeleton className="h-3 w-28 rounded-full" />
         <Skeleton className="mt-3 h-8 w-64 max-w-full" />

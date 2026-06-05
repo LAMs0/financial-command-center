@@ -4,11 +4,13 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Sparkles } from "lucide-react";
 import { loadSampleData } from "@/lib/actions/onboarding";
+import { tx, type Locale } from "@/lib/i18n/config";
 
-export default function LoadSampleDataButton() {
+export default function LoadSampleDataButton({ locale = "es" }: { locale?: Locale }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const t = (text: string) => tx(locale, text);
 
   function handleLoadSample() {
     setError(null);
@@ -35,7 +37,7 @@ export default function LoadSampleDataButton() {
         ) : (
           <Sparkles aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
         )}
-        {isPending ? "Cargando ejemplo..." : "Probar con datos de ejemplo"}
+        {isPending ? t("Cargando ejemplo...") : t("Probar con datos de ejemplo")}
       </button>
       {error && (
         <p className="text-xs text-negative-400" role="alert">

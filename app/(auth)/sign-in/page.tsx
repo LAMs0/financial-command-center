@@ -1,11 +1,13 @@
 import { auth, signIn } from "@/auth";
-import { AnimateIn, ThemeToggle } from "@/components/ui";
+import { AnimateIn, LanguageToggle, ThemeToggle } from "@/components/ui";
+import { tx } from "@/lib/i18n/config";
+import { getLocale } from "@/lib/i18n/server";
 import { ArrowRight, BarChart3, LockKeyhole, ShieldCheck, TrendingUp } from "lucide-react";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import type { CSSProperties } from "react";
 
-export const metadata = { title: "Sign in | Financial Command Center" };
+export const metadata = { title: "Iniciar sesion | Financial Command Center" };
 
 const authTheme = {
   "--color-primary": "#6ee7b7",
@@ -23,13 +25,15 @@ const authTheme = {
 export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string }>;
+  searchParams: Promise<{ accountDeleted?: string; callbackUrl?: string }>;
 }) {
-  const session = await auth();
+  const [session, locale] = await Promise.all([auth(), getLocale()]);
   if (session) redirect("/dashboard");
+  const t = (text: string) => tx(locale, text);
 
-  const { callbackUrl } = await searchParams;
+  const { accountDeleted, callbackUrl } = await searchParams;
   const destination = callbackUrl ?? "/dashboard";
+  const wasAccountDeleted = accountDeleted === "1";
 
   return (
     <main
@@ -50,7 +54,8 @@ export default async function SignInPage({
         <div className="absolute inset-0 grid-background opacity-25" />
       </div>
 
-      <div className="absolute right-4 top-4 z-20 sm:right-6 sm:top-6">
+      <div className="absolute right-4 top-4 z-20 flex items-center gap-2 sm:right-6 sm:top-6">
+        <LanguageToggle locale={locale} />
         <ThemeToggle />
       </div>
 
@@ -66,41 +71,40 @@ export default async function SignInPage({
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-on-surface">Financial Command</p>
-                  <p className="text-xs text-on-surface-variant">Espacio CFO personal</p>
+                  <p className="text-xs text-on-surface-variant">{t("Espacio CFO personal")}</p>
                 </div>
               </div>
 
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary-container/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_14px_rgba(110,231,183,0.8)]" />
-                Beta privada
+                {t("Beta privada")}
               </div>
               <h1 className="mt-5 max-w-xl text-4xl font-semibold leading-tight tracking-normal text-on-surface sm:text-5xl lg:text-6xl">
-                Tu centro de mando financiero privado.
+                {t("Tu centro de mando financiero privado.")}
               </h1>
               <p className="mt-5 max-w-lg text-sm leading-6 text-on-surface-variant sm:text-base">
-                Importa estados de cuenta, revisa flujo de caja, monitorea credito
-                y convierte tus movimientos en decisiones claras.
+                {t("Importa estados de cuenta, revisa flujo de caja, monitorea credito y convierte tus movimientos en decisiones claras.")}
               </p>
             </div>
 
             <div className="mt-10 grid gap-4 lg:mt-0">
               <div className="premium-glow-hover rounded-xl border border-primary/15 bg-surface-container/68 p-4 shadow-2xl shadow-black/20">
                 <div className="mb-4 flex items-center justify-between">
-                  <p className="text-xs uppercase tracking-[0.2em] text-on-surface-variant">Vista previa</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-on-surface-variant">{t("Vista previa")}</p>
                   <TrendingUp aria-hidden="true" className="h-4 w-4 text-primary" strokeWidth={1.8} />
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <div>
                     <p className="text-2xl font-semibold tabular-nums text-on-surface">$186k</p>
-                    <p className="mt-1 text-xs text-on-surface-variant">Patrimonio</p>
+                    <p className="mt-1 text-xs text-on-surface-variant">{t("Patrimonio")}</p>
                   </div>
                   <div>
                     <p className="text-2xl font-semibold tabular-nums text-primary">+12%</p>
-                    <p className="mt-1 text-xs text-on-surface-variant">Flujo</p>
+                    <p className="mt-1 text-xs text-on-surface-variant">{t("Flujo")}</p>
                   </div>
                   <div>
                     <p className="text-2xl font-semibold tabular-nums text-warning-400">31%</p>
-                    <p className="mt-1 text-xs text-on-surface-variant">Uso de credito</p>
+                    <p className="mt-1 text-xs text-on-surface-variant">{t("Uso de credito")}</p>
                   </div>
                 </div>
               </div>
@@ -108,16 +112,16 @@ export default async function SignInPage({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="rounded-xl border border-primary/12 bg-surface-container/52 p-4">
                   <BarChart3 aria-hidden="true" className="h-5 w-5 text-primary" strokeWidth={1.8} />
-                  <p className="mt-4 text-sm font-medium text-on-surface">Analitica primero</p>
+                  <p className="mt-4 text-sm font-medium text-on-surface">{t("Analitica primero")}</p>
                   <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-                    Disenado para revisar metricas, tendencias y detalle.
+                    {t("Disenado para revisar metricas, tendencias y detalle.")}
                   </p>
                 </div>
                 <div className="rounded-xl border border-primary/12 bg-surface-container/52 p-4">
                   <ShieldCheck aria-hidden="true" className="h-5 w-5 text-primary" strokeWidth={1.8} />
-                  <p className="mt-4 text-sm font-medium text-on-surface">Privado por defecto</p>
+                  <p className="mt-4 text-sm font-medium text-on-surface">{t("Privado por defecto")}</p>
                   <p className="mt-1 text-xs leading-5 text-on-surface-variant">
-                    Tus datos son tuyos y quedan aislados en tu cuenta.
+                    {t("Tus datos son tuyos y quedan aislados en tu cuenta.")}
                   </p>
                 </div>
               </div>
@@ -134,33 +138,42 @@ export default async function SignInPage({
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-on-surface">Financial Command</p>
-                  <p className="text-xs text-on-surface-variant">Espacio CFO personal</p>
+                  <p className="text-xs text-on-surface-variant">{t("Espacio CFO personal")}</p>
                 </div>
               </div>
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary-container/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_14px_rgba(110,231,183,0.8)]" />
-                Beta privada
+                {t("Beta privada")}
               </div>
               <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-normal text-on-surface">
-                Tu centro financiero privado.
+                {t("Tu centro financiero privado.")}
               </h1>
               <p className="mt-3 text-sm leading-6 text-on-surface-variant">
-                Importa, revisa y decide con claridad desde un espacio seguro.
+                {t("Importa, revisa y decide con claridad desde un espacio seguro.")}
               </p>
             </div>
 
             <div className="rounded-2xl border border-primary/15 bg-surface-container-low/86 p-5 shadow-2xl shadow-black/30 backdrop-blur sm:p-7">
+              {wasAccountDeleted && (
+                <div className="mb-6 rounded-xl border border-primary/20 bg-primary-container/10 px-4 py-3">
+                  <p className="text-sm font-medium text-primary">{t("Cuenta eliminada")}</p>
+                  <p className="mt-1 text-xs leading-5 text-on-surface-variant">
+                    {t("Tus datos fueron eliminados. Puedes crear un espacio nuevo cuando quieras.")}
+                  </p>
+                </div>
+              )}
+
               <div className="mb-7 inline-flex h-12 w-12 items-center justify-center rounded-xl border border-primary/25 bg-primary-container/10 text-primary">
                 <LockKeyhole aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />
               </div>
               <p className="text-xs uppercase tracking-[0.22em] text-primary">
-                Inicia sesion o registrate
+                {t("Inicia sesion o registrate")}
               </p>
               <h2 className="mt-3 text-2xl font-semibold tracking-normal text-on-surface">
-                Crea tu espacio
+                {t("Crea tu espacio")}
               </h2>
               <p className="mt-2 text-sm leading-6 text-on-surface-variant">
-                Continua con Google para crear tu Financial Command Center personal. Si es tu primera vez, tu cuenta se crea automaticamente.
+                {t("Continua con Google para crear tu Financial Command Center personal. Si es tu primera vez, tu cuenta se crea automaticamente.")}
               </p>
 
               <form
@@ -192,7 +205,7 @@ export default async function SignInPage({
                       fill="#EA4335"
                     />
                   </svg>
-                  Continuar con Google
+                  {t("Continuar con Google")}
                   <ArrowRight
                     aria-hidden="true"
                     className="h-4 w-4 text-on-primary-container/70 transition group-hover:translate-x-0.5 group-hover:text-on-primary-container"
@@ -203,7 +216,7 @@ export default async function SignInPage({
 
               <div className="mt-6 rounded-xl border border-primary/12 bg-surface-container/60 px-4 py-3">
                 <p className="text-xs leading-5 text-on-surface-variant">
-                  La autenticacion se maneja de forma segura con Google OAuth. Solo la usamos para identificar tu espacio; nunca vemos tu contrasena.
+                  {t("La autenticacion se maneja de forma segura con Google OAuth. Solo la usamos para identificar tu espacio; nunca vemos tu contrasena.")}
                 </p>
               </div>
             </div>

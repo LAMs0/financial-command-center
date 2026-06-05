@@ -104,13 +104,13 @@ export async function seedUserData(
   // ── Presupuestos (mes configurable; default = mes actual) ────────────────────
   await prisma.budget.createMany({
     data: [
-      { category: "housing", label: "Housing", allocated: 10000, spent: 9500, color: "#3b82f6", icon: "Home", month: budgetMonth, userId },
-      { category: "food", label: "Food", allocated: 3000, spent: 1635, color: "#10b981", icon: "Utensils", month: budgetMonth, userId },
-      { category: "transport", label: "Transport", allocated: 1500, spent: 800, color: "#14b8a6", icon: "Car", month: budgetMonth, userId },
-      { category: "entertainment", label: "Entertainment", allocated: 600, spent: 219, color: "#8b5cf6", icon: "Tv2", month: budgetMonth, userId },
-      { category: "health", label: "Health & Fitness", allocated: 700, spent: 699, color: "#f59e0b", icon: "Dumbbell", month: budgetMonth, userId },
-      { category: "shopping", label: "Shopping", allocated: 1500, spent: 1890, color: "#ef4444", icon: "ShoppingBag", month: budgetMonth, userId },
-      { category: "services", label: "Subscriptions", allocated: 500, spent: 0, color: "#6366f1", icon: "Zap", month: budgetMonth, userId },
+      { category: "housing", label: "Vivienda", allocated: 10000, spent: 9500, color: "#3b82f6", icon: "Home", month: budgetMonth, userId },
+      { category: "food", label: "Comida", allocated: 3000, spent: 1635, color: "#10b981", icon: "Utensils", month: budgetMonth, userId },
+      { category: "transport", label: "Transporte", allocated: 1500, spent: 800, color: "#14b8a6", icon: "Car", month: budgetMonth, userId },
+      { category: "entertainment", label: "Entretenimiento", allocated: 600, spent: 219, color: "#8b5cf6", icon: "Tv2", month: budgetMonth, userId },
+      { category: "health", label: "Salud y fitness", allocated: 700, spent: 699, color: "#f59e0b", icon: "Dumbbell", month: budgetMonth, userId },
+      { category: "shopping", label: "Compras", allocated: 1500, spent: 1890, color: "#ef4444", icon: "ShoppingBag", month: budgetMonth, userId },
+      { category: "services", label: "Suscripciones", allocated: 500, spent: 0, color: "#6366f1", icon: "Zap", month: budgetMonth, userId },
     ],
   });
 

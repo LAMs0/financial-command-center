@@ -8,6 +8,8 @@ import {
   Loader2,
   ChevronDown,
 } from "lucide-react";
+import { normalizeLocale, tx } from "@/lib/i18n/config";
+import type { Locale } from "@/lib/i18n/config";
 
 type ExportItem = {
   label: string;
@@ -38,9 +40,17 @@ export default function ExportMenu({
   datasets = ["transactions"],
   showReport = true,
 }: ExportMenuProps) {
+  const [locale, setLocale] = useState<Locale>("es");
+  const t = (text: string) => tx(locale, text);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Detección de idioma en cliente desde <html lang> (intencional).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLocale(normalizeLocale(document.documentElement.lang));
+  }, []);
 
   // Cerrar al click fuera
   useEffect(() => {
@@ -64,16 +74,16 @@ export default function ExportMenu({
 
   const items: ExportItem[] = [
     ...datasets.map((ds) => ({
-      label: DATASET_META[ds].label,
-      description: DATASET_META[ds].description,
+      label: t(DATASET_META[ds].label),
+      description: t(DATASET_META[ds].description),
       icon: <FileSpreadsheet aria-hidden="true" className="h-4 w-4 text-positive-400" strokeWidth={1.8} />,
       url: `/api/export/transactions?dataset=${ds}`,
       filename: ds,
     })),
     ...(showReport
       ? [{
-          label: "Reporte mensual PDF",
-          description: "Resumen financiero completo",
+          label: t("Reporte mensual PDF"),
+          description: t("Resumen financiero completo"),
           icon: <FileText aria-hidden="true" className="h-4 w-4 text-info-400" strokeWidth={1.8} />,
           url: "/api/export/report",
           filename: "report",
@@ -103,8 +113,17 @@ export default function ExportMenu({
       a.click();
       a.remove();
       URL.revokeObjectURL(href);
-    } catch (err) {
-      console.error("[ExportMenu] download failed:", err);
+    } catch (error) {
+      await fetch("/api/client-error", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          filename: item.filename,
+          location: "export-menu",
+          message: error instanceof Error ? error.message : String(error),
+          url: item.url,
+        }),
+      });
     } finally {
       setLoading(null);
     }
@@ -117,7 +136,7 @@ export default function ExportMenu({
       <button
         aria-expanded={open}
         aria-haspopup="menu"
-        aria-label="Exportar datos"
+        aria-label={t("Exportar datos")}
         className={`inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm font-medium text-text-secondary transition hover:border-white/20 hover:bg-white/[0.08] hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-50 ${FOCUS_RING}`}
         disabled={isLoading}
         onClick={() => setOpen((v) => !v)}
@@ -128,7 +147,7 @@ export default function ExportMenu({
         ) : (
           <Download aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
         )}
-        <span>{isLoading ? "Exportando..." : "Exportar"}</span>
+        <span>{isLoading ? t("Exportando...") : t("Exportar")}</span>
         <ChevronDown
           aria-hidden="true"
           className={`h-3.5 w-3.5 transition-transform duration-150 ${open ? "rotate-180" : ""}`}
@@ -138,13 +157,13 @@ export default function ExportMenu({
 
       {open && (
         <div
-          aria-label="Opciones de exportacion"
+          aria-label={t("Opciones de exportacion")}
           className="absolute right-0 top-11 z-50 w-[min(16rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-white/10 bg-surface-card shadow-2xl shadow-black/40"
           role="menu"
         >
           <div className="border-b border-white/[0.06] px-3 py-2.5">
             <p className="text-xs font-semibold uppercase tracking-wider text-text-muted">
-              Opciones de exportacion
+              {t("Opciones de exportacion")}
             </p>
           </div>
 

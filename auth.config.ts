@@ -21,6 +21,8 @@ export const authConfig = {
       const isPublic =
         nextUrl.pathname === "/" ||
         nextUrl.pathname.startsWith("/sign-in") ||
+        nextUrl.pathname.startsWith("/privacy") ||
+        nextUrl.pathname.startsWith("/terms") ||
         nextUrl.pathname.startsWith("/api/auth");
       if (isPublic) return true;
       if (isLoggedIn) return true;

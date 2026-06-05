@@ -19,6 +19,7 @@ import {
   parseImageStatement,
   parseXLSXStatement,
 } from "@/lib/import";
+import { notifyMonitoring } from "@/lib/logger";
 
 // Cuota anti-abuso: el parseo/OCR es caro (hasta 120 s). Limitamos por usuario.
 const IMPORT_LIMIT = 15;            // peticiones...
@@ -43,11 +44,11 @@ const SUPPORTED_EXTENSIONS = [
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
   // Rate limit por usuario (defensa contra abuso de CPU/costo del OCR).
-  const { ok, retryAfterMs } = rateLimit(`import:${session.user.id}`, IMPORT_LIMIT, IMPORT_WINDOW_MS);
+  const { ok, retryAfterMs } = await rateLimit(`import:${session.user.id}`, IMPORT_LIMIT, IMPORT_WINDOW_MS);
   if (!ok) {
     const retryAfter = Math.ceil(retryAfterMs / 1000);
     return NextResponse.json(
@@ -60,17 +61,17 @@ export async function POST(req: NextRequest) {
   try {
     formData = await req.formData();
   } catch {
-    return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
+    return NextResponse.json({ error: "Formulario invalido" }, { status: 400 });
   }
 
   const file = formData.get("file");
   if (!file || !(file instanceof File)) {
-    return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    return NextResponse.json({ error: "No se encontro archivo" }, { status: 400 });
   }
 
   if (file.size > MAX_FILE_SIZE) {
     return NextResponse.json(
-      { error: `File too large. Maximum is ${MAX_FILE_SIZE / 1024 / 1024} MB.` },
+      { error: `Archivo demasiado grande. El maximo es ${MAX_FILE_SIZE / 1024 / 1024} MB.` },
       { status: 413 }
     );
   }
@@ -116,10 +117,15 @@ export async function POST(req: NextRequest) {
     const rawContent = await file.text();
     const parsed = parseStatement(rawContent, file.name);
     return NextResponse.json(parsed);
-  } catch (err) {
-    console.error("[import/statement] Parse error:", err);
+  } catch (error) {
+    await notifyMonitoring("import.parse_failed", error, {
+      fileName: file.name,
+      fileSize: file.size,
+      mime: file.type,
+      userId: session.user.id,
+    });
     return NextResponse.json(
-      { error: "Failed to parse the file. Make sure it is a valid bank statement." },
+      { error: "No se pudo leer el archivo. Verifica que sea un estado de cuenta valido." },
       { status: 422 }
     );
   }

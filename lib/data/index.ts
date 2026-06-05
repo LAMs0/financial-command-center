@@ -53,6 +53,7 @@ import type {
 } from "@/types/finance";
 import { generateNotifications } from "@/lib/notifications";
 import { calculateNetWorth } from "@/lib/calculations";
+import { logger } from "@/lib/logger";
 
 /** ¿Debemos leer de la base de datos real? */
 function shouldUseDatabase(): boolean {
@@ -83,10 +84,10 @@ async function withFallback<T>(
   try {
     return await loader();
   } catch (error) {
-    console.warn(
-      `[lib/data] Falló la query "${label}", usando datos mock como fallback.`,
-      error
-    );
+    logger.warn("data.query_failed", {
+      label,
+      error: error instanceof Error ? error.message : String(error),
+    });
     return mock;
   }
 }
@@ -337,7 +338,9 @@ export async function getMonthlyHistory(): Promise<MonthlySnapshot[]> {
 
     return snapshots;
   } catch (error) {
-    console.warn("[lib/data] getMonthlyHistory falló, devolviendo histórico vacío.", error);
+    logger.warn("data.monthly_history_failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return emptyMonthlyHistory();
   }
 }
@@ -391,7 +394,9 @@ export async function getOnboardingState(): Promise<{ hasData: boolean; usingSam
     const hasData = accounts + cards + transactions + investments + goals > 0;
     return { hasData, usingSampleData: user?.usingSampleData ?? false };
   } catch (error) {
-    console.warn("[lib/data] getOnboardingState falló.", error);
+    logger.warn("data.onboarding_state_failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
     // Ante un fallo, asumimos que tiene datos para no bloquear con la bienvenida.
     return { hasData: true, usingSampleData: false };
   }

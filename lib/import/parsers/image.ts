@@ -10,13 +10,16 @@
 import type { Buffer } from "node:buffer";
 import { ocrSingleImage } from "./ocr";
 import { buildPDFResult, type PDFParseResult } from "./pdf";
+import { logger } from "@/lib/logger";
 
 export async function parseImage(buffer: Buffer): Promise<PDFParseResult> {
   let text = "";
   try {
     text = await ocrSingleImage(buffer);
   } catch (err) {
-    console.warn("[parseImage] OCR falló:", (err as Error)?.message);
+    logger.warn("import.image_ocr_failed", {
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 
   if (!text || text.trim().length < 20) {

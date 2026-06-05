@@ -4,16 +4,18 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Sparkles, Trash2 } from "lucide-react";
 import { clearAllData } from "@/lib/actions/onboarding";
+import { tx, type Locale } from "@/lib/i18n/config";
 
-export default function SampleDataBanner() {
+export default function SampleDataBanner({ locale = "es" }: { locale?: Locale }) {
+  const t = (text: string) => tx(locale, text);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const helperText = error
     ?? (confirming
-      ? "Esto borrara datos de ejemplo y cualquier dato cargado en este espacio."
-      : "Borra el set demo cuando quieras empezar con tu propia informacion.");
+      ? t("Esto borrara datos de ejemplo y cualquier dato cargado en este espacio.")
+      : t("Borra el set demo cuando quieras empezar con tu propia informacion."));
 
   function handleClear() {
     if (!confirming) {
@@ -44,7 +46,7 @@ export default function SampleDataBanner() {
         </span>
         <div>
           <p className="text-sm font-semibold text-text-primary">
-            Estas explorando con datos de ejemplo
+            {t("Estas explorando con datos de ejemplo")}
           </p>
           <p
             aria-live="polite"
@@ -63,7 +65,7 @@ export default function SampleDataBanner() {
             onClick={() => setConfirming(false)}
             type="button"
           >
-            Cancelar
+            {t("Cancelar")}
           </button>
         )}
         <button
@@ -77,7 +79,7 @@ export default function SampleDataBanner() {
           ) : (
             <Trash2 aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
           )}
-          {confirming ? "Si, borrar todo" : "Borrar ejemplo"}
+          {confirming ? t("Si, borrar todo") : t("Borrar ejemplo")}
         </button>
       </div>
     </div>

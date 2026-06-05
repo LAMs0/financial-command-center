@@ -32,11 +32,11 @@ export async function GET() {
   // Verificar sesión
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
   // Rate limit: renderizar el PDF (renderToBuffer) es costoso en CPU.
-  const { ok, retryAfterMs } = rateLimit(`export-pdf:${session.user.id}`, 10, 60_000);
+  const { ok, retryAfterMs } = await rateLimit(`export-pdf:${session.user.id}`, 10, 60_000);
   if (!ok) {
     return NextResponse.json(
       { error: "Demasiadas exportaciones. Intenta de nuevo en un momento." },

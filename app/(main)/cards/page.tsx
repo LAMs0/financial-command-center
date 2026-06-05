@@ -3,6 +3,8 @@ import { calculateCardUtilization } from "@/lib/calculations";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 import { AnimateIn, Badge, Card, EmptyState, ProgressBar, SectionHeader, StatCard } from "@/components/ui";
 import EmptyStateActions from "@/components/onboarding/EmptyStateActions";
+import { tx } from "@/lib/i18n/config";
+import { getLocale } from "@/lib/i18n/server";
 import { CreditCard } from "lucide-react";
 
 export const metadata = { title: "Tarjetas" };
@@ -31,7 +33,8 @@ function paymentTone(days: number) {
 }
 
 export default async function CardsPage() {
-  const cards = await getCards();
+  const [cards, locale] = await Promise.all([getCards(), getLocale()]);
+  const t = (text: string) => tx(locale, text);
   const totalDebt = cards.reduce((sum, card) => sum + card.balance, 0);
   const totalLimit = cards.reduce((sum, card) => sum + card.limit, 0);
   const aggregateUtilization = totalLimit === 0 ? 0 : totalDebt / totalLimit;
@@ -40,25 +43,25 @@ export default async function CardsPage() {
   return (
     <section className="flex flex-1 flex-col">
       <SectionHeader
-        eyebrow="Finances"
+        eyebrow={t("Finances")}
         eyebrowClassName="bg-gradient-to-r from-info-400 to-brand-300 bg-clip-text text-transparent"
-        title="Tarjetas de credito"
-        actions={<Badge label={`${formatPercent(aggregateUtilization)} utilizado`} tone={aggregateUtilization > 0.3 ? "warning" : "positive"} size="md" />}
+        title={t("Tarjetas de credito")}
+        actions={<Badge label={`${formatPercent(aggregateUtilization)} ${t("utilizado")}`} tone={aggregateUtilization > 0.3 ? "warning" : "positive"} size="md" />}
       />
 
       <div className="space-y-6 px-4 py-6 md:px-8">
         <AnimateIn className="grid gap-4 md:grid-cols-3">
-          <StatCard label="Deuda total" value={formatCurrency(totalDebt)} detail={`${cards.length} lineas activas`} tone="warning" />
-          <StatCard label="Limite total" value={formatCurrency(totalLimit)} detail="Credito disponible" tone="info" />
-          <StatCard label="Pago minimo" value={formatCurrency(totalMinimumPayment)} detail="Siguiente ciclo" tone="brand" />
+          <StatCard label={t("Deuda total")} value={formatCurrency(totalDebt)} detail={`${cards.length} ${t("lineas activas")}`} tone="warning" />
+          <StatCard label={t("Limite total")} value={formatCurrency(totalLimit)} detail={t("Credito disponible")} tone="info" />
+          <StatCard label={t("Pago minimo")} value={formatCurrency(totalMinimumPayment)} detail={t("Siguiente ciclo")} tone="brand" />
         </AnimateIn>
 
         {cards.length === 0 ? (
           <Card padded={false}>
             <EmptyState
               icon={<CreditCard aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-              title="No hay tarjetas conectadas"
-              description="Las lineas de credito, fechas de pago y alertas de utilizacion apareceran aqui."
+              title={t("No hay tarjetas conectadas")}
+              description={t("Las lineas de credito, fechas de pago y alertas de utilizacion apareceran aqui.")}
               action={<EmptyStateActions />}
             />
           </Card>
@@ -75,7 +78,7 @@ export default async function CardsPage() {
                   <div>
                     <p className="font-semibold text-text-primary">{card.name}</p>
                     <p className="mt-1 text-sm text-text-secondary">
-                      {card.institution} / Termina en {card.lastFourDigits}
+                      {card.institution} / {t("Termina en")} {card.lastFourDigits}
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-2">
@@ -84,7 +87,7 @@ export default async function CardsPage() {
                       tone={utilization > 0.3 ? "warning" : "positive"}
                     />
                     <Badge
-                      label={`Pago en ${daysRemaining}d`}
+                      label={`${t("Pago en")} ${daysRemaining}d`}
                       tone={paymentTone(daysRemaining)}
                     />
                   </div>
@@ -94,18 +97,18 @@ export default async function CardsPage() {
 
                 <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
                   <div className="rounded-lg bg-white/[0.03] p-3">
-                    <p className="text-text-secondary">Usado</p>
+                    <p className="text-text-secondary">{t("Usado")}</p>
                     <p className="mt-1 font-semibold tabular-nums text-text-primary">{formatCurrency(card.balance, card.currency)}</p>
                   </div>
                   <div className="rounded-lg bg-white/[0.03] p-3">
-                    <p className="text-text-secondary">Limite</p>
+                    <p className="text-text-secondary">{t("Limite")}</p>
                     <p className="mt-1 font-semibold tabular-nums text-text-primary">{formatCurrency(card.limit, card.currency)}</p>
                   </div>
                 </div>
 
                 <div className="mt-4 flex justify-between text-sm tabular-nums text-text-secondary">
-                  <span>Corte dia {card.cutoffDay}</span>
-                  <span>Pago dia {card.paymentDueDay}</span>
+                  <span>{t("Corte dia")} {card.cutoffDay}</span>
+                  <span>{t("Pago dia")} {card.paymentDueDay}</span>
                 </div>
               </Card>
               </AnimateIn>

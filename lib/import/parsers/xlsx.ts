@@ -13,7 +13,7 @@
 import type { Buffer } from "node:buffer";
 
 export async function xlsxToCSV(buffer: Buffer): Promise<string> {
-  const XLSX = await import("xlsx");
+  const XLSX = await import("@e965/xlsx");
   const wb = XLSX.read(buffer, { type: "buffer" });
 
   // Elegir la hoja con más contenido.

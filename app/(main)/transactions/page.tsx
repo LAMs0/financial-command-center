@@ -18,15 +18,19 @@ import { getAccounts, getTransactions } from "@/lib/data";
 import { formatCurrency } from "@/lib/formatters";
 import { Badge, ExportMenu, SectionHeader, StatCard } from "@/components/ui";
 import TransactionsList from "@/components/dashboard/TransactionsList";
+import { tx } from "@/lib/i18n/config";
+import { getLocale } from "@/lib/i18n/server";
 
 export const metadata = { title: "Transacciones" };
 
 // ── Página (Server Component async) ──────────────────────────────────
 export default async function TransactionsPage() {
-  const [transactions, accounts] = await Promise.all([
+  const [transactions, accounts, locale] = await Promise.all([
     getTransactions(),
     getAccounts(),
+    getLocale(),
   ]);
+  const t = (text: string) => tx(locale, text);
 
   // ── Cálculos en el servidor ──────────────────────────────────────
   const sortedTransactions = [...transactions].sort(
@@ -54,12 +58,12 @@ export default async function TransactionsPage() {
   return (
     <section className="flex flex-1 flex-col">
       <SectionHeader
-        eyebrow="Actividad"
+        eyebrow={t("Actividad")}
         eyebrowClassName="bg-gradient-to-r from-info-400 to-warning-400 bg-clip-text text-transparent"
-        title="Transacciones"
+        title={t("Transacciones")}
         actions={
           <div className="flex items-center gap-3">
-            <Badge label={`${transactions.length} registros`} tone="info" size="md" />
+            <Badge label={`${transactions.length} ${t("registros")}`} tone="info" size="md" />
             <ExportMenu datasets={["transactions"]} showReport={false} />
           </div>
         }
@@ -69,21 +73,21 @@ export default async function TransactionsPage() {
         {/* Resumen calculado en servidor */}
         <section className="grid gap-4 md:grid-cols-3">
           <StatCard
-            label="Ingresos"
+            label={t("Ingresos")}
             value={formatCurrency(income)}
-            detail="Periodo actual"
+            detail={t("Periodo actual")}
             tone="positive"
           />
           <StatCard
-            label="Gastos"
+            label={t("Gastos")}
             value={formatCurrency(expenses)}
-            detail="Sin transferencias"
+            detail={t("Sin transferencias")}
             tone="negative"
           />
           <StatCard
-            label="Transferencias"
+            label={t("Transferencias")}
             value={String(transferCount)}
-            detail="Movimientos internos"
+            detail={t("Movimientos internos")}
             tone="info"
           />
         </section>
@@ -96,6 +100,7 @@ export default async function TransactionsPage() {
         <TransactionsList
           transactions={sortedTransactions}
           accountNameById={accountNameById}
+          locale={locale}
         />
       </div>
     </section>

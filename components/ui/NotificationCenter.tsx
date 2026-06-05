@@ -18,6 +18,7 @@ import type {
   NotificationCategory,
   NotificationSeverity,
 } from "@/types/finance";
+import { normalizeLocale, tx, type Locale } from "@/lib/i18n/config";
 
 interface NotificationCenterProps {
   notifications: AppNotification[];
@@ -28,8 +29,16 @@ export default function NotificationCenter({
   notifications,
   panelAlign = "right",
 }: NotificationCenterProps) {
+  const [locale, setLocale] = useState<Locale>("es");
+  const t = (text: string) => tx(locale, text);
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Detección de idioma en cliente desde <html lang> (intencional).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLocale(normalizeLocale(document.documentElement.lang));
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -58,7 +67,7 @@ export default function NotificationCenter({
   return (
     <div className="relative" ref={containerRef}>
       <button
-        aria-label={`Notificaciones${badgeCount > 0 ? ` - ${badgeCount} sin leer` : ""}`}
+        aria-label={`${t("Notificaciones")}${badgeCount > 0 ? ` - ${badgeCount} ${t("sin leer")}` : ""}`}
         aria-expanded={open}
         aria-haspopup="dialog"
         className="relative grid h-9 w-9 place-items-center rounded-lg border border-white/10 bg-white/[0.03] text-text-secondary transition hover:border-white/20 hover:bg-white/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
@@ -81,21 +90,21 @@ export default function NotificationCenter({
 
       {open && (
         <div
-          aria-label="Notificaciones"
+          aria-label={t("Notificaciones")}
           className={`absolute ${panelPosition} top-11 z-50 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-white/10 bg-surface-card shadow-2xl shadow-black/40`}
           role="dialog"
         >
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
             <div>
-              <p className="text-sm font-semibold text-text-primary">Notificaciones</p>
+              <p className="text-sm font-semibold text-text-primary">{t("Notificaciones")}</p>
               <p className="text-xs text-text-muted">
                 {badgeCount === 0
-                  ? "Todo en orden"
-                  : `${badgeCount} alerta${badgeCount !== 1 ? "s" : ""}`}
+                  ? t("Todo en orden")
+                  : `${badgeCount} ${badgeCount !== 1 ? t("alertas") : t("alerta")}`}
               </p>
             </div>
             <button
-              aria-label="Cerrar notificaciones"
+              aria-label={t("Cerrar notificaciones")}
               className="grid h-7 w-7 place-items-center rounded-lg text-text-muted transition hover:bg-white/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
               onClick={() => setOpen(false)}
               type="button"
@@ -115,10 +124,10 @@ export default function NotificationCenter({
                   />
                 </div>
                 <p className="text-sm font-medium text-text-primary">
-                  Todo esta al dia
+                  {t("Todo esta al dia")}
                 </p>
                 <p className="text-xs text-text-muted">
-                  No hay alertas financieras por ahora.
+                  {t("No hay alertas financieras por ahora.")}
                 </p>
               </div>
             ) : (
@@ -138,7 +147,7 @@ export default function NotificationCenter({
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className={`text-xs font-semibold ${severityText(n.severity)}`}>
-                          {severityLabel(n.severity)}
+                          {severityLabel(n.severity, locale)}
                         </p>
                         <p className="text-sm font-medium text-text-primary">{n.title}</p>
                         <p className="mt-0.5 text-xs leading-relaxed text-text-secondary">
@@ -169,9 +178,9 @@ function severityText(severity: NotificationSeverity): string {
   return "text-info-400";
 }
 
-function severityLabel(severity: NotificationSeverity): string {
-  if (severity === "critical") return "Critica";
-  if (severity === "warning") return "Advertencia";
+function severityLabel(severity: NotificationSeverity, locale: Locale): string {
+  if (severity === "critical") return tx(locale, "Critica");
+  if (severity === "warning") return tx(locale, "Advertencia");
   return "Info";
 }
 

@@ -9,6 +9,8 @@
     "start:prod": "prisma migrate deploy && next start",
     "postinstall": "prisma generate",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
@@ -19,6 +21,7 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
+    "@e965/xlsx": "^0.20.3",
     "@prisma/client": "^5.22.0",
     "@react-pdf/renderer": "^4.5.1",
     "framer-motion": "^12.40.0",
@@ -29,8 +32,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "recharts": "^3.8.1",
-    "tesseract.js": "^7.0.0",
-    "xlsx": "^0.18.5"
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -38,11 +40,17 @@
     "@types/pdf-parse": "^1.1.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "prisma": "^5.22.0",
     "tailwindcss": "^4",
     "tsx": "^4.22.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.8"
+  },
+  "overrides": {
+    "postcss": "8.5.10"
   }
 }

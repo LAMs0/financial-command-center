@@ -5,14 +5,18 @@ import SpendingDonutChart from "@/components/dashboard/SpendingDonutChart";
 import CashFlowChart from "@/components/charts/CashFlowChart";
 import { ChartNoAxesCombined } from "lucide-react";
 import EmptyStateActions from "@/components/onboarding/EmptyStateActions";
+import { tx } from "@/lib/i18n/config";
+import { getLocale } from "@/lib/i18n/server";
 
 export const metadata = { title: "Analytics" };
 
 export default async function AnalyticsPage() {
-  const [transactions, monthlyHistory] = await Promise.all([
+  const [transactions, monthlyHistory, locale] = await Promise.all([
     getTransactions(),
     getMonthlyHistory(),
+    getLocale(),
   ]);
+  const t = (text: string) => tx(locale, text);
 
   const expensesByCategory = transactions
     .filter((transaction) => transaction.type === "expense")
@@ -38,13 +42,13 @@ export default async function AnalyticsPage() {
   return (
     <section className="flex flex-1 flex-col">
       <SectionHeader
-        eyebrow="Insights"
+        eyebrow={t("Insights")}
         eyebrowClassName="bg-gradient-to-r from-info-400 to-brand-300 bg-clip-text text-transparent"
-        title="Analytics"
+        title={t("Analytics")}
         actions={
           <div className="flex items-center gap-3">
             <Badge
-              label={hasTransactions ? "Analisis activo" : "Sin analisis"}
+              label={hasTransactions ? t("Analisis activo") : t("Sin analisis")}
               tone={hasTransactions ? "info" : "neutral"}
               size="md"
             />
@@ -58,21 +62,21 @@ export default async function AnalyticsPage() {
 
       <div className="space-y-6 px-4 py-6 md:px-8">
         <section className="grid gap-4 md:grid-cols-3">
-          <StatCard label="Ingresos" value={formatCurrency(totalIncome)} detail="Entradas registradas" tone="positive" />
-          <StatCard label="Gastos" value={formatCurrency(totalExpenses)} detail="Salidas categorizadas" tone="negative" />
+          <StatCard label={t("Ingresos")} value={formatCurrency(totalIncome)} detail={t("Entradas registradas")} tone="positive" />
+          <StatCard label={t("Gastos")} value={formatCurrency(totalExpenses)} detail={t("Salidas categorizadas")} tone="negative" />
           <StatCard
-            label="Tasa de ahorro"
+            label={t("Tasa de ahorro")}
             value={formatPercent(savingsRate, 1)}
-            detail={largestCategory ? `Mayor gasto: ${largestCategory[0]}` : "Sin gastos"}
+            detail={largestCategory ? `${t("Mayor gasto")}: ${largestCategory[0]}` : t("Sin gastos")}
             tone="info"
           />
         </section>
 
         <Card padded={false}>
           <CardHeader
-            title="Flujo de caja - 6 meses"
-            subtitle="Tendencia mensual de ingresos vs gastos"
-            action={<Badge label="Ultimos 6 meses" tone="neutral" />}
+            title={t("Flujo de caja - 6 meses")}
+            subtitle={t("Tendencia mensual de ingresos vs gastos")}
+            action={<Badge label={t("Ultimos 6 meses")} tone="neutral" />}
           />
           <div className="px-2 pb-5">
             <CashFlowChart data={monthlyHistory} />
@@ -81,15 +85,15 @@ export default async function AnalyticsPage() {
 
         <Card padded={false}>
           <CardHeader
-            title="Mezcla de gastos"
-            subtitle="Concentracion de gastos por categoria"
-            action={<Badge label={`${categoryRows.length} categorias`} tone="info" />}
+            title={t("Mezcla de gastos")}
+            subtitle={t("Concentracion de gastos por categoria")}
+            action={<Badge label={`${categoryRows.length} ${t("categorias")}`} tone="info" />}
           />
           {categoryRows.length === 0 ? (
             <EmptyState
               icon={<ChartNoAxesCombined aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-              title="Aun no hay mezcla de gastos"
-              description="Las categorias de gasto apareceran aqui cuando tengas datos disponibles."
+              title={t("Aun no hay mezcla de gastos")}
+              description={t("Las categorias de gasto apareceran aqui cuando tengas datos disponibles.")}
               action={<EmptyStateActions />}
             />
           ) : (
@@ -99,15 +103,15 @@ export default async function AnalyticsPage() {
 
         <Card padded={false}>
           <CardHeader
-            title="Gasto por categoria"
-            subtitle="Concentracion de gasto del periodo actual"
+            title={t("Gasto por categoria")}
+            subtitle={t("Concentracion de gasto del periodo actual")}
           />
           <div className="divide-y divide-white/10">
             {categoryRows.length === 0 ? (
               <EmptyState
                 icon={<ChartNoAxesCombined aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-                title="No hay desglose por categoria"
-                description="La tabla de gastos por categoria aparecera cuando existan transacciones categorizadas."
+                title={t("No hay desglose por categoria")}
+                description={t("La tabla de gastos por categoria aparecera cuando existan transacciones categorizadas.")}
                 action={<EmptyStateActions />}
               />
             ) : categoryRows.map(([category, amount]) => {

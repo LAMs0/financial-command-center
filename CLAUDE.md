@@ -117,7 +117,25 @@ Convenciones críticas:
 - ✅ Fase 3: Prisma + PostgreSQL (Neon), capa `lib/data`, todas las páginas migradas
   a leer de la DB (`DATA_SOURCE=database`), seed 1:1 con mocks
 - ✅ Fase 4: autenticación con Auth.js v5 + Google OAuth + PrismaAdapter
-- ⬜ Fase 5: por definir (mejoras UX, notificaciones, exportación, etc.)
+- ✅ Fase 5: notificaciones derivadas, exportación CSV+PDF, importación multi-formato
+  (CSV/Excel/OFX/PDF/imagen+OCR), onboarding + datos de ejemplo, conectividad bancaria
+  (abstracción `lib/banking` + proveedor mock; Plaid stub listo para activar), endurecimiento
+  pre-mercado: tests (Vitest, `npm test`), rate-limit Upstash+fallback, cifrado AES-256-GCM
+  (`lib/crypto` + modelo `BankConnection`), borrado de cuenta (GDPR), logger/monitoreo,
+  páginas legales `/privacy` y `/terms` (borrador)
+
+### Camino a producción (pendiente, requiere acción del usuario)
+- Correr migración de `BankConnection`: `npm run db:migrate`
+- Integrar Plaid real (Sandbox gratis) si se quiere auto-sync — fundación lista
+- Configurar Upstash (`UPSTASH_REDIS_REST_*`) y `APP_ENCRYPTION_KEY` en producción
+- Revisión legal real del contenido de privacy/terms
+
+## Testing
+
+- **Vitest** (`npm test` / `npm run test:watch`). Tests en `tests/unit/` cubren la
+  lógica pura: `lib/calculations`, `lib/formatters`, `lib/import/validate`,
+  `lib/banking/mock-provider`, `lib/crypto`. No se testean componentes React (se cubren
+  con type-check). Validación rápida sin tocar `.next`: `npx tsc --noEmit` + `npm test`.
 
 ## Autenticación (Fase 4)
 

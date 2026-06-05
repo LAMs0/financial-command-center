@@ -19,6 +19,8 @@ import {
   SectionHeader,
   StatCard,
 } from "@/components/ui";
+import { tx, type Locale } from "@/lib/i18n/config";
+import { getLocale } from "@/lib/i18n/server";
 import type { Budget } from "@/types/finance";
 
 export const metadata = { title: "Presupuesto" };
@@ -35,11 +37,11 @@ function budgetTone(ratio: number): "positive" | "warning" | "negative" {
   return "positive";
 }
 
-function budgetStatusLabel(ratio: number): string {
-  if (ratio >= 1) return "Rebasado";
-  if (ratio >= 0.9) return "Critico";
-  if (ratio >= 0.7) return "Atencion";
-  return "En rango";
+function budgetStatusLabel(ratio: number, locale: Locale): string {
+  if (ratio >= 1) return tx(locale, "Rebasado");
+  if (ratio >= 0.9) return tx(locale, "Critico");
+  if (ratio >= 0.7) return tx(locale, "Atencion");
+  return tx(locale, "En rango");
 }
 
 const budgetIcons: Record<string, LucideIcon> = {
@@ -52,7 +54,8 @@ const budgetIcons: Record<string, LucideIcon> = {
   Zap,
 };
 
-function BudgetCard({ budget }: { budget: Budget }) {
+function BudgetCard({ budget, locale }: { budget: Budget; locale: Locale }) {
+  const t = (text: string) => tx(locale, text);
   const ratio = budget.allocated === 0 ? 0 : budget.spent / budget.allocated;
   const remaining = budget.allocated - budget.spent;
   const tone = budgetTone(ratio);
@@ -80,12 +83,12 @@ function BudgetCard({ budget }: { budget: Budget }) {
           <div className="min-w-0">
             <p className="font-semibold text-text-primary">{budget.label}</p>
             <p className="mt-0.5 text-sm tabular-nums text-text-secondary">
-              {formatCurrency(budget.spent, budget.currency)} de{" "}
+              {formatCurrency(budget.spent, budget.currency)} {t("de")}{" "}
               {formatCurrency(budget.allocated, budget.currency)}
             </p>
           </div>
           <Badge
-            label={budgetStatusLabel(ratio)}
+            label={budgetStatusLabel(ratio, locale)}
             tone={tone}
             size="sm"
           />
@@ -100,11 +103,11 @@ function BudgetCard({ budget }: { budget: Budget }) {
         <span className="font-medium text-text-primary">{formatPercent(ratio, 1)}</span>
         {isOver ? (
           <span className="text-negative-400">
-            +{formatCurrency(Math.abs(remaining), budget.currency)} excedido
+            +{formatCurrency(Math.abs(remaining), budget.currency)} {t("excedido")}
           </span>
         ) : (
           <span className="text-text-secondary">
-            {formatCurrency(remaining, budget.currency)} disponible
+            {formatCurrency(remaining, budget.currency)} {t("disponible")}
           </span>
         )}
       </div>
@@ -113,7 +116,8 @@ function BudgetCard({ budget }: { budget: Budget }) {
 }
 
 export default async function BudgetPage() {
-  const budgets = await getBudgets();
+  const [budgets, locale] = await Promise.all([getBudgets(), getLocale()]);
+  const t = (text: string) => tx(locale, text);
   const totalAllocated = budgets.reduce((s, b) => s + b.allocated, 0);
   const totalSpent = budgets.reduce((s, b) => s + b.spent, 0);
   const totalRemaining = totalAllocated - totalSpent;
@@ -131,18 +135,18 @@ export default async function BudgetPage() {
     return (
       <section className="flex flex-1 flex-col">
         <SectionHeader
-          eyebrow="Planning"
+          eyebrow={t("Planning")}
           eyebrowClassName="bg-gradient-to-r from-brand-300 to-warning-400 bg-clip-text text-transparent"
-          title="Presupuesto"
-          actions={<Badge label="Sin categorias" tone="neutral" size="md" />}
+          title={t("Presupuesto")}
+          actions={<Badge label={t("Sin categorias")} tone="neutral" size="md" />}
         />
 
         <div className="px-4 py-6 md:px-8">
           <Card padded={false}>
             <EmptyState
               icon={<Zap aria-hidden="true" className="h-5 w-5" strokeWidth={1.8} />}
-              title="No hay categorias de presupuesto"
-              description="Tus presupuestos mensuales por categoria apareceran aqui cuando importes transacciones o cargues datos de ejemplo."
+              title={t("No hay categorias de presupuesto")}
+              description={t("Tus presupuestos mensuales por categoria apareceran aqui cuando importes transacciones o cargues datos de ejemplo.")}
               action={<EmptyStateActions />}
             />
           </Card>
@@ -154,15 +158,15 @@ export default async function BudgetPage() {
   return (
     <section className="flex flex-1 flex-col">
       <SectionHeader
-        eyebrow="Planning"
+        eyebrow={t("Planning")}
         eyebrowClassName="bg-gradient-to-r from-brand-300 to-warning-400 bg-clip-text text-transparent"
-        title="Presupuesto"
+        title={t("Presupuesto")}
         actions={
           <Badge
             label={
               overBudget.length > 0
-                ? `${overBudget.length} rebasadas`
-                : "Todo en rango"
+                ? `${overBudget.length} ${t("rebasadas")}`
+                : t("Todo en rango")
             }
             tone={overBudget.length > 0 ? "negative" : "positive"}
             size="md"
@@ -174,27 +178,27 @@ export default async function BudgetPage() {
         {/* ── Resumen global ── */}
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
-            label="Presupuesto total"
+            label={t("Presupuesto total")}
             value={formatCurrency(totalAllocated)}
-            detail={`${budgets.length} categorias`}
+            detail={`${budgets.length} ${t("categorias")}`}
             tone="brand"
           />
           <StatCard
-            label="Gastado"
+            label={t("Gastado")}
             value={formatCurrency(totalSpent)}
-            detail={formatPercent(overallRatio, 1) + " del presupuesto"}
+            detail={`${formatPercent(overallRatio, 1)} ${t("del presupuesto")}`}
             tone={overallRatio >= 1 ? "negative" : overallRatio >= 0.7 ? "warning" : "positive"}
           />
           <StatCard
-            label="Disponible"
+            label={t("Disponible")}
             value={formatCurrency(Math.abs(totalRemaining))}
-            detail={totalRemaining < 0 ? "Presupuesto rebasado" : "Disponible para gastar"}
+            detail={totalRemaining < 0 ? t("Presupuesto rebasado") : t("Disponible para gastar")}
             tone={totalRemaining < 0 ? "negative" : "positive"}
           />
           <StatCard
-            label="Categorias en riesgo"
+            label={t("Categorias en riesgo")}
             value={String(atRisk.length + overBudget.length)}
-            detail={`${onTrack.length} en rango`}
+            detail={`${onTrack.length} ${t("en rango")}`}
             tone={overBudget.length > 0 ? "negative" : "warning"}
           />
         </section>
@@ -202,13 +206,13 @@ export default async function BudgetPage() {
         {/* ── Progress global ── */}
         <Card>
           <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm font-medium text-text-primary">Gasto total</p>
+            <p className="text-sm font-medium text-text-primary">{t("Gasto total")}</p>
             <p className="text-sm tabular-nums text-text-secondary">{formatPercent(overallRatio, 1)}</p>
           </div>
           <ProgressBar value={Math.min(overallRatio, 1)} autoColor size="md" />
           <div className="mt-3 flex justify-between text-xs tabular-nums text-text-muted">
-            <span>{formatCurrency(totalSpent)} gastado</span>
-            <span>{formatCurrency(totalAllocated)} presupuestado</span>
+            <span>{formatCurrency(totalSpent)} {t("gastado")}</span>
+            <span>{formatCurrency(totalAllocated)} {t("presupuestado")}</span>
           </div>
         </Card>
 
@@ -217,13 +221,13 @@ export default async function BudgetPage() {
           <section>
             <div className="mb-4 flex items-center justify-between">
               <p className="text-xs uppercase tracking-[0.22em] text-text-muted">
-                Rebasado
+                {t("Rebasado")}
               </p>
-              <Badge label={`${overBudget.length} categorias`} tone="negative" />
+              <Badge label={`${overBudget.length} ${t("categorias")}`} tone="negative" />
             </div>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {overBudget.map((b) => (
-                <BudgetCard budget={b} key={b.id} />
+                <BudgetCard budget={b} key={b.id} locale={locale} />
               ))}
             </div>
           </section>
@@ -234,13 +238,13 @@ export default async function BudgetPage() {
           <section>
             <div className="mb-4 flex items-center justify-between">
               <p className="text-xs uppercase tracking-[0.22em] text-text-muted">
-                Cerca del limite
+                {t("Cerca del limite")}
               </p>
-              <Badge label={`${atRisk.length} categorias`} tone="warning" />
+              <Badge label={`${atRisk.length} ${t("categorias")}`} tone="warning" />
             </div>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {atRisk.map((b) => (
-                <BudgetCard budget={b} key={b.id} />
+                <BudgetCard budget={b} key={b.id} locale={locale} />
               ))}
             </div>
           </section>
@@ -251,13 +255,13 @@ export default async function BudgetPage() {
           <section>
             <div className="mb-4 flex items-center justify-between">
               <p className="text-xs uppercase tracking-[0.22em] text-text-muted">
-                En rango
+                {t("En rango")}
               </p>
-              <Badge label={`${onTrack.length} categorias`} tone="positive" />
+              <Badge label={`${onTrack.length} ${t("categorias")}`} tone="positive" />
             </div>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {onTrack.map((b) => (
-                <BudgetCard budget={b} key={b.id} />
+                <BudgetCard budget={b} key={b.id} locale={locale} />
               ))}
             </div>
           </section>

@@ -1,10 +1,13 @@
 import { Skeleton } from "@/components/ui";
+import { tx } from "@/lib/i18n/config";
+import { getLocale } from "@/lib/i18n/server";
 
-export default function AuthLoading() {
+export default async function AuthLoading() {
+  const locale = await getLocale();
   return (
     <main
       aria-busy="true"
-      aria-label="Loading sign in"
+      aria-label={tx(locale, "Cargando inicio de sesion")}
       className="flex min-h-screen w-full items-center justify-center px-4 py-6 sm:px-6 lg:px-8"
     >
       <div className="grid w-full max-w-6xl overflow-hidden rounded-2xl border border-white/10 bg-surface-card/88 shadow-2xl shadow-black/25 xl:min-h-[min(760px,calc(100vh-48px))] xl:grid-cols-[1.05fr_0.95fr]">
