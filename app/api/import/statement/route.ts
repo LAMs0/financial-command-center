@@ -29,9 +29,10 @@ const IMPORT_WINDOW_MS = 60_000;    // ...por minuto
 // runtime Node (en Vercel evita que se intente compilar para Edge).
 export const runtime = "nodejs";
 // El OCR de imágenes/PDFs escaneados puede tardar varios segundos por página.
-// ⚠️ En Vercel, 120 s requiere plan Pro (Hobby tope 60 s — baja este valor a 60
-// o mueve el OCR al cliente si despliegas en Hobby).
-export const maxDuration = 120;
+// 60 s = límite del plan Hobby (gratis) de Vercel; en Pro puedes subirlo a 300.
+// Si un escaneo grande excede 60 s, mueve el OCR al cliente (tesseract.js corre
+// en el navegador) en vez de subir el plan.
+export const maxDuration = 60;
 
 const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15 MB (imágenes/escaneos pesan más)
 
