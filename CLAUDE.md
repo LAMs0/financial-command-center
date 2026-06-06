@@ -124,11 +124,16 @@ Convenciones críticas:
   (`lib/crypto` + modelo `BankConnection`), borrado de cuenta (GDPR), logger/monitoreo,
   páginas legales `/privacy` y `/terms` (borrador)
 
+- ✅ Plaid real implementado (6 jun 2026): `lib/banking/plaid-client.ts` + `plaid-provider.ts`
+  (link token → exchange → sync, access_token cifrado en `BankConnection`), server actions
+  `createPlaidLinkToken`/`connectPlaidItem`, `components/banking/PlaidLinkButton.tsx`.
+  `BankProvider.mode` ("direct"=mock | "link"=Plaid). Migración `BankConnection` aplicada.
+
 ### Camino a producción (pendiente, requiere acción del usuario)
-- Correr migración de `BankConnection`: `npm run db:migrate`
-- Integrar Plaid real (Sandbox gratis) si se quiere auto-sync — fundación lista
-- Configurar Upstash (`UPSTASH_REDIS_REST_*`) y `APP_ENCRYPTION_KEY` en producción
-- Revisión legal real del contenido de privacy/terms
+- Probar Plaid Sandbox end-to-end (`.env`: `BANK_PROVIDER=plaid` + `PLAID_*` + `APP_ENCRYPTION_KEY`)
+  y añadir esas vars en Vercel para producción.
+- Configurar Upstash (`UPSTASH_REDIS_REST_*`) en producción.
+- Revisión legal real del contenido de privacy/terms.
 
 ## Testing
 

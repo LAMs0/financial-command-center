@@ -14,7 +14,8 @@ import { useState, useTransition } from "react";
 import { Plus, Loader2, X, Landmark } from "lucide-react";
 import { Card, CardHeader } from "@/components/ui";
 import { connectInstitution, disconnectInstitution } from "@/lib/actions/banking";
-import type { BankInstitution } from "@/lib/banking";
+import type { BankInstitution, BankProvider } from "@/lib/banking";
+import PlaidLinkButton from "./PlaidLinkButton";
 
 interface ConnectedInstitution {
   name: string;
@@ -27,9 +28,11 @@ interface ConnectBankProps {
   connected: ConnectedInstitution[];
   /** Nombre del proveedor activo, para el aviso de modo demo. */
   providerId: string;
+  /** Modo de conexión: "direct" (botones por banco) o "link" (widget Plaid). */
+  mode: BankProvider["mode"];
 }
 
-export default function ConnectBank({ institutions, connected, providerId }: ConnectBankProps) {
+export default function ConnectBank({ institutions, connected, providerId, mode }: ConnectBankProps) {
   const [pending, startTransition] = useTransition();
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -108,12 +111,19 @@ export default function ConnectBank({ institutions, connected, providerId }: Con
           </div>
         )}
 
-        {/* Instituciones disponibles para conectar */}
+        {/* Conectar: widget Plaid (modo link) o botones por banco (modo direct) */}
         <div className="space-y-2">
           <p className="font-mono text-xs uppercase tracking-[0.16em] text-text-muted">
-            Disponibles
+            {mode === "link" ? "Conectar" : "Disponibles"}
           </p>
-          {available.length === 0 ? (
+          {mode === "link" ? (
+            <div className="space-y-2">
+              <PlaidLinkButton onError={setError} />
+              <p className="text-xs text-text-muted">
+                Se abrirá una ventana segura de Plaid para elegir tu banco e iniciar sesión.
+              </p>
+            </div>
+          ) : available.length === 0 ? (
             <p className="flex items-center gap-2 text-sm text-text-secondary">
               <Landmark aria-hidden className="h-4 w-4" strokeWidth={1.8} />
               Todas las instituciones disponibles ya están conectadas.

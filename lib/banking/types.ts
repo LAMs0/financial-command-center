@@ -63,6 +63,19 @@ export interface BankSyncResult {
 }
 
 /*
+  Resultado de canjear un public_token de Plaid por un access_token.
+  El access_token es un secreto de larga duración: se guarda CIFRADO
+  (BankConnection.accessTokenCipher) y nunca llega al cliente.
+*/
+export interface ExchangeResult {
+  /** access_token en texto plano — el llamador lo cifra antes de persistir. */
+  accessToken: string;
+  /** item_id de Plaid (identifica la conexión banco↔usuario). */
+  itemId: string;
+  institution: BankInstitution;
+}
+
+/*
   El contrato que todo proveedor debe cumplir.
 
   Nota sobre Plaid: su flujo real es createLinkToken → Plaid Link (UI) →
@@ -73,8 +86,17 @@ export interface BankSyncResult {
 export interface BankProvider {
   /** Identificador del proveedor activo ("mock" | "plaid" | ...). */
   readonly id: string;
-  /** Instituciones disponibles para conectar. */
+  /*
+    Modo de conexión, decide qué UI renderiza ConnectBank:
+      "direct" → el proveedor expone una lista de instituciones y conectar es
+                 un único `sync(institutionId)` (mock).
+      "link"   → conexión interactiva vía widget del agregador (Plaid Link):
+                 el usuario elige el banco e ingresa credenciales en el widget,
+                 no en nuestra UI. Aquí `listInstitutions`/`sync` no se usan.
+  */
+  readonly mode: "direct" | "link";
+  /** Instituciones disponibles para conectar (solo modo "direct"). */
   listInstitutions(): Promise<BankInstitution[]>;
-  /** Conecta/sincroniza una institución y devuelve cuentas+transacciones. */
+  /** Conecta/sincroniza una institución y devuelve cuentas+transacciones (modo "direct"). */
   sync(institutionId: string): Promise<BankSyncResult>;
 }

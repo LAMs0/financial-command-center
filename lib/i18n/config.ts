@@ -133,6 +133,10 @@ const en: Record<string, string> = {
   "Confirmar borrado de cuenta": "Confirm account deletion",
   "Confirmar": "Confirm",
   "Eliminar": "Delete",
+  "Eliminar tarjeta": "Delete card",
+  "Sí, eliminar": "Yes, delete",
+  "Esta acción es permanente y no se puede deshacer. La tarjeta se eliminará de tu panel.":
+    "This action is permanent and cannot be undone. The card will be removed from your dashboard.",
 
   "Command Center": "Command Center",
   "Resumen financiero": "Financial summary",

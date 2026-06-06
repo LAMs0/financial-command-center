@@ -3,6 +3,7 @@ import { calculateCardUtilization } from "@/lib/calculations";
 import { formatCurrency, formatPercent } from "@/lib/formatters";
 import { AnimateIn, Badge, Card, EmptyState, ProgressBar, SectionHeader, StatCard } from "@/components/ui";
 import EmptyStateActions from "@/components/onboarding/EmptyStateActions";
+import DeleteCardButton from "@/components/cards/DeleteCardButton";
 import { tx } from "@/lib/i18n/config";
 import { getLocale } from "@/lib/i18n/server";
 import { CreditCard } from "lucide-react";
@@ -109,6 +110,10 @@ export default async function CardsPage() {
                 <div className="mt-4 flex justify-between text-sm tabular-nums text-text-secondary">
                   <span>{t("Corte dia")} {card.cutoffDay}</span>
                   <span>{t("Pago dia")} {card.paymentDueDay}</span>
+                </div>
+
+                <div className="mt-4 flex justify-end border-t border-white/10 pt-4">
+                  <DeleteCardButton cardId={card.id} cardName={card.name} locale={locale} />
                 </div>
               </Card>
               </AnimateIn>

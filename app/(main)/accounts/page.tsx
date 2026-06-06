@@ -57,6 +57,7 @@ export default async function AccountsPage() {
             institutions={institutions}
             connected={connected}
             providerId={provider.id}
+            mode={provider.mode}
           />
         </AnimateIn>
 

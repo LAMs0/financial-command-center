@@ -70,6 +70,7 @@ function transactionsFor(account: ProviderAccount): ProviderTransaction[] {
 
 class MockBankProvider implements BankProvider {
   readonly id = "mock";
+  readonly mode = "direct" as const;
 
   async listInstitutions(): Promise<BankInstitution[]> {
     return INSTITUTIONS;
