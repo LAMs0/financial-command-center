@@ -60,11 +60,14 @@ UPSTASH_REDIS_REST_TOKEN=...
 
 ### B. OCR de importación → **timeout de funciones** ⚠️
 La importación de PDF/imagen usa `tesseract.js` + `pdf-parse`, que pueden tardar decenas de
-segundos. Límite de duración de función en Vercel: **Hobby 60s, Pro hasta 300s** (vía
-`export const maxDuration` en la route). Opciones:
-- Añadir `export const maxDuration = 60;` (o 300 en Pro) en `app/api/import/statement/route.ts`.
-- Mejor a futuro: mover el OCR al **cliente** (tesseract.js corre en el browser) para no
-  depender del timeout del server.
+segundos. **Ya hecho en código:**
+- `app/api/import/statement/route.ts`: `export const runtime = "nodejs"` + `maxDuration = 120`.
+- `app/api/export/report/route.ts` (PDF) y `app/api/export/transactions/route.ts` (CSV):
+  `runtime = "nodejs"` (+ `maxDuration = 30` en el PDF).
+
+**Lo que debes decidir tú:**
+- `maxDuration = 120` **requiere plan Pro** (Hobby tope 60 s). Si despliegas en **Hobby**,
+  baja ese valor a `60` o mueve el OCR al **cliente** (tesseract.js corre en el browser).
 - `serverExternalPackages` ya declara `tesseract.js`, `pdf-parse`, `sharp`, `xlsx` (bien),
   pero ojo con el **tamaño del bundle** de la función (límite ~250 MB descomprimido en Vercel).
   Si el deploy falla por tamaño, el OCR client-side resuelve esto también.
@@ -74,9 +77,11 @@ Serverless abre muchas conexiones cortas. Con Neon usa la **connection string co
 (`-pooler` en el host) para `DATABASE_URL`, o el adaptador serverless de Neon.
 
 ### Checklist de despliegue en Vercel
-1. Importar el repo en Vercel (Framework: Next.js, root = `Financial Command Center`).
+1. Importar el repo `LAMs0/financial-command-center` en Vercel (Framework: Next.js detectado
+   automáticamente). **Root Directory = `.` (default)** — el repo ya está rooteado en la carpeta
+   de la app (el `package.json` está en la raíz del repo), así que NO hay subdirectorio que ajustar.
 2. Variables de entorno (Production):
-   - `DATABASE_URL` (Neon, **con pooler**)
+   - `DATABASE_URL` (Neon, **con pooler** — el host con `-pooler`)
    - `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`
    - `DATA_SOURCE=database`
    - `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
@@ -85,10 +90,16 @@ Serverless abre muchas conexiones cortas. Con Neon usa la **connection string co
 3. Google OAuth: añadir el redirect URI de producción en Google Cloud Console:
    `https://TU-DOMINIO.vercel.app/api/auth/callback/google` (y el dominio custom si lo hay).
    `trustHost: true` ya está, así que Auth.js detecta el host automáticamente.
-4. Migraciones: correr `prisma migrate deploy` contra la DB de prod (incluye `BankConnection`).
-   Se puede automatizar con un build/deploy hook o ejecutándolo una vez manualmente.
-5. `maxDuration` en la route de import (ver punto B).
+4. **Migraciones: automáticas.** El script `vercel-build` (`prisma migrate deploy && next build`)
+   ya aplica las migraciones en cada deploy. Vercel lo detecta y lo usa en vez de `build`.
+   ⚠️ Genera primero el archivo de migración de `BankConnection` localmente con
+   `npm run db:migrate` y commitéalo, para que `migrate deploy` lo aplique en prod.
+5. `runtime`/`maxDuration` ya configurados en las routes (ver punto B; ajusta `maxDuration`
+   a 60 si vas en Hobby).
 6. Smoke test: login Google, dashboard, importar, exportar, conectar banco (sandbox), es/en.
+
+> El `Dockerfile` y `start:prod` (`prisma migrate deploy && next start`) siguen sirviendo si
+> algún día prefieres Railway/contenedor; en Vercel no se usan.
 
 ### Otros pendientes ya conocidos (no bloqueantes)
 - Revisión **legal real** del contenido de `/privacy` y `/terms` (hoy marcado BORRADOR) y

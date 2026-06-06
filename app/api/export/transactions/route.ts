@@ -17,6 +17,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { rateLimit } from "@/lib/rate-limit";
 import { getAccounts, getBudgets, getCards, getGoals, getTransactions } from "@/lib/data";
+
+// Consulta Prisma (Node), no Edge.
+export const runtime = "nodejs";
 import {
   accountsToCSV,
   budgetsToCSV,

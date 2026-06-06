@@ -18,6 +18,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { rateLimit } from "@/lib/rate-limit";
+
+// @react-pdf/renderer (renderToBuffer) corre en Node, no en Edge.
+export const runtime = "nodejs";
+// Renderizar el PDF es CPU-bound pero rápido; margen holgado para Vercel.
+export const maxDuration = 30;
 import {
   getAccounts,
   getBudgets,
