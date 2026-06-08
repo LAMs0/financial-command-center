@@ -81,13 +81,28 @@ async function upstashRateLimit(
   return { ok: true, retryAfterMs: 0, remaining: Math.max(0, limit - count) };
 }
 
+// Aviso único: en serverless (Vercel) el limitador en memoria NO se comparte
+// entre invocaciones/instancias, así que sin Upstash el throttle es casi
+// inefectivo en producción. Logueamos una sola vez para que el gap sea visible.
+let warnedNoUpstash = false;
+
 export async function rateLimit(
   key: string,
   limit: number,
   windowMs: number
 ): Promise<RateLimitResult> {
   const cfg = upstashConfig();
-  if (!cfg) return memoryRateLimit(key, limit, windowMs);
+  if (!cfg) {
+    if (!warnedNoUpstash && process.env.NODE_ENV === "production") {
+      warnedNoUpstash = true;
+      logger.warn("rate_limit.upstash_not_configured", {
+        detail:
+          "Rate limit en memoria: en serverless no se comparte entre instancias. " +
+          "Configura UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_TOKEN para un límite efectivo.",
+      });
+    }
+    return memoryRateLimit(key, limit, windowMs);
+  }
 
   try {
     return await upstashRateLimit(cfg, key, limit, windowMs);

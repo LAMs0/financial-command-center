@@ -1,8 +1,11 @@
-# ── Financial Command Center — imagen de producción ──────────────────────────
-# Pensada para Railway/Render (contenedor de larga ejecución), que maneja bien
-# el OCR pesado (tesseract.js + sharp) sin los límites de timeout/tamaño de las
-# funciones serverless. Imagen única (no standalone) para evitar problemas de
-# tracing con las dependencias nativas (sharp, pdf-parse).
+# ── Financial Command Center — imagen de producción (ALTERNATIVA, no usada) ───
+# NOTA: el despliegue real y soportado es Vercel (ver docs/PRODUCTION.md).
+# Este Dockerfile queda como opción de contenedor de larga ejecución
+# (Railway/Render) por si se necesita evitar el límite de maxDuration del plan
+# Hobby en OCR de PDFs grandes. No recibe mantenimiento activo.
+# Maneja bien el OCR pesado (tesseract.js + sharp) sin límites de timeout/tamaño.
+# Imagen única (no standalone) para evitar problemas de tracing con las
+# dependencias nativas (sharp, pdf-parse).
 
 FROM node:20-bookworm-slim
 

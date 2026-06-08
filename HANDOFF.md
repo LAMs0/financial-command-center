@@ -1,12 +1,13 @@
 # HANDOFF — Financial Command Center
 
-> Documento para retomar el proyecto sin perder contexto. Última actualización: **5 jun 2026**.
+> Documento para retomar el proyecto sin perder contexto. Última actualización: **7 jun 2026**.
 
 ## TL;DR
 Dashboard financiero personal (Next.js 16 + React 19 + TS + Prisma/Postgres Neon + Tailwind v4).
 **Desplegado y funcionando en producción (Vercel)** con login Google operativo.
-Fase 5 completa, i18n es/en completo, hardening pre-mercado hecho. Lo único pendiente de
-features es la **integración real de Plaid** (hoy hay un proveedor mock funcional).
+Fase 5 completa, i18n es/en completo, hardening pre-mercado hecho. **Plaid real implementado
+y probado** en Sandbox (sync idempotente + re-sincronización); el proveedor `mock` sigue como
+default. **Sentry** monitorea errores en server y cliente.
 
 - **Prod:** https://financial-command-center-ochre.vercel.app  ← dominio estable
 - **Repo:** github.com/LAMs0/financial-command-center (rama `main`)
@@ -29,19 +30,32 @@ features es la **integración real de Plaid** (hoy hay un proveedor mock funcion
 - ✅ Páginas legales bilingües `/privacy` y `/terms` (marcadas BORRADOR; faltan revisión legal real + correos reales).
 - ✅ **Deploy en Vercel (Hobby)**: `vercel-build` corre migraciones; `runtime=nodejs` + `maxDuration`
   en rutas pesadas; build verde.
+- ✅ **Plaid real** (7 jun): `lib/banking/plaid-*`, server actions link/exchange/sync, access_token
+  cifrado en `BankConnection`, **sync idempotente por `externalId`** + botón ↻ Re-sincronizar.
+  Probado end-to-end en Sandbox. Switch `BANK_PROVIDER=mock|plaid`.
+- ✅ **Borrado de tarjetas** con confirmación (`deleteCard` + `DeleteCardButton`).
+- ✅ **Sentry** (7 jun): `@sentry/nextjs` (server/edge/client + instrumentation); `notifyMonitoring`
+  y el error boundary reportan. Gated por `NEXT_PUBLIC_SENTRY_DSN` (no-op sin DSN).
+- ✅ **Next 16**: `middleware.ts` migrado a `proxy.ts`. i18n vía `LocaleContext` (sin set-state-in-effect).
+  Tests de componentes en `tests/components`. ESLint 0 warnings.
 
-**Validación:** `npx tsc --noEmit` limpio · `npm test` 55/55 · `npm run build` OK · `eslint` 0 errores.
+**Validación (7 jun):** `npx tsc --noEmit` limpio · `npm test` 55/55 · `eslint` 0 errores/0 warnings.
+(El `build` lo corre Vercel; en local no se ejecuta para respetar la regla de un solo dev server.)
 
 ---
 
 ## ⚠️ Pendientes al retomar (en orden)
 
-### 1. Git — pushear commits locales
-Hay **2 commits locales sin subir** (prep de Vercel). Desde la raíz del repo:
-```bash
-git push origin main
-```
-(El agente no puede pushear a `main`; lo haces tú.)
+### 1. Variables de entorno en Vercel (Production) — lo más importante
+El código de Plaid y Sentry ya está desplegado, pero **solo se activan si las vars existen** en
+Vercel → Settings → Environment Variables (Production). Confirma/añade:
+- `NEXT_PUBLIC_SENTRY_DSN` — sin ella Sentry NO reporta en prod (aunque el código esté).
+- Para Plaid real en prod: `BANK_PROVIDER=plaid`, `PLAID_CLIENT_ID`, `PLAID_SECRET`,
+  `PLAID_ENV=sandbox`, `APP_ENCRYPTION_KEY`. (Sin ellas, prod sigue en modo `mock`/DEMO, que
+  funciona perfecto para demostrar la app.)
+- Ya configuradas antes: `DATABASE_URL` (Neon), `AUTH_*`, `DATA_SOURCE=database`.
+- Tras añadir vars, **Redeploy** para que se apliquen.
+(El agente no puede pushear a `main`; los commits y el push los haces tú.)
 
 ### 2. Plaid — terminar el formulario de acceso (Sandbox gratis)
 Quedaban **3 adjuntos** por subir en el "Security Questionnaire":
@@ -95,11 +109,15 @@ en `.env` y, para producción, poner las vars en Vercel.
   vienen del sync de Plaid; ese flujo solo crea FinancialAccount + Transaction).
 
 ### 4. Limpieza menor
-- Reemplazar correos placeholder `your-domain.com` / `tu-dominio.com` en `app/(legal)/privacy` y `terms`
-  por el correo real (`dg.luislo8@gmail.com` o dominio propio).
+- ✅ Correos legales reales (`dg.luislo8@gmail.com`) en `/privacy` y `/terms` (7 jun).
+- ✅ Docs de Railway/Docker marcados obsoletos: `DEPLOY.md` ahora es un stub que apunta a
+  `docs/PRODUCTION.md`; `Dockerfile` etiquetado como alternativa no usada (Vercel es el canónico).
+- ✅ Rate-limit: avisa en logs (`rate_limit.upstash_not_configured`) si corre en producción
+  sin Upstash — el gap queda visible hasta configurar `UPSTASH_REDIS_REST_*` en Vercel.
+- ✅ Secreto viejo de Google deshabilitado (confirmar que `AUTH_GOOGLE_SECRET` en Vercel es el habilitado).
 - (Opcional) Activar **Dependabot/CodeQL** en GitHub para respaldar las respuestas de seguridad de Plaid.
-- (Opcional prod a escala) `DATABASE_URL` con **pooler** de Neon + `directUrl` para migraciones; Upstash en prod.
-- Revisión **legal real** de `/privacy` y `/terms` antes de un lanzamiento público serio.
+- (Opcional prod a escala) `DATABASE_URL` con **pooler** de Neon + `directUrl` para migraciones.
+- Revisión **legal real** de `/privacy` y `/terms` antes de un lanzamiento público serio (siguen marcados borrador).
 
 ---
 

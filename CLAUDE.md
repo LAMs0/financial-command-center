@@ -189,18 +189,26 @@ Variables relevantes:
 - `PLAID_ENV=sandbox | development | production`
 - `APP_ENCRYPTION_KEY`
 
-Pendiente: probar Plaid Sandbox end-to-end y configurar variables en produccion.
+Plaid real probado end-to-end en Sandbox (7 jun). Sync **idempotente** por `externalId`
+(`@@unique([userId, externalId])` en `FinancialAccount` y `Transaction`): re-sincronizar
+actualiza balances y agrega lo nuevo sin duplicar. `resyncInstitution` descifra el
+access_token de `BankConnection`; botón ↻ en `ConnectBank` (modo link).
+
+Pendiente: configurar las variables de Plaid en produccion (Vercel) si se quiere Plaid en prod.
 
 ## Observabilidad y seguridad
 
 - `lib/logger.ts` para logging estructurado
 - `/api/client-error` para errores del cliente
+- **Sentry** (`@sentry/nextjs`): configs server/edge/client + `instrumentation.ts`.
+  `notifyMonitoring` y el error boundary hacen `captureException`. Gated por
+  `NEXT_PUBLIC_SENTRY_DSN` (no-op sin DSN). Solo error monitoring (tracing/replay en 0).
 - Rate limit con Upstash opcional y fallback en memoria
 - `npm audit` limpio a 0 vulnerabilidades
 - `@e965/xlsx` reemplaza al paquete `xlsx` vulnerable
 
 Pendiente externo: rotar/deshabilitar secreto viejo de Google en Google Cloud
-Console.
+Console; configurar Upstash y `NEXT_PUBLIC_SENTRY_DSN` en produccion.
 
 ## Testing
 
@@ -219,17 +227,13 @@ Tests de componentes en `tests/components`:
 
 ## Pendientes de mayor valor
 
-1. Smoke test multi-idioma ES/EN:
-   - `/`
-   - `/sign-in`
-   - `/dashboard`
-   - `/import`
-   - `/privacy`
-   - mobile 390px
-2. Normalizar encoding en `.env.example` y comentarios antiguos con mojibake.
-3. Plaid Sandbox end-to-end.
-4. Upstash en produccion.
-5. Revision legal real de privacy/terms.
+1. Configurar variables en Vercel (prod): `NEXT_PUBLIC_SENTRY_DSN` y, si se quiere Plaid en
+   prod, `BANK_PROVIDER=plaid` + `PLAID_*` + `APP_ENCRYPTION_KEY`. Redeploy tras añadirlas.
+2. Rotar secreto viejo de Google + Upstash en produccion (acciones en consolas externas).
+3. Smoke test multi-idioma ES/EN (`/`, `/sign-in`, `/dashboard`, `/import`, `/privacy`, mobile 390px).
+4. Revision legal real de privacy/terms (+ correos reales).
+5. Formulario de produccion de Plaid (Q4/Q5/Q11) para conectar cuentas reales.
+6. Opcional: webhooks de Plaid (`SYNC_UPDATES_AVAILABLE`) + guardar `cursor` para sync incremental real.
 
 ## Estado de producto
 
@@ -240,7 +244,7 @@ Venta publica abierta: no todavia.
 Bloqueos principales para venta publica:
 
 - QA real con testers
-- Plaid Sandbox/produccion probado
+- Plaid produccion aprobado (Sandbox ya probado; falta el formulario para cuentas reales)
 - revision legal
-- monitoreo externo real configurado
-- secretos rotados y entorno de produccion completo
+- monitoreo externo: Sentry integrado en codigo; falta `NEXT_PUBLIC_SENTRY_DSN` en prod
+- secretos rotados y entorno de produccion completo (Upstash + vars Plaid/Sentry)

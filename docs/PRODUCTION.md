@@ -102,7 +102,7 @@ Serverless abre muchas conexiones cortas. Con Neon usa la **connection string co
 > algún día prefieres Railway/contenedor; en Vercel no se usan.
 
 ### Otros pendientes ya conocidos (no bloqueantes)
-- Revisión **legal real** del contenido de `/privacy` y `/terms` (hoy marcado BORRADOR) y
-  actualizar los correos `your-domain.com` / `tu-dominio.com`.
+- Revisión **legal real** del contenido de `/privacy` y `/terms` (hoy marcado BORRADOR).
+  Los correos de contacto ya son reales (`dg.luislo8@gmail.com`).
 - `npm run build` final (correrlo sin un `next dev` activo: Next permite un solo dev server
   por proyecto y comparten `.next`).

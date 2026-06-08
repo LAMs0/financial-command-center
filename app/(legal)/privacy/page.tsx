@@ -117,7 +117,7 @@ const content: Record<Locale, LegalContent> = {
         body: [
           <>
             Para ejercer tus derechos o consultas de privacidad, escribe a:{" "}
-            <span className="text-[#6ee7b7]">privacy@tu-dominio.com</span> (actualiza este correo).
+            <span className="text-[#6ee7b7]">dg.luislo8@gmail.com</span>.
           </>,
         ],
       },
@@ -208,7 +208,7 @@ const content: Record<Locale, LegalContent> = {
         body: [
           <>
             To exercise your rights or for privacy questions, email:{" "}
-            <span className="text-[#6ee7b7]">privacy@your-domain.com</span> (update this address).
+            <span className="text-[#6ee7b7]">dg.luislo8@gmail.com</span>.
           </>,
         ],
       },

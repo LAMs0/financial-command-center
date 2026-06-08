@@ -120,7 +120,7 @@ const content: Record<Locale, LegalContent> = {
         body: [
           <>
             Dudas sobre estos Términos:{" "}
-            <span className="text-[#6ee7b7]">legal@tu-dominio.com</span> (actualiza este correo).
+            <span className="text-[#6ee7b7]">dg.luislo8@gmail.com</span>.
           </>,
         ],
       },
@@ -208,7 +208,7 @@ const content: Record<Locale, LegalContent> = {
         body: [
           <>
             Questions about these Terms:{" "}
-            <span className="text-[#6ee7b7]">legal@your-domain.com</span> (update this address).
+            <span className="text-[#6ee7b7]">dg.luislo8@gmail.com</span>.
           </>,
         ],
       },
