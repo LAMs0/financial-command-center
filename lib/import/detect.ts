@@ -69,8 +69,7 @@ function hasSavingsSignals(transactions: ParsedTransaction[]): boolean {
 export function detectAccountType(
   accountName: string,
   filename: string,
-  transactions: ParsedTransaction[],
-  finalBalance: number
+  transactions: ParsedTransaction[]
 ): { type: AccountType | "credit_card"; confidence: number } {
   const text = norm(accountName + " " + filename);
 

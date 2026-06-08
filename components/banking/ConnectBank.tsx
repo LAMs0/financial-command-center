@@ -11,9 +11,9 @@
 */
 
 import { useState, useTransition } from "react";
-import { Plus, Loader2, X, Landmark } from "lucide-react";
+import { Plus, Loader2, X, Landmark, RefreshCw } from "lucide-react";
 import { Card, CardHeader } from "@/components/ui";
-import { connectInstitution, disconnectInstitution } from "@/lib/actions/banking";
+import { connectInstitution, disconnectInstitution, resyncInstitution } from "@/lib/actions/banking";
 import type { BankInstitution, BankProvider } from "@/lib/banking";
 import PlaidLinkButton from "./PlaidLinkButton";
 
@@ -60,6 +60,16 @@ export default function ConnectBank({ institutions, connected, providerId, mode 
     });
   }
 
+  function handleResync(name: string) {
+    setError(null);
+    setBusyId(`resync:${name}`);
+    startTransition(async () => {
+      const res = await resyncInstitution(name);
+      if (res.error) setError(res.error);
+      setBusyId(null);
+    });
+  }
+
   return (
     <Card padded={false}>
       <CardHeader
@@ -92,6 +102,22 @@ export default function ConnectBank({ institutions, connected, providerId, mode 
                   <span className="text-xs text-text-muted">
                     {inst.accountCount} {inst.accountCount === 1 ? "cuenta" : "cuentas"}
                   </span>
+                  {mode === "link" && (
+                    <button
+                      aria-label={`Re-sincronizar ${inst.name}`}
+                      className="grid h-6 w-6 place-items-center rounded-md text-text-muted transition hover:bg-brand-500/10 hover:text-brand-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50 disabled:opacity-50"
+                      disabled={pending}
+                      onClick={() => handleResync(inst.name)}
+                      title="Re-sincronizar"
+                      type="button"
+                    >
+                      {busyId === `resync:${inst.name}` ? (
+                        <Loader2 aria-hidden className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <RefreshCw aria-hidden className="h-3.5 w-3.5" strokeWidth={2} />
+                      )}
+                    </button>
+                  )}
                   <button
                     aria-label={`Desconectar ${inst.name}`}
                     className="grid h-6 w-6 place-items-center rounded-md text-text-muted transition hover:bg-negative-900 hover:text-negative-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50 disabled:opacity-50"

@@ -1,21 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Upload } from "lucide-react";
+import { useLocale } from "@/contexts/LocaleContext";
+import { tx } from "@/lib/i18n/config";
 import LoadSampleDataButton from "./LoadSampleDataButton";
-import { normalizeLocale, tx, type Locale } from "@/lib/i18n/config";
 
 export default function EmptyStateActions() {
-  const [locale, setLocale] = useState<Locale>("es");
+  const locale = useLocale();
   const t = (text: string) => tx(locale, text);
-
-  useEffect(() => {
-    // Detección de idioma en cliente desde <html lang>; intencional para un
-    // componente reutilizado en muchos EmptyState sin acceso al locale del server.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLocale(normalizeLocale(document.documentElement.lang));
-  }, []);
 
   return (
     <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">

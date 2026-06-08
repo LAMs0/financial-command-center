@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs";
+
 type LogLevel = "debug" | "info" | "warn" | "error";
 
 type LogContext = Record<string, unknown>;
@@ -49,6 +51,13 @@ export const logger = {
 
 export async function notifyMonitoring(event: string, error: ErrorInput, context: LogContext = {}) {
   logger.error(event, error, context);
+
+  // Reporta a Sentry si hay DSN configurado (no-op si el SDK no está inicializado).
+  // El `event` va como tag para agrupar/filtrar en el dashboard.
+  Sentry.captureException(error instanceof Error ? error : new Error(String(error)), {
+    tags: { event },
+    extra: context,
+  });
 
   const webhookUrl = process.env.ERROR_WEBHOOK_URL;
   if (!webhookUrl) return;

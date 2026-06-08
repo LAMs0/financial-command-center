@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 /*
   Cabeceras de seguridad HTTP — defensa en profundidad para una app financiera.
@@ -55,4 +56,15 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+/*
+  Envolvemos con Sentry SOLO si hay DSN (en producción/Vercel). Así en local sin
+  DSN no se añade el plugin de build ni overhead. La subida de source maps requiere
+  SENTRY_AUTH_TOKEN; si no está, Sentry la omite silenciosamente (silent:true).
+*/
+export default process.env.NEXT_PUBLIC_SENTRY_DSN
+  ? withSentryConfig(nextConfig, {
+      silent: true,
+      widenClientFileUpload: true,
+      disableLogger: true,
+    })
+  : nextConfig;

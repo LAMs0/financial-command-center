@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Roboto_Mono } from "next/font/google";
 import Script from "next/script";
 import { getLocale } from "@/lib/i18n/server";
+import { LocaleProvider } from "@/contexts/LocaleContext";
 import "./globals.css";
 
 const inter = Inter({
@@ -58,7 +59,7 @@ export default async function RootLayout({
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: themeScript }}
         />
-        {children}
+        <LocaleProvider locale={locale}>{children}</LocaleProvider>
       </body>
     </html>
   );

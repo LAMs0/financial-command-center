@@ -23,14 +23,14 @@ features es la **integración real de Plaid** (hoy hay un proveedor mock funcion
 - ✅ Temática unificada (near-black/emerald, tokens + primitivos) + fondo animado.
 - ✅ **i18n es/en COMPLETO** (incluye páginas legales). Infra en `lib/i18n` (`tx`/`getLocale`,
   cookie `fcc-locale`). Detalle en memoria del proyecto `project_i18n`.
-- ✅ Tests: **Vitest, 51 tests** (`npm test`) sobre calculations, formatters, import/validate, banking, crypto.
+- ✅ Tests: **Vitest, 55 tests** (`npm test`) sobre calculations, formatters, import/validate, banking, crypto y componentes críticos.
 - ✅ Rate-limit async con **Upstash + fallback in-memory** (`lib/rate-limit.ts`).
 - ✅ Cifrado **AES-256-GCM** (`lib/crypto.ts`) + modelo `BankConnection` en el schema.
 - ✅ Páginas legales bilingües `/privacy` y `/terms` (marcadas BORRADOR; faltan revisión legal real + correos reales).
 - ✅ **Deploy en Vercel (Hobby)**: `vercel-build` corre migraciones; `runtime=nodejs` + `maxDuration`
   en rutas pesadas; build verde.
 
-**Validación:** `npx tsc --noEmit` limpio · `npm test` 51/51 · `npm run build` OK · `eslint` 0 errores.
+**Validación:** `npx tsc --noEmit` limpio · `npm test` 55/55 · `npm run build` OK · `eslint` 0 errores.
 
 ---
 
@@ -54,7 +54,7 @@ Quedaban **3 adjuntos** por subir en el "Security Questionnaire":
 - Consent screen en **Testing** → agregar Test Users (o publicar) para que entren cuentas de prueba.
 
 ### 3. Plaid — integración REAL ✅ IMPLEMENTADA (6 jun 2026)
-Implementado y validado (tsc + 51 tests + lint). Falta solo **probarlo end-to-end** con keys
+Implementado y validado (tsc + 55 tests + lint). Falta solo **probarlo end-to-end** con keys
 en `.env` y, para producción, poner las vars en Vercel.
 - Deps instaladas: `plaid` 42.x + `react-plaid-link` 4.x.
 - `lib/banking/plaid-client.ts` — cliente SDK (singleton, lee `PLAID_*`).
@@ -73,16 +73,20 @@ en `.env` y, para producción, poner las vars en Vercel.
   cifra el access_token. Recordatorio: Sandbox NO conecta bancos reales (eso es Production,
   requiere aprobación del formulario de Plaid).
 
-### 3b. Mejora futura — sync incremental por `externalId` (NO bloqueante)
-Hoy `persistSyncResult` (lib/actions/banking.ts) deduplica **por nombre de cuenta** dentro de
-una institución: al reconectar un banco agrega solo las cuentas nuevas (p. ej. una savings que
-no se compartió la primera vez) sin duplicar las existentes ni sus transacciones. Limitación:
-no permite **re-sincronizar** (actualizar balances / traer movimientos nuevos) y los nombres
-deben ser distintos. La versión robusta:
-- Añadir columna `externalId` (provider account_id) a `FinancialAccount` y a `Transaction`
-  (+ índices únicos por usuario) y migrar.
-- Cambiar el guardado a `upsert` por `externalId` → idempotente: actualiza balances, agrega
-  cuentas/transacciones nuevas, no duplica. Habilitaría un botón "Re-sincronizar".
+### 3b. Sync incremental idempotente por `externalId` ✅ HECHO (7 jun 2026)
+`persistSyncResult` (lib/actions/banking.ts) ahora es **idempotente**:
+- Columnas `externalId` en `FinancialAccount` y `Transaction` (+ `@@unique([userId, externalId])`;
+  NULL para cuentas/movimientos manuales — los NULL no colisionan en Postgres).
+  Migración `20260607120000_add_external_id_sync` aplicada.
+- Cuentas: `upsert` por `(userId, externalId)` → actualiza balance/nombre, agrega nuevas, no
+  duplica. `color`/`institution` se fijan solo al crear (estables entre syncs).
+- Transacciones: `createMany({ skipDuplicates: true })` → omite las ya importadas.
+- **Botón "Re-sincronizar"** (icono ↻) en cada institución conectada en modo link
+  (`ConnectBank`) → server action `resyncInstitution` (descifra el access_token de
+  `BankConnection`, re-sync, actualiza `lastSyncedAt`).
+- Futuro opcional: webhooks de Plaid (`SYNC_UPDATES_AVAILABLE`) para auto-refrescar sin botón;
+  guardar el `cursor` de `transactionsSync` para sync verdaderamente incremental (hoy re-lee todo
+  y deduplica, que es correcto pero menos eficiente).
 
 ### 3c. Borrado de tarjetas (hecho 6 jun 2026)
 - `lib/actions/cards.ts` → `deleteCard(cardId)` (scoped a `userId`).
@@ -115,7 +119,7 @@ deben ser distintos. La versión robusta:
 ```bash
 npm run dev          # desarrollo (NO levantar un 2º)
 npm run build        # build prod (solo sin dev activo)
-npm test             # Vitest (51 tests)
+npm test             # Vitest (55 tests)
 npx tsc --noEmit     # type-check rápido sin tocar .next
 npm run db:migrate   # generar/aplicar migración (genera la de BankConnection cuando toque Plaid)
 ```

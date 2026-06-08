@@ -11,7 +11,7 @@ import {
   syncByAccessToken as plaidSyncByAccessToken,
 } from "@/lib/banking/plaid-provider";
 import type { BankInstitution, BankSyncResult } from "@/lib/banking";
-import { encryptSecret } from "@/lib/crypto";
+import { encryptSecret, decryptSecret } from "@/lib/crypto";
 import { notifyMonitoring } from "@/lib/logger";
 
 const DATA_PATHS = ["/dashboard", "/accounts", "/transactions", "/analytics"];
@@ -29,27 +29,28 @@ async function persistSyncResult(
   userId: string,
   { institution, accounts, transactions }: BankSyncResult
 ): Promise<{ error?: string; connected?: string }> {
-  // Dedup POR CUENTA (no por institución): al reconectar el mismo banco
-  // agregamos solo las cuentas nuevas (p. ej. una de ahorro que no se compartió
-  // la primera vez) sin duplicar las que ya existen ni sus transacciones.
-  const existing = await prisma.financialAccount.findMany({
-    where: { userId, institution: institution.name },
-    select: { name: true },
-  });
-  const existingNames = new Set(existing.map((account) => account.name));
-  const newAccounts = accounts.filter((account) => !existingNames.has(account.name));
-
-  if (newAccounts.length === 0) {
-    return { error: `${institution.name} ya esta conectado (sin cuentas nuevas).` };
-  }
-
-  // Solo creamos las cuentas nuevas. El Map resultante hace que más abajo solo
-  // se inserten las transacciones de ESAS cuentas (las viejas no se tocan).
+  // IDEMPOTENTE por `externalId` (el id de la cuenta/movimiento en el
+  // proveedor). Re-sincronizar el mismo banco ahora:
+  //   - actualiza balances de las cuentas existentes,
+  //   - agrega cuentas nuevas (p. ej. una savings que no se compartió antes),
+  //   - inserta solo los movimientos nuevos (skipDuplicates por unique),
+  // sin duplicar nada. Esto habilita un futuro botón "Re-sincronizar".
   const idByExternal = new Map<string, string>();
-  for (const account of newAccounts) {
-    const created = await prisma.financialAccount.create({
-      data: {
+  for (const account of accounts) {
+    const saved = await prisma.financialAccount.upsert({
+      where: { userId_externalId: { userId, externalId: account.externalId } },
+      update: {
+        // No tocamos `color` ni `institution` en update: se fijan al crear y
+        // se conservan estables entre re-sincronizaciones.
+        name: account.name,
+        type: account.type,
+        balance: account.balance,
+        currency: account.currency,
+        lastUpdated: new Date(),
+      },
+      create: {
         userId,
+        externalId: account.externalId,
         name: account.name,
         institution: institution.name,
         type: account.type,
@@ -59,15 +60,18 @@ async function persistSyncResult(
         lastUpdated: new Date(),
       },
     });
-    idByExternal.set(account.externalId, created.id);
+    idByExternal.set(account.externalId, saved.id);
   }
 
   if (transactions.length > 0) {
+    // createMany + skipDuplicates: los movimientos ya importados (mismo
+    // userId+externalId) se omiten automáticamente. Solo entran los nuevos.
     await prisma.transaction.createMany({
       data: transactions
         .filter((transaction) => idByExternal.has(transaction.accountExternalId))
         .map((transaction) => ({
           userId,
+          externalId: transaction.externalId,
           accountId: idByExternal.get(transaction.accountExternalId)!,
           description: transaction.description,
           amount: transaction.amount,
@@ -76,6 +80,7 @@ async function persistSyncResult(
           date: new Date(transaction.date),
           currency: transaction.currency,
         })),
+      skipDuplicates: true,
     });
   }
 
@@ -184,6 +189,52 @@ export async function connectPlaidItem(
       institution: institution?.name,
     });
     return { error: "No se pudo conectar el banco. Intentalo de nuevo." };
+  }
+}
+
+/*
+  Re-sincronizar: usa el access_token CIFRADO ya guardado (BankConnection) para
+  volver a traer cuentas + movimientos de Plaid. Gracias al guardado idempotente
+  (persistSyncResult), esto actualiza balances y agrega lo nuevo sin duplicar.
+  Solo aplica a conexiones de Plaid (el mock no guarda BankConnection).
+*/
+export async function resyncInstitution(
+  institution: string
+): Promise<{ error?: string; connected?: string }> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "No autenticado" };
+  const userId = session.user.id;
+
+  const { ok } = await rateLimit(`banking:${userId}`, 10, 60_000);
+  if (!ok) return { error: "Demasiadas solicitudes. Espera un momento." };
+
+  try {
+    const connection = await prisma.bankConnection.findFirst({
+      where: { userId, institutionName: institution, provider: "plaid", status: "active" },
+    });
+    if (!connection) {
+      return { error: "Esta institución no se puede re-sincronizar." };
+    }
+
+    const accessToken = decryptSecret(connection.accessTokenCipher);
+    const meta: BankInstitution = {
+      id: connection.institutionId,
+      name: connection.institutionName,
+      color: "#10b981", // create-only en persistSyncResult; no pisa el color real
+      country: "US",
+    };
+
+    const result = await plaidSyncByAccessToken(accessToken, meta);
+    const saved = await persistSyncResult(userId, result);
+
+    await prisma.bankConnection
+      .update({ where: { id: connection.id }, data: { lastSyncedAt: new Date() } })
+      .catch((error) => notifyMonitoring("banking.resync_timestamp_failed", error, { userId }));
+
+    return saved;
+  } catch (error) {
+    await notifyMonitoring("banking.resync_failed", error, { institution, userId });
+    return { error: "No se pudo re-sincronizar. Intentalo de nuevo." };
   }
 }
 

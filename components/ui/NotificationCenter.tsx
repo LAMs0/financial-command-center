@@ -18,7 +18,8 @@ import type {
   NotificationCategory,
   NotificationSeverity,
 } from "@/types/finance";
-import { normalizeLocale, tx, type Locale } from "@/lib/i18n/config";
+import { useLocale } from "@/contexts/LocaleContext";
+import { tx, type Locale } from "@/lib/i18n/config";
 
 interface NotificationCenterProps {
   notifications: AppNotification[];
@@ -29,16 +30,31 @@ export default function NotificationCenter({
   notifications,
   panelAlign = "right",
 }: NotificationCenterProps) {
-  const [locale, setLocale] = useState<Locale>("es");
+  const locale = useLocale();
   const t = (text: string) => tx(locale, text);
   const [open, setOpen] = useState(false);
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
     // Detección de idioma en cliente desde <html lang> (intencional).
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLocale(normalizeLocale(document.documentElement.lang));
-  }, []);
+  function markAllAsRead() {
+    if (notifications.length === 0) return;
+    setReadIds((current) => {
+      const next = new Set(current);
+      for (const notification of notifications) {
+        next.add(notification.id);
+      }
+      return next;
+    });
+  }
+
+  function toggleOpen() {
+    setOpen((value) => {
+      const next = !value;
+      if (next) markAllAsRead();
+      return next;
+    });
+  }
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -60,30 +76,36 @@ export default function NotificationCenter({
     return () => document.removeEventListener("keydown", handleKey);
   }, [open]);
 
-  const criticalCount = notifications.filter((n) => n.severity === "critical").length;
-  const badgeCount = notifications.length;
+  const unreadNotifications = notifications.filter((n) => !readIds.has(n.id));
+  const criticalCount = unreadNotifications.filter((n) => n.severity === "critical").length;
+  const unreadCount = unreadNotifications.length;
+  const totalCount = notifications.length;
   const panelPosition = panelAlign === "left" ? "left-0" : "right-0";
 
   return (
     <div className="relative" ref={containerRef}>
       <button
-        aria-label={`${t("Notificaciones")}${badgeCount > 0 ? ` - ${badgeCount} ${t("sin leer")}` : ""}`}
+        aria-label={`${t("Notificaciones")}${unreadCount > 0 ? ` - ${unreadCount} ${t("sin leer")}` : ""}`}
         aria-expanded={open}
         aria-haspopup="dialog"
-        className="relative grid h-9 w-9 place-items-center rounded-lg border border-white/10 bg-white/[0.03] text-text-secondary transition hover:border-white/20 hover:bg-white/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50"
-        onClick={() => setOpen((v) => !v)}
+        className={`relative grid h-9 w-9 place-items-center rounded-lg border text-text-secondary transition hover:border-white/20 hover:bg-white/[0.08] hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/50 ${
+          unreadCount > 0
+            ? "border-brand-400/40 bg-brand-500/15 shadow-[0_0_18px_rgba(16,185,129,0.18)]"
+            : "border-white/10 bg-white/[0.03]"
+        }`}
+        onClick={toggleOpen}
         type="button"
       >
         <Bell aria-hidden="true" className="h-4 w-4" strokeWidth={1.8} />
 
-        {badgeCount > 0 && (
+        {unreadCount > 0 && (
           <span
             aria-hidden="true"
             className={`absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none text-text-primary ${
               criticalCount > 0 ? "bg-negative-500" : "bg-warning-500"
             }`}
           >
-            {badgeCount > 9 ? "9+" : badgeCount}
+            {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
@@ -98,9 +120,11 @@ export default function NotificationCenter({
             <div>
               <p className="text-sm font-semibold text-text-primary">{t("Notificaciones")}</p>
               <p className="text-xs text-text-muted">
-                {badgeCount === 0
+                {totalCount === 0
                   ? t("Todo en orden")
-                  : `${badgeCount} ${badgeCount !== 1 ? t("alertas") : t("alerta")}`}
+                  : unreadCount > 0
+                    ? `${unreadCount} ${unreadCount !== 1 ? t("alertas") : t("alerta")}`
+                    : t("Todo esta al dia")}
               </p>
             </div>
             <button

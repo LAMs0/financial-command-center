@@ -357,7 +357,7 @@ function detectBankSchema(headers: string[]): BankSchema | null {
 }
 
 /** Encuentra la primera fila que parece ser un encabezado de columnas */
-function findHeaderRow(lines: string[][], delimiter: string): number {
+function findHeaderRow(lines: string[][]): number {
   // Buscamos la fila que contiene palabras clave conocidas
   const keywords = ["fecha", "date", "cargo", "abono", "monto", "importe", "saldo", "descripcion", "concepto", "amount"];
   for (let i = 0; i < Math.min(lines.length, 15); i++) {
@@ -427,7 +427,7 @@ export function parseCSV(rawContent: string): CSVParseResult {
   }
 
   // Buscar la fila de encabezados (puede haber filas de metadata antes)
-  const headerRowIdx = findHeaderRow(allRows, delimiter);
+  const headerRowIdx = findHeaderRow(allRows);
   const preamble = lines.slice(0, headerRowIdx);
   const headerRow = allRows[headerRowIdx];
   const dataRows = allRows.slice(headerRowIdx + 1);

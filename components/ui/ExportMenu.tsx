@@ -8,8 +8,8 @@ import {
   Loader2,
   ChevronDown,
 } from "lucide-react";
-import { normalizeLocale, tx } from "@/lib/i18n/config";
-import type { Locale } from "@/lib/i18n/config";
+import { tx } from "@/lib/i18n/config";
+import { useLocale } from "@/contexts/LocaleContext";
 
 type ExportItem = {
   label: string;
@@ -40,17 +40,13 @@ export default function ExportMenu({
   datasets = ["transactions"],
   showReport = true,
 }: ExportMenuProps) {
-  const [locale, setLocale] = useState<Locale>("es");
+  const locale = useLocale();
   const t = (text: string) => tx(locale, text);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
     // Detección de idioma en cliente desde <html lang> (intencional).
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLocale(normalizeLocale(document.documentElement.lang));
-  }, []);
 
   // Cerrar al click fuera
   useEffect(() => {

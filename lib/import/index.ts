@@ -26,11 +26,6 @@ import {
   extractLastFourDigits,
 } from "./detect";
 
-// Colores por defecto para cuentas nuevas
-const ACCOUNT_COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6", "#ef4444", "#14b8a6"];
-let colorIdx = 0;
-function nextColor() { return ACCOUNT_COLORS[colorIdx++ % ACCOUNT_COLORS.length]; }
-
 export function parseStatement(
   rawContentRaw: string,
   filename: string
@@ -90,8 +85,7 @@ function assembleFromImageLike(
   const { type: detectedType, confidence } = detectAccountType(
     accountName,
     filename,
-    result.transactions,
-    result.finalBalance
+    result.transactions
   );
 
   const goal = detectedType !== "credit_card"
@@ -145,8 +139,7 @@ function parseCSVStatement(rawContent: string, filename: string): ParsedStatemen
   const { type: detectedType, confidence } = detectAccountType(
     accountName,
     filename,
-    result.transactions,
-    result.finalBalance
+    result.transactions
   );
 
   const goal = detectedType !== "credit_card"

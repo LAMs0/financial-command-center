@@ -81,8 +81,6 @@ export function parseOFX(rawContent: string): OFXParseResult {
 
   // Determinar si es cuenta de crédito o débito
   const hasCCStmt = content.toUpperCase().includes("<CCSTMTTRNRS>") || content.toUpperCase().includes("<CCSTMT>");
-  const hasBankStmt = content.toUpperCase().includes("<BANKSTMTTRNRS>") || content.toUpperCase().includes("<STMTTRNRS>");
-
   let accountType: OFXParseResult["accountType"] = "checking";
   if (hasCCStmt) {
     accountType = "credit_card";

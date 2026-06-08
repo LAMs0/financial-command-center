@@ -69,8 +69,8 @@ export default function Sidebar({
 
   return (
     <aside className="hidden w-72 shrink-0 border-r border-white/10 bg-surface-base/80 px-5 py-6 backdrop-blur xl:block">
-      <div className="mb-9 flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
+      <div className="mb-8 space-y-4">
+        <div className="flex min-w-0 items-center gap-3 rounded-xl border border-white/10 bg-white/[0.025] p-2.5">
           <div className="grid h-11 w-11 place-items-center rounded-lg border border-brand-400/30 bg-brand-500/15 font-display text-sm font-bold text-brand-300">
             FC
           </div>
@@ -79,10 +79,12 @@ export default function Sidebar({
             <p className="text-xs text-text-secondary">{t("Espacio CFO personal")}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/[0.025] p-2">
           <NotificationCenter notifications={notifications} panelAlign="left" />
-          <LanguageToggle locale={locale} />
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <LanguageToggle locale={locale} />
+            <ThemeToggle />
+          </div>
         </div>
       </div>
 
@@ -232,17 +234,17 @@ export function MobileNav({ deleteAccountAction, locale, user, signOutAction, no
 
   return (
     <div className="border-b border-white/10 bg-surface-base/90 px-4 py-3 backdrop-blur xl:hidden">
-      <div className="mb-3 flex items-center justify-between gap-3">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <div className="grid h-9 w-9 place-items-center rounded-lg border border-brand-400/30 bg-brand-500/15 font-display text-xs font-bold text-brand-300">
             FC
           </div>
-          <div className="min-w-0">
+          <div className="min-w-[10rem] flex-1">
             <p className="truncate font-display text-sm font-bold tracking-tight text-text-primary">Financial Command</p>
             <p className="truncate text-xs text-text-secondary">{t("Espacio CFO personal")}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2">
           <NotificationCenter notifications={notifications} />
           <LanguageToggle locale={locale} />
           <ThemeToggle />

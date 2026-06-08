@@ -135,10 +135,16 @@ model FinancialAccount {
   lastUpdated DateTime    @default(now())
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+  // Id de la cuenta en el proveedor (Plaid account_id). NULL para cuentas
+  // manuales / de ejemplo. Permite re-sincronizar de forma idempotente.
+  externalId  String?
 
   userId       String
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
+
+  // Una misma cuenta externa no se duplica por usuario (NULLs no colisionan).
+  @@unique([userId, externalId])
 }
 
 model CreditCard {
@@ -171,11 +177,17 @@ model Transaction {
   notes       String?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+  // Id del movimiento en el proveedor (Plaid transaction_id). NULL para
+  // movimientos manuales / de ejemplo. Evita duplicados al re-sincronizar.
+  externalId  String?
 
   userId    String
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   accountId String
   account   FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  // Un mismo movimiento externo no se duplica por usuario (NULLs no colisionan).
+  @@unique([userId, externalId])
 }
 
 model Investment {

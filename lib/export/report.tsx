@@ -11,7 +11,6 @@
 
 import {
   Document,
-  Font,
   Page,
   StyleSheet,
   Text,
