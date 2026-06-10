@@ -10,16 +10,16 @@ import type { CSSProperties } from "react";
 export const metadata = { title: "Iniciar sesion | Financial Command Center" };
 
 const authTheme = {
-  "--color-primary": "#6ee7b7",
-  "--color-primary-container": "#10b981",
+  "--color-primary": "var(--color-brand-300)",
+  "--color-primary-container": "var(--color-brand-500)",
   "--color-on-primary-container": "#022c22",
-  "--color-background": "#141313",
-  "--color-on-background": "#e5e2e1",
-  "--color-on-surface": "#e5e2e1",
-  "--color-on-surface-variant": "#b9d8cc",
-  "--color-surface-container": "#201f1f",
-  "--color-surface-container-low": "#1c1b1b",
-  "--color-outline-variant": "#24483d",
+  "--color-background": "var(--color-surface-card)",
+  "--color-on-background": "var(--color-text-primary)",
+  "--color-on-surface": "var(--color-text-primary)",
+  "--color-on-surface-variant": "var(--color-text-secondary)",
+  "--color-surface-container": "var(--color-surface-card)",
+  "--color-surface-container-low": "var(--color-surface-raised)",
+  "--color-outline-variant": "var(--color-surface-border)",
 } as CSSProperties;
 
 export default async function SignInPage({

@@ -17,9 +17,9 @@ import type { ReactNode } from "react";
 type CardVariant = "default" | "raised" | "ghost";
 
 const variantClasses: Record<CardVariant, string> = {
-  default: "bg-surface-card border border-white/10",
-  raised:  "bg-surface-raised border border-white/10",
-  ghost:   "bg-transparent border border-white/10",
+  default: "surface-panel",
+  raised:  "surface-raised",
+  ghost:   "surface-ghost",
 };
 
 interface CardProps {
@@ -39,7 +39,7 @@ export default function Card({
   return (
     <div
       className={[
-        "rounded-xl shadow-2xl shadow-black/20 transition-all duration-500 premium-glow-hover",
+        "rounded-xl transition-all duration-500 premium-glow-hover",
         variantClasses[variant],
         padded ? "p-5" : "",
         className,
@@ -73,7 +73,7 @@ export function CardHeader({
     <div
       className={[
         "flex items-center justify-between px-5 py-4",
-        bordered ? "border-b border-white/10" : "",
+        bordered ? "border-b border-surface-border" : "",
       ]
         .filter(Boolean)
         .join(" ")}

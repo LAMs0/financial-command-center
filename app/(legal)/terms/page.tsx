@@ -13,14 +13,14 @@ const UPDATED: Record<Locale, string> = {
 };
 
 function H({ children }: { children: ReactNode }) {
-  return <h2 className="mt-10 font-display text-xl font-bold uppercase tracking-tight text-[#ece9e7]">{children}</h2>;
+  return <h2 className="mt-10 font-display text-xl font-bold uppercase tracking-tight text-text-primary">{children}</h2>;
 }
 function P({ children }: { children: ReactNode }) {
-  return <p className="mt-3 text-sm leading-7 text-[#b8b2ad]">{children}</p>;
+  return <p className="mt-3 text-sm leading-7 text-text-secondary">{children}</p>;
 }
 
 const privacyLink = (label: string) => (
-  <a className="text-[#6ee7b7] underline-offset-2 hover:underline" href="/privacy">
+  <a className="text-brand-300 underline-offset-2 hover:underline" href="/privacy">
     {label}
   </a>
 );
@@ -120,7 +120,7 @@ const content: Record<Locale, LegalContent> = {
         body: [
           <>
             Dudas sobre estos Términos:{" "}
-            <span className="text-[#6ee7b7]">dg.luislo8@gmail.com</span>.
+            <span className="text-brand-300">dg.luislo8@gmail.com</span>.
           </>,
         ],
       },
@@ -208,7 +208,7 @@ const content: Record<Locale, LegalContent> = {
         body: [
           <>
             Questions about these Terms:{" "}
-            <span className="text-[#6ee7b7]">dg.luislo8@gmail.com</span>.
+            <span className="text-brand-300">dg.luislo8@gmail.com</span>.
           </>,
         ],
       },
@@ -226,11 +226,11 @@ export default async function TermsPage() {
         {c.draft}
       </div>
 
-      <p className="font-mono text-xs uppercase tracking-[0.18em] text-[#6ee7b7]">Legal</p>
-      <h1 className="mt-2 font-display text-3xl font-bold uppercase tracking-tight text-[#ece9e7] sm:text-4xl">
+      <p className="font-mono text-xs uppercase tracking-[0.18em] text-brand-300">Legal</p>
+      <h1 className="mt-2 font-display text-3xl font-bold uppercase tracking-tight text-text-primary sm:text-4xl">
         {c.title}
       </h1>
-      <p className="mt-3 text-sm text-[#78716c]">{c.updatedLabel}: {UPDATED[locale]}</p>
+      <p className="mt-3 text-sm text-text-muted">{c.updatedLabel}: {UPDATED[locale]}</p>
 
       {c.sections.map((section) => (
         <section key={section.h}>

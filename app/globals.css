@@ -77,6 +77,10 @@
   --app-shell-bg: radial-gradient(circle at top left, rgba(16, 185, 129, 0.12), transparent 38%),
     radial-gradient(circle at 82% -10%, rgba(16, 185, 129, 0.07), transparent 42%),
     linear-gradient(160deg, #0a0a0b 0%, #0e0e0e 55%, #121111 100%);
+  --ui-glass-bg: rgba(255, 255, 255, 0.04);
+  --ui-glass-bg-strong: rgba(255, 255, 255, 0.08);
+  --ui-glass-border: rgba(255, 255, 255, 0.1);
+  --ui-card-shadow: rgba(0, 0, 0, 0.2);
 }
 
 html:not(.dark) {
@@ -95,6 +99,10 @@ html:not(.dark) {
   --color-negative-900: #fee2e2;
   --color-warning-900: #fef3c7;
   --color-info-900: #dbeafe;
+  --ui-glass-bg: rgba(15, 23, 42, 0.035);
+  --ui-glass-bg-strong: rgba(15, 23, 42, 0.075);
+  --ui-glass-border: rgba(15, 23, 42, 0.12);
+  --ui-card-shadow: rgba(15, 23, 42, 0.08);
 }
 
 html.dark {
@@ -114,6 +122,39 @@ body {
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+html:not(.dark) [class*="border-white/"] {
+  border-color: var(--ui-glass-border) !important;
+}
+
+html:not(.dark) [class*="bg-white/"] {
+  background-color: var(--ui-glass-bg) !important;
+}
+
+html:not(.dark) [class*="hover:bg-white/"]:hover,
+html:not(.dark) [class*="active:bg-white/"]:active {
+  background-color: var(--ui-glass-bg-strong) !important;
+}
+
+html:not(.dark) [class*="disabled:bg-white/"]:disabled {
+  background-color: var(--ui-glass-bg) !important;
+}
+
+.surface-panel {
+  border: 1px solid var(--ui-glass-border);
+  background: color-mix(in oklab, var(--color-surface-card) 88%, transparent);
+  box-shadow: 0 24px 60px var(--ui-card-shadow);
+}
+
+.surface-raised {
+  border: 1px solid var(--ui-glass-border);
+  background: color-mix(in oklab, var(--color-surface-raised) 92%, transparent);
+}
+
+.surface-ghost {
+  border: 1px solid var(--ui-glass-border);
+  background: color-mix(in oklab, var(--color-surface-card) 42%, transparent);
 }
 
 :where(a, button, input, select, textarea, [role="button"], [role="tab"]):focus-visible {
@@ -143,8 +184,8 @@ body {
 
 @theme {
   /* MD3 color palette (landing page) */
-  --color-primary:                   #6ee7b7;
-  --color-primary-container:         #10b981;
+  --color-primary:                   var(--color-brand-300);
+  --color-primary-container:         var(--color-brand-500);
   --color-on-primary:                #022c22;
   --color-on-primary-container:      #022c22;
   --color-secondary:                 #99f6e4;
@@ -154,22 +195,22 @@ body {
   --color-tertiary:                  #67e8f9;
   --color-tertiary-container:        #0891b2;
   --color-on-tertiary:               #083344;
-  --color-surface:                   #141313;
-  --color-surface-dim:               #141313;
+  --color-surface:                   var(--color-surface-card);
+  --color-surface-dim:               var(--color-surface-card);
   --color-surface-bright:            #3a3939;
-  --color-surface-container:         #201f1f;
-  --color-surface-container-low:     #1c1b1b;
-  --color-surface-container-high:    #2a2a2a;
-  --color-surface-container-lowest:  #0e0e0e;
+  --color-surface-container:         var(--color-surface-card);
+  --color-surface-container-low:     var(--color-surface-raised);
+  --color-surface-container-high:    var(--color-surface-border);
+  --color-surface-container-lowest:  var(--color-surface-base);
   --color-surface-container-highest: #353434;
   --color-surface-variant:           #353434;
-  --color-surface-tint:              #6ee7b7;
-  --color-background:                #141313;
-  --color-on-background:             #e5e2e1;
-  --color-on-surface:                #e5e2e1;
-  --color-on-surface-variant:        #e4beb9;
-  --color-outline:                   #ab8985;
-  --color-outline-variant:           #5b403d;
+  --color-surface-tint:              var(--color-brand-300);
+  --color-background:                var(--color-surface-card);
+  --color-on-background:             var(--color-text-primary);
+  --color-on-surface:                var(--color-text-primary);
+  --color-on-surface-variant:        var(--color-text-secondary);
+  --color-outline:                   var(--color-text-muted);
+  --color-outline-variant:           var(--color-surface-border);
   --color-inverse-surface:           #e5e2e1;
   --color-inverse-on-surface:        #313030;
   --color-inverse-primary:           #10b981;
