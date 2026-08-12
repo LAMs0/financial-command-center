@@ -13,7 +13,7 @@ cuando una decision tecnica o de producto sea importante.
 
 ## Stack
 
-- Next.js 16.2.6, App Router, React 19.2.4, TypeScript 5
+- Next.js 16.3.0, App Router, React 19.2.4, TypeScript 5
 - Tailwind CSS v4 via `@theme` en `app/globals.css`
 - Prisma 5.22 + PostgreSQL
 - Auth.js v5 + Google OAuth + PrismaAdapter
@@ -37,13 +37,19 @@ npm run db:seed
 npm run db:studio
 ```
 
-Validacion del 2026-06-07:
+Validacion del 2026-08-10:
 
 - `npx tsc --noEmit`: OK
 - `npm run lint`: OK sin warnings
 - `npm test`: OK, 55 tests
 - `npm audit`: OK, 0 vulnerabilidades
 - `npm run build`: OK
+
+Nota: `npm audit` se degrada solo con el tiempo, por avisos nuevos sobre
+dependencias que no cambiaron. Conviene re-correrlo antes de cada release en
+vez de confiar en la validacion anterior. Ojo con `npm audit fix --force`:
+suele proponer degradar dependencias directas a versiones muy viejas.
+Revisar siempre que cambiaria antes de aceptarlo.
 
 ## Arquitectura
 
@@ -204,8 +210,11 @@ Pendiente: configurar las variables de Plaid en produccion (Vercel) si se quiere
   `notifyMonitoring` y el error boundary hacen `captureException`. Gated por
   `NEXT_PUBLIC_SENTRY_DSN` (no-op sin DSN). Solo error monitoring (tracing/replay en 0).
 - Rate limit con Upstash opcional y fallback en memoria
-- `npm audit` limpio a 0 vulnerabilidades
+- `npm audit` limpio a 0 vulnerabilidades (2026-08-10)
 - `@e965/xlsx` reemplaza al paquete `xlsx` vulnerable
+- `overrides.postcss` en `package.json` fuerza una version parcheada de postcss
+  en todo el arbol (next, tailwind, vite). Es un pin exacto: hay que subirlo a
+  mano cuando salga un aviso nuevo, porque `npm audit fix` no puede sortearlo.
 
 Pendiente externo: rotar/deshabilitar secreto viejo de Google en Google Cloud
 Console; configurar Upstash y `NEXT_PUBLIC_SENTRY_DSN` en produccion.
