@@ -31,7 +31,7 @@ Warnings actuales:
 
 ## Stack vigente
 
-- Next.js 16.2.6, App Router, Turbopack build
+- Next.js 16.3.0, App Router, Turbopack build
 - React 19.2.4
 - TypeScript 5
 - Tailwind CSS v4 via `@theme` en `app/globals.css`
@@ -156,7 +156,7 @@ API:
 - Rate limit con Upstash Redis opcional y fallback en memoria.
 - `npm audit` limpio a 0 vulnerabilidades.
 - `xlsx` vulnerable reemplazado por `@e965/xlsx`.
-- `postcss` fijado con override.
+- `postcss` fijado con override (pin exacto: subirlo a mano ante avisos nuevos).
 
 ### Testing
 

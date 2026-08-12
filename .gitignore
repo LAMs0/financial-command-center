@@ -42,5 +42,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# modelos OCR: los versionados viven en tessdata/. Si tesseract escribe su
+# cache en la raiz del proyecto, no la versionamos.
+/*.traineddata
+
 # carpetas temporales del proyecto
 _dashboard_old/

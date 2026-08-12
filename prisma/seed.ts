@@ -15,14 +15,17 @@ import { seedUserData } from "../lib/sample-data";
 
 const prisma = new PrismaClient();
 
+/** Usuario de desarrollo que crea este seed. Solo se usa aqui. */
+const DEMO_USER_EMAIL = "demo@financialcc.app";
+
 async function main() {
   console.log("🌱 Seeding Financial Command Center...");
 
   // Crear usuario de prueba
   const user = await prisma.user.upsert({
-    where: { email: "demo@financialcc.app" },
+    where: { email: DEMO_USER_EMAIL },
     update: {},
-    create: { email: "demo@financialcc.app", name: "Demo User", image: null },
+    create: { email: DEMO_USER_EMAIL, name: "Demo User", image: null },
   });
   console.log(`✅ User: ${user.email}`);
 
